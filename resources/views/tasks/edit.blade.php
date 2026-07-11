@@ -1,63 +1,70 @@
-@extends('layouts.app')
+<x-app-layout>
+    <x-slot name="header">
+        <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
+            {{ __('Editar Tarea') }}
+        </h2>
+    </x-slot>
 
-@section('titulo', 'Editar Tarea')
-@section('titulo_pagina', 'Editar Tarea')
+    <div class="py-12 bg-gray-100 dark:bg-gray-900 min-h-screen">
+        <div class="max-w-2xl mx-auto sm:px-6 lg:px-8">
+            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg p-6 border border-gray-300 dark:border-gray-700">
+                
+                <h3 class="text-lg font-bold text-gray-900 dark:text-gray-100 mb-6">Modificar los datos de la Tarea</h3>
 
-@section('contenido')
-    <div class="card shadow">
-        <div class="card-body">
-            <form method="POST" action="{{ route('tasks.update', $tarea->id) }}">
-                @csrf
-                @method('PUT')
-                <div class="mb-3">
-                    <label for="titulo" class="form-label">Título <span class="text-danger">*</span></label>
-                    <input type="text" class="form-control @error('titulo') is-invalid @enderror" id="titulo" name="titulo" value="{{ old('titulo', $tarea->titulo) }}" required>
-                    @error('titulo')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
-                </div>
-                <div class="mb-3">
-                    <label for="descripcion" class="form-label">Descripción</label>
-                    <textarea class="form-control @error('descripcion') is-invalid @enderror" id="descripcion" name="descripcion" rows="3">{{ old('descripcion', $tarea->descripcion) }}</textarea>
-                    @error('descripcion')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
-                </div>
-                <div class="mb-3">
-                    <label for="category_id" class="form-label">Categoría <span class="text-danger">*</span></label>
-                    <select class="form-control @error('category_id') is-invalid @enderror" id="category_id" name="category_id" required>
-                        <option value="">Seleccione...</option>
-                        @foreach ($categorias as $cat)
-                            <option value="{{ $cat->id }}" {{ old('category_id', $tarea->category_id) == $cat->id ? 'selected' : '' }}>
-                                {{ $cat->nombre }}
-                            </option>
-                        @endforeach
-                    </select>
-                    @error('category_id')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
-                </div>
-                <div class="mb-3">
-                    <label for="estado" class="form-label">Estado</label>
-                    <select class="form-control @error('estado') is-invalid @enderror" id="estado" name="estado">
-                        <option value="pendiente" {{ old('estado', $tarea->estado) == 'pendiente' ? 'selected' : '' }}>Pendiente</option>
-                        <option value="en_progreso" {{ old('estado', $tarea->estado) == 'en_progreso' ? 'selected' : '' }}>En Progreso</option>
-                        <option value="completada" {{ old('estado', $tarea->estado) == 'completada' ? 'selected' : '' }}>Completada</option>
-                    </select>
-                    @error('estado')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
-                </div>
-                <div class="mb-3">
-                    <label for="fecha_limite" class="form-label">Fecha Límite</label>
-                    <input type="date" class="form-control @error('fecha_limite') is-invalid @enderror" id="fecha_limite" name="fecha_limite" value="{{ old('fecha_limite', $tarea->fecha_limite) }}">
-                    @error('fecha_limite')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
-                </div>
-                <button type="submit" class="btn btn-primary">Actualizar Tarea</button>
-                <a href="{{ route('tasks.index') }}" class="btn btn-secondary">Cancelar</a>
-            </form>
+                <form action="{{ route('tasks.update', $tarea->id) }}" method="POST">
+                    @csrf
+                    @method('PUT')
+
+                    <div class="mb-4">
+                        <label class="block text-xs font-semibold uppercase text-gray-600 dark:text-gray-400 mb-2">Título *</label>
+                        <input type="text" name="titulo" value="{{ old('titulo', $tarea->titulo) }}" required
+                               class="w-full text-sm rounded-md border-gray-300 bg-white text-black dark:bg-gray-900 dark:text-gray-100 focus:border-emerald-500 focus:ring-emerald-500 shadow-sm py-2 px-3">
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="block text-xs font-semibold uppercase text-gray-600 dark:text-gray-400 mb-2">Descripción</label>
+                        <textarea name="descripcion" rows="4"
+                                  class="w-full text-sm rounded-md border-gray-300 bg-white text-black dark:bg-gray-900 dark:text-gray-100 focus:border-emerald-500 focus:ring-emerald-500 shadow-sm py-2 px-3">{{ old('descripcion', $tarea->descripcion) }}</textarea>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="block text-xs font-semibold uppercase text-gray-600 dark:text-gray-400 mb-2">Categoría *</label>
+                        <select name="category_id" required
+                                class="w-full text-sm rounded-md border-gray-300 bg-white text-black dark:bg-gray-900 dark:text-gray-100 focus:border-emerald-500 focus:ring-emerald-500 shadow-sm py-2 px-3">
+                            @foreach($categories as $category)
+                                <option value="{{ $category->id }}" {{ $tarea->category_id == $category->id ? 'selected' : '' }} class="text-black dark:text-gray-100">
+                                    {{ $category->nombre }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="block text-xs font-semibold uppercase text-gray-600 dark:text-gray-400 mb-2">Estado</label>
+                        <select name="estado" class="w-full text-sm rounded-md border-gray-300 bg-white text-black dark:bg-gray-900 dark:text-gray-100 focus:border-emerald-500 focus:ring-emerald-500 shadow-sm py-2 px-3">
+                            <option value="pendiente" {{ $tarea->estado == 'pendiente' ? 'selected' : '' }} class="text-black dark:text-gray-100">Pendiente</option>
+                            <option value="en_progreso" {{ $tarea->estado == 'en_progreso' ? 'selected' : '' }} class="text-black dark:text-gray-100">En Progreso</option>
+                            <option value="completado" {{ $tarea->estado == 'completado' ? 'selected' : '' }} class="text-black dark:text-gray-100">Completado</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-6">
+                        <label class="block text-xs font-semibold uppercase text-gray-600 dark:text-gray-400 mb-2">Fecha Límite</label>
+                        <input type="date" name="fecha_limite" value="{{ old('fecha_limite', $tarea->fecha_limite) }}"
+                               class="w-full text-sm rounded-md border-gray-300 bg-white text-black dark:bg-gray-900 dark:text-gray-100 focus:border-emerald-500 focus:ring-emerald-500 shadow-sm py-2 px-3">
+                    </div>
+
+                    <div class="flex items-center justify-end gap-3 border-t border-gray-200 dark:border-gray-700 pt-4">
+                        <a href="{{ url('/dashboard') }}" class="inline-flex items-center px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600 font-bold text-xs uppercase tracking-wider rounded transition">
+                            Cancelar
+                        </a>
+                        <button type="submit" class="inline-flex items-center px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs uppercase tracking-wider rounded transition shadow-sm">
+                            Actualizar Tarea
+                        </button>
+                    </div>
+
+                </form>
+            </div>
         </div>
     </div>
-@endsection
+</x-app-layout>

@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.task')
 
 @section('titulo', 'Crear Tarea')
 @section('titulo_pagina', 'Crear Nueva Tarea')

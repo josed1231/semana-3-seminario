@@ -9,13 +9,22 @@ use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Tymon\JWTAuth\Contracts\JWTSubject;
 
-#[Fillable(['name', 'email', 'password'])]
-#[Hidden(['password', 'remember_token'])]
-class User extends Authenticatable
+/** @fillable(['name', 'email', 'password']) */
+/** @hidden(['password', 'remember_token']) */
+class User extends Authenticatable implements JWTSubject
 {
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
+
+    protected $fillable = [
+        'name',
+        'username', // <-- VERIFICA QUE ESTÉ ESCRITO EXACTAMENTE ASÍ
+        'email',
+        'password',
+        'rol',
+    ];
 
     /**
      * Get the attributes that should be cast.
@@ -29,11 +38,19 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
-    
-    public function tasks() {
+
+    // Un usuario puede tener muchas tareas
+    public function tasks() { 
         return $this->hasMany(Task::class);
     }
 
+    public function getJWTIdentifier()
+    {
+        return $this->getKey();
+    }
+
+    public function getJWTCustomClaims(): array
+    {
+        return [];
+    }
 }
-
-

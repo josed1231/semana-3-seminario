@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.task')
 
 @section('titulo', 'Listado de Tareas')
 @section('titulo_pagina', 'Listado de Tareas')
