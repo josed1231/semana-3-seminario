@@ -7,24 +7,25 @@
 
         <title>{{ config('app.name', 'Laravel') }}</title>
 
-        <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
-        <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
+        <link href="https://fonts.bunny.net/css?family=figtree:400,500,600,700,800&display=swap" rel="stylesheet" />
 
-        <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
-    <body class="font-sans text-gray-900 antialiased">
-        <div class="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0 bg-gray-100 dark:bg-gray-900">
-            <div>
-                <a href="/">
-                    <x-application-logo class="w-20 h-20 fill-current text-gray-500" />
-                </a>
+    <body class="font-sans antialiased" style="margin: 0; padding: 0;">
+        <div style="background: linear-gradient(135deg, #004d2e 0%, #002b1a 100%); min-height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 2rem; box-sizing: border-box;">
+            
+            <div style="margin-bottom: 1.5rem; text-align: center;">
+                <span style="color: #ffffff; font-size: 2.25rem; font-weight: 900; letter-spacing: 0.05em; text-shadow: 0 2px 4px rgba(0,0,0,0.3);">
+                    COTE<span style="color: #f17a28;">NOVA</span>
+                </span>
+                <p style="color: rgba(240, 253, 250, 0.9); font-size: 0.8rem; margin-top: 6px; margin-bottom: 0; font-weight: 500; letter-spacing: 0.05em;">
+                    Plataforma Inteligente de Alertas Tempranas
+                </p>
             </div>
 
-            <div class="w-full sm:max-w-md mt-6 px-6 py-4 bg-white dark:bg-gray-800 shadow-md overflow-hidden sm:rounded-lg">
-                {{ $slot }}
-            </div>
+            {{ $slot }}
+            
         </div>
     </body>
 </html>

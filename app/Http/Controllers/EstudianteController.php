@@ -25,11 +25,12 @@ class EstudianteController extends Controller
         return view('estudiantes.create', compact('programas', 'docentes'));
     }
 
+    // Muestra el formulario de edición
     public function edit($codigo_estudiante)
     {
-        // Bloquear el acceso si es Director de Unidad (docente)
-        if (auth()->user()->rol === 'dir_unidad') {
-            abort(403, 'No tienes permisos para editar estudiantes.');
+        // SEGURIDAD: Bloquear el acceso si es Director de Unidad (docente) o Psicólogo (si no debe editar datos académicos)
+        if (!auth()->user()->rol === 'admin' && !auth()->user()->rol === 'psicologo') {
+        abort(403, 'No tienes permisos para acceder a la edición.');
         }
 
         if (!Schema::hasTable('programas_academicos')) {
@@ -40,7 +41,8 @@ class EstudianteController extends Controller
             ->where('codigo_estudiante', $codigo_estudiante)
             ->firstOrFail();
 
-        $programas = DB::table('programas_academicos')->get();$docentes = DB::table('docentes')->get();
+        $programas = DB::table('programas_academicos')->get();
+        $docentes = DB::table('docentes')->get();
 
         return view('estudiantes.edit', compact('estudiante', 'programas', 'docentes'));
     }
@@ -48,24 +50,28 @@ class EstudianteController extends Controller
     // Guarda el estudiante en la base de datos
     public function store(Request $request)
     {
+        // SEGURIDAD: Evitar que roles no autorizados guarden registros
+        if (in_array(auth()->user()->rol, ['dir_unidad', 'psicologo'])) {
+            abort(403, 'No tienes permisos para registrar estudiantes.');
+        }
+
         $request->validate([
-            'codigo_estudiante' => 'required',
+            'codigo_estudiante' => 'required|string|max:50|unique:estudiantes,codigo_estudiante',
             'nombre_estudiante' => 'required|string|max:255',
-            'correo'            => 'required|email',
-            'id_programa'       => 'required',
-            'id_docente'        => 'required',
+            'correo'            => 'required|email|max:255',
+            'id_programa'       => 'required|integer',
+            'id_docente'        => 'required|integer',
             'promedio'          => 'required|numeric|between:0,5.0',
         ]);
 
-        DB::table('estudiantes')->insert([
+        // PROTECCIÓN SQLi: Usamos Eloquent (que usa sentencias preparadas por defecto bajo PDO)
+        Estudiante::create([
             'codigo_estudiante' => $request->input('codigo_estudiante'),
             'nombre_estudiante' => $request->input('nombre_estudiante'),
             'correo'            => $request->input('correo'),
             'id_programa'       => $request->input('id_programa'),
             'id_docente'        => $request->input('id_docente'),
             'promedio'          => $request->input('promedio'),
-            'created_at'        => now(),
-            'updated_at'        => now(),
         ]);
 
         return redirect()->route('dashboard')->with('success', 'Estudiante registrado con éxito.');
@@ -73,21 +79,21 @@ class EstudianteController extends Controller
 
     public function update(Request $request, $codigo_estudiante)
     {
-        // Bloquear el acceso si es Director de Unidad (docente)
+        // SEGURIDAD: Bloquear el acceso si es Director de Unidad (docente)
         if (auth()->user()->rol === 'dir_unidad') {
             abort(403, 'No tienes permisos para actualizar estudiantes.');
         }
 
-        $estudiante = Estudiante::findOrFail($codigo_estudiante);
+        $estudiante = Estudiante::where('codigo_estudiante', $codigo_estudiante)->firstOrFail();
         $rol = auth()->user()->rol;
 
-        // ACTUALIZAR DATOS ACADÉMICOS (Solo si NO es psicologo)
+        // ACTUALIZAR DATOS ACADÉMICOS (Solo si es Admin o Bienestar, NO si es psicologo)
         if ($rol !== 'psicologo') {
             $request->validate([
                 'nombre_estudiante' => 'required|string|max:255',
                 'correo' => 'required|email|max:255',
-                'id_programa' => 'required',
-                'id_docente' => 'required',
+                'id_programa' => 'required|integer',
+                'id_docente' => 'required|integer',
                 'promedio' => 'required|numeric|between:0,5.0',
             ]);
 
@@ -99,7 +105,7 @@ class EstudianteController extends Controller
                 'promedio' => $request->promedio,
             ]);
 
-            // Guardamos o actualizamos en la tabla de Riesgos usando DB directo (evita el error de "Class not found")
+            // PROTECCIÓN SQLi: updateOrInsert parametrizado de Laravel
             DB::table('riesgos_desercion')->updateOrInsert(
                 ['codigo_estudiante' => $estudiante->codigo_estudiante],
                 [
@@ -109,7 +115,6 @@ class EstudianteController extends Controller
                 ]
             );
 
-            // Guardamos o actualizamos en la tabla de Estilos de Vida usando DB directo
             DB::table('estilos_vida')->updateOrInsert(
                 ['codigo_estudiante' => $estudiante->codigo_estudiante],
                 [
@@ -120,7 +125,7 @@ class EstudianteController extends Controller
             );
         }
 
-        // ACTUALIZAR ORIENTACIÓN PSICOPEDAGÓGICA (Solo si NO es dir_bienestar ni dir_unidad)
+        // ACTUALIZAR ORIENTACIÓN PSICOPEDAGÓGICA (Solo si es psicologo o admin)
         if (!in_array($rol, ['dir_bienestar', 'dir_unidad'])) {
             DB::table('orientaciones_psicologicas')->updateOrInsert(
                 ['codigo_estudiante' => $estudiante->codigo_estudiante],

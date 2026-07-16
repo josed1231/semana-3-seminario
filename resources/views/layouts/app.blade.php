@@ -6,29 +6,38 @@
         <meta name="csrf-token" content="{{ csrf_token() }}">
 
         <title>{{ config('app.name', 'Laravel') }}</title>
-
-        <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
-        <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
+        <link href="https://fonts.bunny.net/css?family=figtree:400,500,600,700,800&display=swap" rel="stylesheet" />
 
-        <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
+
+        <style>
+            body { background-color: #f8fafc !important; color: #1e293b !important; }
+            .bg-white { background-color: #ffffff !important; }
+            h2, h3, th { color: #004d2e !important; font-weight: 700 !important; }
+            .btn-primary, button[type="submit"]:not(.bg-red-600) {
+                background-color: #f17a28 !important; color: #ffffff !important;
+                border-radius: 12px !important; font-weight: 700 !important;
+                border: none !important; transition: background-color 0.2s !important;
+            }
+            .btn-primary:hover, button[type="submit"]:not(.bg-red-600):hover { background-color: #d66213 !important; }
+            input[type="text"], input[type="email"], input[type="password"], select, textarea {
+                border: 1px solid #cbd5e1 !important; border-radius: 10px !important;
+                color: #1e293b !important; background-color: #ffffff !important; padding: 10px 14px !important;
+            }
+            input:focus, select:focus, textarea:focus {
+                border-color: #005a36 !important; box-shadow: 0 0 0 3px #dcece4 !important; outline: none !important;
+            }
+        </style>
     </head>
     <body class="font-sans antialiased">
-        <div class="min-h-screen bg-gray-100 dark:bg-gray-900">
-            @include('layouts.navigation')
+        <div class="min-h-screen" style="background-color: #f4f6f8;">
+            
+            <div style="background-color: #004d2e;">
+                @include('layouts.navigation')
+            </div>
 
-            <!-- Page Heading -->
-            @isset($header)
-                <header class="bg-white dark:bg-gray-800 shadow">
-                    <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-                        {{ $header }}
-                    </div>
-                </header>
-            @endisset
-
-            <!-- Page Content -->
-            <main>
+            <main class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
                 {{ $slot }}
             </main>
         </div>

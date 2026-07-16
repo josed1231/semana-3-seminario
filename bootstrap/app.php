@@ -12,13 +12,16 @@ return Application::configure(basePath: dirname(__DIR__))
         commands: __DIR__.'/../routes/console.php',
         health: '/up',
     )
-    ->withMiddleware(function (Middleware $middleware): void {
+    ->withMiddleware(function (Middleware $middleware) {
+        $middleware->web(append: [
+            \App\Http\Middleware\PreventBackHistory::class,
+        ]);
+
         $middleware->alias([
-            'prevent-back'  => \App\Http\Middleware\PreventBackHistory::class,
-            'verificar.rol' => \App\Http\Middleware\VerificarRol::class, // <-- CORRIGE AQUÍ (De .col a .rol)
+            'prevent-back' => \App\Http\Middleware\PreventBackHistory::class,
+            'verificar.rol' => \App\Http\Middleware\VerificarRol::class, // Asegúrate que esta clase exista
         ]);
     })
-    
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(
             fn (Request $request) => $request->is('api/*'),

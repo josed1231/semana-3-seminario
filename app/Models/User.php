@@ -20,10 +20,11 @@ class User extends Authenticatable implements JWTSubject
 
     protected $fillable = [
         'name',
-        'username', // <-- VERIFICA QUE ESTÉ ESCRITO EXACTAMENTE ASÍ
+        'username',
         'email',
         'password',
         'rol',
+        'jornada', // <--- Agregamos este campo
     ];
 
     /**
@@ -37,6 +38,12 @@ class User extends Authenticatable implements JWTSubject
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    public function getCodigoEstudianteAttribute()
+    {
+        // Esto mostrará: EST-2026-008
+        return 'EST-2026-' . str_pad($this->id, 3, '0', STR_PAD_LEFT);
     }
 
     // Un usuario puede tener muchas tareas

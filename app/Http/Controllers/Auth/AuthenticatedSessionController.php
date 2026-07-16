@@ -34,14 +34,21 @@ class AuthenticatedSessionController extends Controller
     /**
      * Destroy an authenticated session.
      */
+    /**
+     * Destroy an authenticated session.
+     */
     public function destroy(Request $request): RedirectResponse
-    {
-        Auth::guard('web')->logout();
+{
+    // 1. Limpiar el guard de autenticación
+    Auth::guard('web')->logout();
 
-        // ESTAS DOS LÍNEAS SON CLAVE:
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
+    // 2. Invalidar la sesión del usuario
+    $request->session()->invalidate();
 
-        return redirect('/');
-    }
+    // 3. Regenerar el token para seguridad
+    $request->session()->regenerateToken();
+
+    // 4. Limpiar cookies específicas si es necesario
+    return redirect('/')->withCookie(cookie()->forget('laravel_session'));
+}
 }

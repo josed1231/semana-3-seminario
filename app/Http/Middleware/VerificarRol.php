@@ -8,19 +8,23 @@ use Symfony\Component\HttpFoundation\Response;
 
 class VerificarRol
 {
-    /**
-     * Handle an incoming request.
-     */
-   public function handle(Request $request, Closure $next, string $rol): Response
+    public function handle(Request $request, Closure $next, string $rol): Response
     {
-        $user = \App\Models\User::where('username', 'prueba_juan')->first();
+        // Usamos auth()->user() para obtener al usuario que realmente inició sesión
+        $user = auth()->user();
 
-        // Si es admin, lo dejamos pasar directo al formulario limpio
-        if ($user && $user->rol === 'admin') {
+        // 1. Si no hay usuario, abortar
+        if (!$user) {
+            abort(403, 'Debes iniciar sesión.');
+        }
+
+        // 2. Si el rol es 'admin', permitir el acceso total a todo
+        if ($user->rol === 'admin') {
             return $next($request);
         }
 
-        if (!$user || $user->rol !== $rol) {
+        // 3. Si el rol del usuario no coincide con el requerido, abortar
+        if ($user->rol !== $rol) {
             abort(403, 'No tienes permiso para acceder a esta sección.');
         }
 

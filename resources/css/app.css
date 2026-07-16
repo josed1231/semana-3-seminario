@@ -1,3 +1,26 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+/* resources/css/app.css */
+
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+
+/* Variables globales con la paleta de COTECNOVA / CampusNOVA */
+:root {
+    --brand-green-deep: #004d2e;
+    --brand-green-medium: #005a36;
+    --brand-green-light: #dcece4;
+    --brand-orange: #f17a28;
+    --brand-orange-hover: #d66213;
+}
+
+/* Forzar que los bordes enfocados de cualquier input del sistema usen el verde institucional */
+input:focus, select:focus, textarea:focus {
+    border-color: var(--brand-green-medium) !important;
+    --tw-ring-color: #dcece4 !important; /* Soft green shadow focus */
+}
+
+/* Forzar el checkbox del "Recuérdame" */
+input[type="checkbox"]:checked {
+    background-color: var(--brand-green-medium) !important;
+    border-color: var(--brand-green-medium) !important;
+}
