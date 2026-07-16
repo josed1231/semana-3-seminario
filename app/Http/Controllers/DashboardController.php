@@ -3,45 +3,44 @@
 namespace App\Http\Controllers;
 
 use App\Models\Task;
-use App\Models\User; // <-- ASEGÚRATE DE QUE ESTA LÍNEA ESTÉ AQUÍ
+use App\Models\Estudiante;
+use App\Models\RiesgoDesercion;
+use App\Models\OrientacionPsicologica;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth; // <-- AGREGA ESTA LÍNEA TAMBIÉN
 
 class DashboardController extends Controller
 {
     public function index(Request $request)
     {
-        // 🚨 LOGUEO FORZADO TEMPORAL PARA LA PRUEBA 🚨
-        // Buscamos al usuario de prueba e iniciamos su sesión en la web tradicional
-        $userPrueba = User::where('username', 'prueba_juan')->first();
-        if ($userPrueba) {
-            Auth::login($userPrueba);
-        }
-
-        // 1. Capturamos lo que el usuario escribió en el cuadro de búsqueda
+        // 1. Capturamos la búsqueda si el usuario quiere filtrar estudiantes
         $searchTerm = $request->input('search');
 
-        // 2. Traemos las tareas aplicando el filtro si existe un término de búsqueda
-        $tareasRecientes = Task::with(['category', 'user'])
+        // 2. Traemos los estudiantes con sus relaciones (¡Descripciones en lugar de IDs!)
+        $estudiantes = Estudiante::with(['programa', 'docente', 'riesgo', 'orientacionPsicologica', 'estiloVida'])
             ->when($searchTerm, function ($query, $searchTerm) {
-                return $query->where('id', $searchTerm)
-                             ->orWhere('titulo', 'LIKE', "%{$searchTerm}%")
-                             ->orWhereDate('fecha_limite', $searchTerm);
+                return $query->where('nombre_estudiante', 'LIKE', "%{$searchTerm}%")
+                             ->orWhere('codigo_estudiante', 'LIKE', "%{$searchTerm}%");
             })
-            ->orderBy('created_at', 'desc')
-            ->take(5)
             ->get();
 
-        // 3. Tus estadísticas actuales
-        $stats = [
-            'total'                 => Task::count(),
-            'completadas'           => Task::where('estado', 'completado')->count(),
-            'en_progreso'           => Task::where('estado', 'en_progreso')->count(),
-            'pendientes'            => Task::where('estado', 'pendiente')->count(),
-            'promedio_por_usuario'  => 10, 
+        // 3. Calculamos estadísticas reales basadas en tu Base de Datos para el Dashboard
+        $statsEstudiantes = [
+            'total_estudiantes'    => Estudiante::count(),
+            'riesgo_alto'          => RiesgoDesercion::where('nivel_riesgo', 'Alto')->count(),
+            'riesgo_medio'         => RiesgoDesercion::where('nivel_riesgo', 'Medio')->count(),
+            'riesgo_bajo'          => RiesgoDesercion::where('nivel_riesgo', 'Bajo')->count(),
+            'con_psicoorientacion' => OrientacionPsicologica::count(),
         ];
 
-        // 4. Retornamos la vista con las variables requeridas
-        return view('dashboard', compact('tareasRecientes', 'stats'));
+        // 4. Tus estadísticas de tareas (mantenemos lo que ya tenías)
+        $statsTareas = [
+            'total'       => Task::count(),
+            'completadas' => Task::where('estado', 'completado')->count(),
+            'en_progreso' => Task::where('estado', 'en_progreso')->count(),
+            'pendientes'  => Task::where('estado', 'pendiente')->count(),
+        ];
+
+        // 5. Retornamos la vista con todas las variables
+        return view('dashboard', compact('estudiantes', 'statsEstudiantes', 'statsTareas', 'searchTerm'));
     }
 }
