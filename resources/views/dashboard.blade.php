@@ -35,7 +35,6 @@
                     <h3 class="text-lg font-bold text-gray-800 dark:text-gray-200">Monitoreo de Estudiantes en Alerta</h3>
                     
                     <div class="flex flex-col sm:flex-row items-center gap-3 w-full lg:w-auto">
-                        <!-- Permiso: Registro solo disponible para Admin y Director de Bienestar -->
                         @if(auth()->user()->rol === 'admin' || auth()->user()->rol === 'dir_bienestar')
                             <a href="{{ route('estudiantes.create') }}" class="inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-semibold transition-colors w-full sm:w-auto shadow-sm">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -67,7 +66,9 @@
                                 <th class="px-6 py-3 text-center text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Hrs. Estudio</th>
                                 <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider text-center">Nivel de Riesgo</th>
                                 <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Orientación</th>
-                                <th class="px-6 py-3 text-center text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Acciones</th>
+                                @if(auth()->user()->rol !== 'dir_unidad')
+                                    <th class="px-6 py-3 text-center text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Acciones</th>
+                                @endif
                             </tr>
                         </thead>
                         <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
@@ -85,7 +86,6 @@
                                             {{ $estudiante->promedio }}
                                         </span>
                                     </td>
-                                    <!-- Nueva columna: Horas de estudio semanal -->
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-center text-gray-500 dark:text-gray-350">
                                         {{ $estudiante->estiloVida->horas_estudio_semanal ?? '0' }} hrs
                                     </td>
@@ -104,33 +104,33 @@
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-550 dark:text-gray-300">
                                         {{ $estudiante->orientacionPsicologica->observaciones ?? 'Sin orientación' }}
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-center font-medium">
-                                        <div class="flex items-center justify-center gap-3">
-                                            <!-- Todos los roles pueden ingresar a Editar -->
-                                            <a href="{{ route('estudiantes.edit', $estudiante->codigo_estudiante) }}" class="text-blue-500 hover:text-blue-400 transition-colors" title="Editar">
-                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                                </svg>
-                                            </a>
-                                            
-                                            <!-- Eliminar: EXCLUSIVO para admin -->
-                                            @if(auth()->user()->rol === 'admin')
-                                                <form action="{{ route('estudiantes.destroy', $estudiante->codigo_estudiante) }}" method="POST" onsubmit="return confirm('¿Estás seguro de que deseas eliminar este estudiante?');" class="inline">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button type="submit" class="text-red-500 hover:text-red-400 transition-colors" title="Eliminar">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                                        </svg>
-                                                    </button>
-                                                </form>
-                                            @endif
-                                        </div>
-                                    </td>
+                                    @if(auth()->user()->rol !== 'dir_unidad')
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-center font-medium">
+                                            <div class="flex items-center justify-center gap-3">
+                                                <a href="{{ route('estudiantes.edit', $estudiante->codigo_estudiante) }}" class="text-blue-500 hover:text-blue-400 transition-colors" title="Editar">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                                    </svg>
+                                                </a>
+                                                
+                                                @if(auth()->user()->rol === 'admin')
+                                                    <form action="{{ route('estudiantes.destroy', $estudiante->codigo_estudiante) }}" method="POST" onsubmit="return confirm('¿Estás seguro de que deseas eliminar este estudiante?');" class="inline">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <button type="submit" class="text-red-500 hover:text-red-400 transition-colors" title="Eliminar">
+                                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                            </svg>
+                                                        </button>
+                                                    </form>
+                                                @endif
+                                            </div>
+                                        </td>
+                                    @endif
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="9" class="px-6 py-4 whitespace-nowrap text-sm text-gray-550 text-center dark:text-gray-400">No se encontraron estudiantes registrados.</td>
+                                    <td colspan="{{ auth()->user()->rol !== 'dir_unidad' ? 9 : 8 }}" class="px-6 py-4 whitespace-nowrap text-sm text-gray-550 text-center dark:text-gray-400">No se encontraron estudiantes registrados.</td>
                                 </tr>
                             @endforelse
                         </tbody>
