@@ -4,99 +4,107 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use App\Models\DirectorUnidad;
+use App\Models\Estudiante;
 
 class CuestionarioController extends Controller
 {
-    // Mostrar el formulario al estudiante logueado
-    public function show()
+    public function index()
     {
-        $user = auth()->user();
-        // Intentamos buscar si ya existe un registro previo de este estudiante
-        $estudiante = DB::table('estudiantes')->where('correo',$user->email)->first();
-
-        return view('cuestionario', compact('estudiante'));
+        $programas = DB::table('programas_academicos')->get();
+        return view('estudiantes.create', compact('programas'));
     }
 
-    // Almacenar las respuestas y calcular el riesgo automáticamente
+    public function create()
+    {
+        $programas = DB::table('programas_academicos')->get();
+        $directores = DirectorUnidad::all();
+        
+        return view('cuestionario', compact('programas', 'directores'));
+    }
+
     public function store(Request $request)
     {
-        $user = auth()->user();
-        $semestre = intval($request->input('semestre'));
-
-        // Validaciones de los campos clave de la encuesta
+        // 1. Validar los datos
         $request->validate([
-            'semestre' => 'required|integer|between:1,10',
-            'id_programa' => 'required|integer',
-            'afectacion_academico' => 'required|integer',
-            'afectacion_socioeconomico' => 'required|integer',
-            'afectacion_psicosocial' => 'required|integer',
+            'id_programa'               => 'required',
+            'semestre'                  => 'required|integer',
+            'jornada'                   => 'required|string',
+            'genero'                    => 'required|string',
+            'victima_confict'           => 'required|string',
+            'afectacion_academico'      => 'required|numeric',
+            'afectacion_socioeconomico' => 'required|numeric',
+            'afectacion_psicosocial'    => 'required|numeric',
         ]);
 
-        // 1. Obtener o insertar al estudiante asociado a la cuenta de usuario
-        $estudiante = DB::table('estudiantes')->where('correo',$user->email)->first();
+        $programa = DB::table('programas_academicos')->where('id_programa', $request->id_programa)->first();
 
-        // app/Http/Controllers/CuestionarioController.php
+        // 2. Guardar estudiante
+        $estudiante = Estudiante::updateOrCreate(
+            ['correo' => auth()->user()->email],
+            [
+                'codigo_estudiante'  => auth()->user()->codigo_estudiante, 
+                'nombre_estudiante'  => auth()->user()->name,
+                'id_programa'        => $request->id_programa,
+                'id_docente'         => $programa->id_docente ?? 1, 
+                'jornada'            => $request->jornada,
+                'promedio'           => 0,
+            ]
+        );
 
-        if (!$estudiante) {
-            $codigoEstudiante = 'EST-' . sprintf('%05d', $user->id);
-            DB::table('estudiantes')->insert([
-            'codigo_estudiante' => $codigoEstudiante,
-            'nombre_estudiante' => $user->name,
-            'correo'            => $user->email,
-            'id_programa'       => $request->input('id_programa'),
-            'id_docente'        => 1,
-            'promedio'          => 0.0,
-            // Aquí asignamos la jornada que el usuario tiene definida en su perfil
-            'jornada'           => $user->jornada ?? 'Diurna', 
-            'created_at'        => now(),
-            'updated_at'        => now(),
-        ]);
-        } else {
-            $codigoEstudiante =$estudiante->codigo_estudiante;
-            // Actualizamos el programa si cambió en el formulario
-            DB::table('estudiantes')->where('codigo_estudiante', $codigoEstudiante)->update([
-                'id_programa' => $request->input('id_programa'),
-                'updated_at' => now()
-            ]);
-        }
-
-        // 2. Cálculo matemático automatizado del riesgo basado en el Excel
-        $puntosAcad = intval($request->input('afectacion_academico'));
-        $puntosSocio = intval($request->input('afectacion_socioeconomico'));
-        $puntosPsico = intval($request->input('afectacion_psicosocial'));
-
-        $totalCriterios =$puntosAcad + $puntosSocio +$puntosPsico;
-
-        // Umbrales de corte para el módulo de predicción
-        if ($totalCriterios >= 6) {$nivelRiesgo = 'Alto';
-        } elseif ($totalCriterios >= 3) {$nivelRiesgo = 'Medio';
-        } else {
-            $nivelRiesgo = 'Bajo';
-        }
-
-        // 3. Serializar y guardar todas las respuestas en formato JSON en `saberes_previos`
-        $respuestasCompletas =$request->except(['_token', 'semestre', 'id_programa']);
+        // 3. Guardar saberes previos
+        $respuestas = [
+            'genero'                    => $request->genero,
+            'victima_conflicto'         => $request->victima_confict,
+            'afectacion_academico'      => $request->afectacion_academico,
+            'afectacion_socioeconomico' => $request->afectacion_socioeconomico,
+            'afectacion_psicosocial'    => $request->afectacion_psicosocial,
+        ];
 
         DB::table('saberes_previos')->updateOrInsert(
-            ['codigo_estudiante' => $codigoEstudiante],
+            ['codigo_estudiante' => $estudiante->codigo_estudiante],
             [
-                'semestre' => $semestre,
-                'respuestas' => json_encode($respuestasCompletas),
+                'semestre'   => $request->semestre,
+                'respuestas' => json_encode($respuestas),
                 'created_at' => now(),
                 'updated_at' => now(),
             ]
         );
 
-        // 4. Inyectar los resultados calculados directamente en la tabla de alertas
-        DB::table('riesgos_desercion')->updateOrInsert(
-            ['codigo_estudiante' => $codigoEstudiante],
+        // 4. Calcular nivel de riesgo automático
+        $academico = (int) $request->afectacion_academico;
+        $socio = (int) $request->afectacion_socioeconomico;
+        $psico = (int) $request->afectacion_psicosocial;
+        
+        $nivelMaximo = max($academico, $socio, $psico);
+        
+        $nivelCalculado = 'SIN RIESGO';
+        if ($nivelMaximo >= 3) {
+            $nivelCalculado = 'ALTO';
+        } elseif ($nivelMaximo >= 1) {
+            $nivelCalculado = 'BAJO';
+        }
+
+        $estudiante->riesgo()->updateOrCreate(
+            ['codigo_estudiante' => $estudiante->codigo_estudiante],
             [
-                'nivel_riesgo' => $nivelRiesgo,
-                'detalles' => "Generado automáticamente por el Cuestionario PIAE. Puntaje acumulado: $totalCriterios",
-                'updated_at' => now(),
+                'nivel_riesgo' => $nivelCalculado,
+                'detalles'     => "Puntajes - Académico: $academico, Socioeconómico: $socio, Psicosocial: $psico. Nivel máximo: $nivelMaximo",
             ]
         );
 
         return redirect()->route('cuestionario.success');
+    }
+
+    public function edit($codigo_estudiante)
+    {
+        $estudiante = Estudiante::with(['programa', 'directorUnidad', 'riesgo', 'orientacionPsicologica', 'estiloVida', 'saberesPrevios'])
+            ->where('codigo_estudiante', $codigo_estudiante)
+            ->firstOrFail();
+
+        $programas = DB::table('programas_academicos')->get();
+        $directores = DirectorUnidad::all(); 
+
+        return view('estudiantes.edit', compact('estudiante', 'programas', 'directores'));
     }
 }

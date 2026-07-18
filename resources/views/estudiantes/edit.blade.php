@@ -13,7 +13,7 @@
                     @csrf
                     @method('PUT')
 
-                    <!-- SECCIÓN 1: DATOS ACADÉMICOS (Bloqueado para psicologo) -->
+                    <!-- SECCIÓN 1: DATOS ACADÉMICOS -->
                     <div class="border-b border-gray-700 pb-4">
                         <h3 class="text-md font-bold text-blue-400 mb-4">Datos Académicos</h3>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -59,21 +59,22 @@
                             </div>
 
                             <div>
-                                <label for="id_docente" class="block text-sm font-medium text-gray-300">Docente Tutor <span class="text-red-500">*</span></label>
-                                <select name="id_docente" id="id_docente" required 
-                                        {{ auth()->user()->rol === 'psicologo' ? 'disabled' : '' }}
-                                        class="mt-1 block w-full rounded-md border-gray-700 bg-gray-900 {{ auth()->user()->rol === 'psicologo' ? 'text-gray-450 bg-gray-950 cursor-not-allowed' : 'text-gray-100' }} text-sm focus:border-indigo-500 focus:ring-indigo-500">
-                                    @foreach($docentes as $docente)
+                                <label for="id_director_unidad" class="block text-sm font-medium text-gray-400">Director de Unidad (Asignado Automáticamente)</label>
+                                <select id="id_director_unidad" required 
+                                        class="mt-1 block w-full rounded-md border-gray-700 bg-gray-950 text-gray-400 text-sm pointer-events-none select-none shadow-none focus:ring-0 focus:border-gray-700">
+                                    <option value="" disabled>-- Asignando director --</option>
+                                    @foreach($directores as $director)
                                         @php 
-                                            $docId = $docente->id_docente ?? $docente->id; 
-                                            $docNombre = $docente->nombre_docente ?? $docente->nombre;
+                                            $dirId = $director->id_director_unidad ?? $director->id; 
+                                            $dirNombre = $director->nombre_director ?? $director->nombre; 
                                         @endphp
-                                        <option value="{{ $docId }}" {{ old('id_docente', $estudiante->id_docente) == $docId ? 'selected' : '' }}>
-                                            {{ $docNombre }}
+                                        <option value="{{ $dirId }}" {{ old('id_director_unidad', $estudiante->id_director_unidad) == $dirId ? 'selected' : '' }}>
+                                            {{ $dirNombre }}
                                         </option>
                                     @endforeach
                                 </select>
-                                @error('id_docente') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
+                                <input type="hidden" name="id_director_unidad" id="hidden_id_director_unidad" value="{{ old('id_director_unidad', $estudiante->id_director_unidad) }}">
+                                @error('id_director_unidad') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
                             </div>
                         </div>
 
@@ -84,9 +85,38 @@
                                    class="mt-1 block w-full rounded-md border-gray-700 bg-gray-900 {{ auth()->user()->rol === 'psicologo' ? 'text-gray-450 bg-gray-950 cursor-not-allowed' : 'text-gray-100' }} text-sm focus:border-indigo-500 focus:ring-indigo-500">
                             @error('promedio') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
                         </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+                            <div>
+                                <label for="semestre" class="block text-sm font-medium text-gray-300">Semestre <span class="text-gray-450 text-xs">(Traído del Cuestionario)</span></label>
+                                @php
+                                    $semestreActual = old('semestre', optional($estudiante->cuestionario)->semestre ?? $estudiante->semestre);
+                                @endphp
+                                <select name="semestre" id="semestre" required 
+                                        {{ auth()->user()->rol === 'psicologo' ? 'disabled' : '' }}
+                                        class="mt-1 block w-full rounded-md border-gray-700 bg-gray-900 {{ auth()->user()->rol === 'psicologo' ? 'text-gray-450 bg-gray-950 cursor-not-allowed' : 'text-gray-100' }} text-sm focus:border-indigo-500 focus:ring-indigo-500">
+                                    @for ($i = 1; $i <= 10; $i++)
+                                        <option value="{{ $i }}" {{ $semestreActual == $i ? 'selected' : '' }}>Semestre {{ $i }}</option>
+                                    @endfor
+                                </select>
+                                @error('semestre') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
+                            </div>
+
+                            <div>
+                                <label for="jornada" class="block text-sm font-medium text-gray-300">Jornada <span class="text-red-500">*</span></label>
+                                <select name="jornada" id="jornada" required 
+                                        {{ auth()->user()->rol === 'psicologo' ? 'disabled' : '' }}
+                                        class="mt-1 block w-full rounded-md border-gray-700 bg-gray-900 {{ auth()->user()->rol === 'psicologo' ? 'text-gray-450 bg-gray-950 cursor-not-allowed' : 'text-gray-100' }} text-sm focus:border-indigo-500 focus:ring-indigo-500">
+                                    <option value="Diurna" {{ old('jornada', $estudiante->jornada) == 'Diurna' ? 'selected' : '' }}>Diurna</option>
+                                    <option value="Nocturna" {{ old('jornada', $estudiante->jornada) == 'Nocturna' ? 'selected' : '' }}>Nocturna</option>
+                                    <option value="Sabatina" {{ old('jornada', $estudiante->jornada) == 'Sabatina' ? 'selected' : '' }}>Sabatina</option>
+                                </select>
+                                @error('jornada') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
+                            </div>
+                        </div>
                     </div>
 
-                    <!-- SECCIÓN 2: ESTILO DE VIDA Y RIESGO (Bloqueado para psicologo) -->
+                    <!-- SECCIÓN 2: ESTILO DE VIDA Y RIESGO -->
                     <div class="border-b border-gray-700 pb-4">
                         <h3 class="text-md font-bold text-yellow-500 mb-4">Análisis de Riesgo y Estilos de Vida</h3>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -102,34 +132,24 @@
                             </div>
 
                             <div>
-                                <label for="horas_estudio_semanal" class="block text-sm font-medium text-gray-300">Horas de Estudio Semanal</label>
-                                <input type="number" name="horas_estudio_semanal" id="horas_estudio_semanal" value="{{ old('horas_estudio_semanal', optional($estudiante->estiloVida)->horas_estudio_semanal) }}"
-                                       {{ auth()->user()->rol === 'psicologo' ? 'disabled' : '' }}
-                                       class="mt-1 block w-full rounded-md border-gray-700 bg-gray-900 {{ auth()->user()->rol === 'psicologo' ? 'text-gray-450 bg-gray-950 cursor-not-allowed' : 'text-gray-100' }} text-sm">
+                                <label for="actividad" class="block text-sm font-medium text-gray-300">Actividades Frecuentes (Estilo de Vida)</label>
+                                <input type="text" name="actividad" id="actividad" 
+                                       value="{{ old('actividad', optional($estudiante->cuestionario)->actividad) }}"
+                                       placeholder="Actividades que realiza el estudiante..."
+                                       {{ auth()->user()->rol !== 'admin' ? 'disabled' : '' }}
+                                       class="mt-1 block w-full rounded-md border-gray-700 bg-gray-900 {{ auth()->user()->rol !== 'admin' ? 'text-gray-450 bg-gray-950 cursor-not-allowed' : 'text-gray-100 focus:border-indigo-500 focus:ring-indigo-500' }} text-sm">
                             </div>
                         </div>
 
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
-                            <div>
-                                <label for="trabaja" class="block text-sm font-medium text-gray-300">¿Trabaja actualmente?</label>
-                                <select name="trabaja" id="trabaja" 
-                                        {{ auth()->user()->rol === 'psicologo' ? 'disabled' : '' }}
-                                        class="mt-1 block w-full rounded-md border-gray-700 bg-gray-900 {{ auth()->user()->rol === 'psicologo' ? 'text-gray-450 bg-gray-950 cursor-not-allowed' : 'text-gray-100' }} text-sm">
-                                    <option value="no" {{ old('trabaja', optional($estudiante->estiloVida)->trabaja) == 'no' ? 'selected' : '' }}>No</option>
-                                    <option value="si" {{ old('trabaja', optional($estudiante->estiloVida)->trabaja) == 'si' ? 'selected' : '' }}>Sí</option>
-                                </select>
-                            </div>
-
-                            <div>
-                                <label for="detalles" class="block text-sm font-medium text-gray-300">Detalles adicionales del riesgo</label>
-                                <textarea name="detalles" id="detalles" rows="2" 
-                                          {{ auth()->user()->rol === 'psicologo' ? 'disabled' : '' }}
-                                          class="mt-1 block w-full rounded-md border-gray-700 bg-gray-900 {{ auth()->user()->rol === 'psicologo' ? 'text-gray-450 bg-gray-950 cursor-not-allowed' : 'text-gray-100' }} text-sm">{{ old('detalles', optional($estudiante->riesgo)->detalles) }}</textarea>
-                            </div>
+                        <div class="mt-4">
+                            <label for="detalles" class="block text-sm font-medium text-gray-300">Detalles adicionales del riesgo</label>
+                            <textarea name="detalles" id="detalles" rows="2" 
+                                      {{ auth()->user()->rol === 'psicologo' ? 'disabled' : '' }}
+                                      class="mt-1 block w-full rounded-md border-gray-700 bg-gray-900 {{ auth()->user()->rol === 'psicologo' ? 'text-gray-450 bg-gray-950 cursor-not-allowed' : 'text-gray-100' }} text-sm">{{ old('detalles', optional($estudiante->riesgo)->detalles) }}</textarea>
                         </div>
                     </div>
 
-                    <!-- SECCIÓN 3: ORIENTACIÓN PSICOPEDAGÓGICA (Bloqueado para dir_bienestar y dir_unidad) -->
+                    <!-- SECCIÓN 3: ORIENTACIÓN PSICOPEDAGÓGICA -->
                     <div class="pb-4">
                         <h3 class="text-md font-bold text-green-500 mb-4">Seguimiento Psicoorientación</h3>
                         <div>
@@ -154,4 +174,40 @@
             </div>
         </div>
     </div>
+
+    <!-- Script de Automatización del Director según el Programa -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const programaSelect = document.getElementById('id_programa');
+            const directorSelect = document.getElementById('id_director_unidad');
+            const hiddenDirectorInput = document.getElementById('hidden_id_director_unidad');
+
+            const programaAlDirector = {
+                '1': '1', 
+                '2': '2', 
+                '3': '3'  
+            };
+
+            function actualizarDirector() {
+                const programaId = programaSelect.value;
+                const directorId = programaAlDirector[programaId];
+
+                if (directorId) {
+                    directorSelect.value = directorId;
+                    hiddenDirectorInput.value = directorId;
+                } else {
+                    directorSelect.value = "";
+                    hiddenDirectorInput.value = "";
+                }
+            }
+
+            if (programaSelect && directorSelect) {
+                programaSelect.addEventListener('change', actualizarDirector);
+                
+                if (!hiddenDirectorInput.value) {
+                    actualizarDirector();
+                }
+            }
+        });
+    </script>
 </x-app-layout>

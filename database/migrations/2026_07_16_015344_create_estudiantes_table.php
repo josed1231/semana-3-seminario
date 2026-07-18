@@ -30,8 +30,8 @@ return new class extends Migration
                 ->onDelete('cascade');
                 
             $table->foreign('id_docente')
-                ->references('id_docente')
-                ->on('docentes')
+                ->references('id_docente') // Asegúrate de que esta columna exista en directores_unidad
+                ->on('directores_unidad')  // <--- APUNTA A LA TABLA ACTUAL
                 ->onDelete('cascade');
         });
     }

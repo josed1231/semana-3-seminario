@@ -17,7 +17,7 @@
             
             <div style="margin-bottom: 1.5rem; text-align: center;">
                 <span style="color: #ffffff; font-size: 2.25rem; font-weight: 900; letter-spacing: 0.05em; text-shadow: 0 2px 4px rgba(0,0,0,0.3);">
-                    COTE<span style="color: #f17a28;">NOVA</span>
+                    COTEC<span style="color: #f17a28;">NOVA</span>
                 </span>
                 <p style="color: rgba(240, 253, 250, 0.9); font-size: 0.8rem; margin-top: 6px; margin-bottom: 0; font-weight: 500; letter-spacing: 0.05em;">
                     Plataforma Inteligente de Alertas Tempranas

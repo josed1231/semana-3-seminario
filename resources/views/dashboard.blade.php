@@ -85,7 +85,6 @@
                 </div>
 
                 <!-- Tabla de Estudiantes -->
-                <!-- Tabla de Estudiantes -->
                 <div class="overflow-x-auto rounded-2xl border border-slate-100">
                     <table class="min-w-full divide-y divide-slate-100">
                         <thead style="background-color: #f8fafc;">
@@ -93,9 +92,9 @@
                                 <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider" style="color: #000000;">Código</th>
                                 <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider" style="color: #000000;">Nombre</th>
                                 <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider" style="color: #000000;">Carrera (Programa)</th>
-                                <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider" style="color: #000000;">Docente Tutor</th>
-                                <th class="px-6 py-4 text-center text-xs font-bold uppercase tracking-wider" style="color: #000000;">Promedio</th>
-                                <th class="px-6 py-4 text-center text-xs font-bold uppercase tracking-wider" style="color: #000000;">Hrs. Estudio</th>
+                                <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider" style="color: #000000;">Director de Unidad</th>
+                                <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider" style="color: #000000;">Semestre</th>
+                                <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider" style="color: #000000;">Jornada</th>
                                 <th class="px-6 py-4 text-center text-xs font-bold uppercase tracking-wider" style="color: #000000;">Nivel de Riesgo</th>
                                 <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider" style="color: #000000;">Orientación</th>
                                 @if(auth()->user()->rol !== 'dir_unidad')
@@ -117,15 +116,14 @@
                                         {{ $estudiante->programa?->nombre_programa ?? 'N/A' }}
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm" style="color: #000000;">
-                                        {{ $estudiante->docente?->nombre_docente ?? 'Sin asignar' }}
+                                        {{ $estudiante->directorUnidad?->nombre_director ?? 'Sin asignar' }}
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-center">
-                                        <span class="font-black {{ $estudiante->promedio >= 4.0 ? 'text-emerald-600' : 'text-red-500' }}">
-                                            {{ number_format($estudiante->promedio, 1) }}
-                                        </span>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm" style="color: #000000;">
+                                        <!-- Se cambia $estudiante->semestre por la relación correcta de saberesPrevios -->
+                                        {{ $estudiante->saberesPrevios?->semestre ?? 'N/A' }}
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-center font-medium" style="color: #000000;">
-                                        {{ $estudiante->estiloVida?->horas_estudio_semanal ?? '0' }} hrs
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm" style="color: #000000;">
+                                        {{ $estudiante->jornada ?? 'N/A' }}
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-center">
                                         @if($estudiante->riesgo)
@@ -155,7 +153,7 @@
                                                         @csrf @method('DELETE')
                                                         <button type="submit" style="color: #ef4444;" class="hover:scale-110 transition-transform bg-transparent border-none p-0 cursor-pointer" title="Eliminar Registro">
                                                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.25">
-                                                                <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                                <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1-1 v3M4 7h16" />
                                                             </svg>
                                                         </button>
                                                     </form>

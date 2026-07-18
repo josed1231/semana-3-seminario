@@ -8,7 +8,7 @@ class OrientacionPsicologica extends Model
 {
     protected $table = 'orientaciones_psicologicas';
     protected $primaryKey = 'id_orientacion';
-    protected $fillable = ['codigo_estudiante', 'nivel_servicio'];
+    protected $fillable = ['codigo_estudiante', 'nivel_servicio', 'observaciones'];
 
     public function estudiante()
     {

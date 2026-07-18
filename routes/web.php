@@ -2,23 +2,16 @@
 
 use App\Http\Controllers\{ProfileController, TaskController, EstudianteController, CuestionarioController, PsicologoController};
 use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\DB;
 
-// 1. Redirección raíz
 Route::get('/', fn() => auth()->check() ? redirect()->route('dashboard') : redirect()->route('login'));
 
 Route::middleware(['auth', 'prevent-back'])->group(function () {
 
-    // 2. RUTA PARA CARGA DINÁMICA DE DOCENTES (Asignación automática)
-    Route::get('/get-docentes/{id_programa}', function ($id_programa) {
-        return response()->json(DB::table('docentes')->where('id_programa', $id_programa)->get());
-    });
-
-    // 3. DASHBOARD
+    // DASHBOARD: Redirección automática
     Route::get('/dashboard', function () {
         $user = auth()->user();
         if (in_array($user->rol, ['user', 'estudiante'])) {
-            return redirect()->route('cuestionario.show');
+            return redirect()->route('cuestionario.create');
         }
         if (!in_array($user->rol, ['admin', 'psicologo', 'dir_bienestar', 'dir_unidad'])) {
             abort(403);
@@ -26,14 +19,21 @@ Route::middleware(['auth', 'prevent-back'])->group(function () {
         return app(EstudianteController::class)->index(request());
     })->name('dashboard');
 
-    // 4. CUESTIONARIO
+    // CUESTIONARIO
     Route::controller(CuestionarioController::class)->group(function () {
-        Route::get('/cuestionario', 'show')->name('cuestionario.show');
+        Route::get('/cuestionario', 'create')->name('cuestionario.create');
         Route::post('/cuestionario', 'store')->name('cuestionario.store');
         Route::get('/cuestionario/finalizado', fn() => view('cuestionario_success'))->name('cuestionario.success');
     });
 
-    // 5. MÓDULO ADMINISTRATIVO
+    // PERFIL
+    Route::controller(ProfileController::class)->group(function () {
+        Route::get('/profile', 'edit')->name('profile.edit');
+        Route::patch('/profile', 'update')->name('profile.update');
+        Route::delete('/profile', 'destroy')->name('profile.destroy');
+    });
+
+    // GESTIÓN ESTUDIANTES (Admin)
     Route::middleware(['verificar.rol:admin'])->group(function () {
         Route::resource('estudiantes', EstudianteController::class);
         Route::controller(TaskController::class)->group(function () {
@@ -41,21 +41,20 @@ Route::middleware(['auth', 'prevent-back'])->group(function () {
             Route::post('/tasks', 'store')->name('tasks.store');
         });
     });
+    
+    Route::get('/estudiantes/{estudiante}/edit', [EstudianteController::class, 'edit'])->name('estudiantes.edit');
+    Route::put('/estudiantes/{estudiante}', [EstudianteController::class, 'update'])->name('estudiantes.update');
 
-    // 6. MÓDULO PSICOLOGÍA
-    Route::middleware(['verificar.rol:psicologo'])->group(function () {
-        Route::get('/psicologo', [PsicologoController::class, 'index'])->name('psicologo.index');
+    // RESULTADOS CUESTIONARIO (Acceso para todos menos 'user' y 'estudiante')
+    Route::middleware(['verificar.rol:admin,psicologo,dir_bienestar,dir_unidad'])->group(function () {
+        Route::get('/resultados-cuestionario', [PsicologoController::class, 'index'])->name('resultados.index');
+        Route::get('/resultados-cuestionario/buscar', [PsicologoController::class, 'buscar'])->name('resultados.buscar');
+        
+        // Mantenemos estas rutas por si necesitas editar desde el mismo módulo
         Route::get('/psicologo/estudiante/{codigo}/editar', [PsicologoController::class, 'edit'])->name('psicologo.edit');
         Route::post('/psicologo/estudiante/{codigo}/actualizar', [PsicologoController::class, 'update'])->name('psicologo.update');
     });
 
-    // 7. PERFIL Y TAREAS GENERALES
-    Route::controller(ProfileController::class)->group(function () {
-        Route::get('/profile', 'edit')->name('profile.edit');
-        Route::patch('/profile', 'update')->name('profile.update');
-        Route::delete('/profile', 'destroy')->name('profile.destroy');
-    });
-    
     Route::resource('tasks', TaskController::class)->except(['create', 'store']);
 });
 

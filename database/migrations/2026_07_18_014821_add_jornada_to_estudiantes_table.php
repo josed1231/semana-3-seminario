@@ -11,10 +11,12 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::table('estudiantes', function (Blueprint $table) {
-            // Usamos 'Diurna' como valor por defecto para evitar el error 1364
-            $table->string('jornada')->default('Diurna'); 
-        });
+        // Solo agrega la columna si no existe previamente
+        if (!Schema::hasColumn('estudiantes', 'jornada')) {
+            Schema::table('estudiantes', function (Blueprint $table) {
+                $table->string('jornada')->default('Diurna');
+            });
+        }
     }
 
     public function down()

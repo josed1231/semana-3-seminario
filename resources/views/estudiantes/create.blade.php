@@ -35,8 +35,7 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
                             <label for="id_programa" class="block text-sm font-medium text-gray-300">Programa Académico <span class="text-red-500">*</span></label>
-                            <!-- Se añadió el evento onchange -->
-                            <select name="id_programa" id="id_programa" required onchange="cargarDocentes(this.value)" class="mt-1 block w-full rounded-md border-gray-700 bg-gray-900 text-gray-100 text-sm focus:border-indigo-500 focus:ring-indigo-500">
+                            <select name="id_programa" id="id_programa" required class="mt-1 block w-full rounded-md border-gray-700 bg-gray-900 text-gray-100 text-sm focus:border-indigo-500 focus:ring-indigo-500">
                                 <option value="">Seleccione un programa...</option>
                                 @foreach($programas as $programa)
                                     @php 
@@ -52,18 +51,51 @@
                         </div>
 
                         <div>
-                            <label for="id_docente" class="block text-sm font-medium text-gray-300">Docente Tutor <span class="text-red-500">*</span></label>
-                            <select name="id_docente" id="id_docente" required class="mt-1 block w-full rounded-md border-gray-700 bg-gray-900 text-gray-100 text-sm focus:border-indigo-500 focus:ring-indigo-500">
-                                <option value="">Primero seleccione un programa...</option>
+                            <label for="id_director_unidad" class="block text-sm font-medium text-gray-400">Director de Unidad (Asignado Automáticamente)</label>
+                            <select name="id_director_unidad" id="id_director_unidad" required class="mt-1 block w-full rounded-md border-gray-700 bg-gray-950 text-gray-400 text-sm cursor-not-allowed pointer-events-none">
+                                <option value="" disabled selected>-- Primero elija un programa --</option>
+                                @foreach($directores as $director)
+                                    @php 
+                                        $dirId = $director->id_director_unidad ?? $director->id; 
+                                        $dirNombre = $director->nombre_director ?? $director->nombre; 
+                                    @endphp
+                                    <option value="{{ $dirId }}" {{ old('id_director_unidad') == $dirId ? 'selected' : '' }}>
+                                        {{ $dirNombre }}
+                                    </option>
+                                @endforeach
                             </select>
-                            @error('id_docente') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
+                            @error('id_director_unidad') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
                         </div>
                     </div>
 
-                    <div class="w-full md:w-1/2">
-                        <label for="promedio" class="block text-sm font-medium text-gray-300">Promedio <span class="text-red-500">*</span></label>
-                        <input type="number" step="0.01" min="0" max="5.0" name="promedio" id="promedio" value="{{ old('promedio') }}" required placeholder="0.00 a 5.00" class="mt-1 block w-full rounded-md border-gray-700 bg-gray-900 text-gray-100 text-sm focus:border-indigo-500 focus:ring-indigo-500">
-                        @error('promedio') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div>
+                            <label for="promedio" class="block text-sm font-medium text-gray-300">Promedio <span class="text-red-500">*</span></label>
+                            <input type="number" step="0.01" min="0" max="5.0" name="promedio" id="promedio" value="{{ old('promedio') }}" required placeholder="0.00 a 5.00" class="mt-1 block w-full rounded-md border-gray-700 bg-gray-900 text-gray-100 text-sm focus:border-indigo-500 focus:ring-indigo-500">
+                            @error('promedio') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
+                        </div>
+
+                        <div>
+                            <label for="semestre" class="block text-sm font-medium text-gray-300">Semestre <span class="text-red-500">*</span></label>
+                            <select name="semestre" id="semestre" required class="mt-1 block w-full rounded-md border-gray-700 bg-gray-900 text-gray-100 text-sm focus:border-indigo-500 focus:ring-indigo-500">
+                                <option value="">Seleccione...</option>
+                                @for ($i = 1; $i <= 10; $i++)
+                                    <option value="{{ $i }}" {{ old('semestre') == $i ? 'selected' : '' }}>Semestre {{ $i }}</option>
+                                @endfor
+                            </select>
+                            @error('semestre') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
+                        </div>
+
+                        <div>
+                            <label for="jornada" class="block text-sm font-medium text-gray-300">Jornada <span class="text-red-500">*</span></label>
+                            <select name="jornada" id="jornada" required class="mt-1 block w-full rounded-md border-gray-700 bg-gray-900 text-gray-100 text-sm focus:border-indigo-500 focus:ring-indigo-500">
+                                <option value="">Seleccione...</option>
+                                <option value="Diurna" {{ old('jornada') == 'Diurna' ? 'selected' : '' }}>Diurna</option>
+                                <option value="Nocturna" {{ old('jornada') == 'Nocturna' ? 'selected' : '' }}>Nocturna</option>
+                                <option value="Sabatina" {{ old('jornada') == 'Sabatina' ? 'selected' : '' }}>Sabatina</option>
+                            </select>
+                            @error('jornada') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
+                        </div>
                     </div>
 
                     <div class="flex justify-end gap-3 pt-4 border-t border-gray-700">
@@ -80,31 +112,34 @@
         </div>
     </div>
 
-    <!-- Script para cargar docentes dinámicamente -->
+    <!-- Script de Automatización del Director según el Programa -->
     <script>
-        function cargarDocentes(id_programa) {
-            const selectDocente = document.getElementById('id_docente');
-            
-            if (!id_programa) {
-                selectDocente.innerHTML = '<option value="">Primero seleccione un programa...</option>';
-                return;
+        document.addEventListener('DOMContentLoaded', function () {
+            const programaSelect = document.getElementById('id_programa');
+            const directorSelect = document.getElementById('id_director_unidad');
+
+            // MAPEO: ID de Programa Académico => ID de su Director de Unidad correspondiente
+            const programaAlDirector = {
+                '1': '1', // Ejemplo: 1 (Ingeniería de Sistemas) -> 1 (Director Ingeniería)
+                '2': '2', // Ejemplo: 2 (Tec. Agropecuaria)   -> 2 (Director Agro)
+                '3': '3'  // Ejemplo: 3 (Contaduría Pública) -> 3 (Director Contaduría)
+            };
+
+            function actualizarDirector() {
+                const programaId = programaSelect.value;
+                const directorId = programaAlDirector[programaId];
+
+                if (directorId) {
+                    directorSelect.value = directorId;
+                } else {
+                    directorSelect.value = "";
+                }
             }
 
-            // Llamada a la ruta que creamos en web.php
-            fetch(`/get-docentes/${id_programa}`)
-                .then(response => response.json())
-                .then(data => {
-                    selectDocente.innerHTML = '<option value="">Seleccione un docente</option>';
-                    data.forEach(docente => {
-                        // Asegúrate de que las propiedades 'id' y 'nombre_docente' coincidan con tu tabla
-                        // Ajusta 'nombre_docente' si en tu BD el campo se llama distinto (ej. 'nombre')
-                        let docId = docente.id_docente ?? docente.id;
-                        let docNombre = docente.nombre_docente ?? docente.nombre;
-                        
-                        selectDocente.innerHTML += `<option value="${docId}">${docNombre}</option>`;
-                    });
-                })
-                .catch(error => console.error('Error al cargar docentes:', error));
-        }
+            if (programaSelect && directorSelect) {
+                programaSelect.addEventListener('change', actualizarDirector);
+                actualizarDirector(); // Inicializar por si hay un valor "old"
+            }
+        });
     </script>
 </x-app-layout>

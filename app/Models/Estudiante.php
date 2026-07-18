@@ -15,33 +15,42 @@ class Estudiante extends Model
     public $incrementing = false;
     protected $keyType = 'string';
 
+    // CORRECCIÓN: Se incluye 'id_director' para permitir el update masivo con la columna real de la base de datos
     protected $fillable = [
-        'codigo_estudiante',
-        'nombre_estudiante',
-        'jornada',
-        'correo',
-        'id_programa',
-        'id_director_unidad',
-        'valor_matricula',
-        'estado_pago',
-        'promedio'
+    'codigo_estudiante', 
+    'nombre_estudiante', 
+    'correo', 
+    'id_programa', 
+    'id_docente', // <-- ESTE CAMPO DEBE ESTAR AQUÍ PARA QUE FUNCIONE EL UPDATEORCREATE
+    'promedio', 
+    'jornada',
     ];
 
+    // ==========================================
     // Relaciones
+    // ==========================================
+
     public function programa()
     {
         return $this->belongsTo(ProgramaAcademico::class, 'id_programa', 'id_programa');
     }
 
+    // CORRECCIÓN: La llave foránea en estudiantes es 'id_docente' y la primaria en directores_unidad también es 'id_docente'
     public function directorUnidad()
     {
-        return $this->belongsTo(DirectorUnidad::class, 'id_director_unidad', 'id_director');
+        return $this->belongsTo(DirectorUnidad::class, 'id_docente', 'id_docente');
+    }
+
+    public function saberesPrevios()
+    {
+        return $this->hasOne(SaberesPrevios::class, 'codigo_estudiante', 'codigo_estudiante');
     }
 
     public function riesgo()
-    {
-        return $this->hasOne(RiesgoDesercion::class, 'codigo_estudiante', 'codigo_estudiante');
-    }
+{
+    // El segundo parámetro debe ser el nombre de la columna en la tabla riesgos_desercion
+    return $this->hasOne(RiesgoDesercion::class, 'codigo_estudiante', 'codigo_estudiante');
+}
 
     public function estiloVida()
     {
