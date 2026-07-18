@@ -2,11 +2,12 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
-use App\Models\Task;
-use App\Models\Category;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+
+// IMPORTANTE: Debes importar las clases para que el método call las reconozca
+use Database\Seeders\DirectorUnidadSeeder;
+use Database\Seeders\TaskSeeder;
 
 class DatabaseSeeder extends Seeder
 {
@@ -15,22 +16,12 @@ class DatabaseSeeder extends Seeder
     /**
      * Seed the application's database.
      */
-    public function run() {
-        $user = User::factory()->create([
-            'name' => 'Jose D',
-            'username' => 'josed', // <-- Asegúrate de que tenga esto si se crea de forma explícita
-            'email' => 'test@example.com',
+    public function run(): void
+    {
+        // Llamamos a los grupos de seeders en orden
+        $this->call([
+            DirectorUnidadSeeder::class,
+            TaskSeeder::class,
         ]);
-
-        $categorias = Category::factory(10)->create();
-
-        Task::factory(50)->create([
-            'user_id' => $user->id,
-            'category_id' => $categorias->random()->id,
-        ]);
-
-
-        
-    
     }
 }

@@ -12,9 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('docentes', function (Blueprint $table) {
-            $table->id('id_docente'); // Cambiado de ->id() a ->id('id_docente')
-            $table->string('nombre_docente');
-            $table->string('correo')->unique();
+            $table->id('id_docente'); // <--- DEBE SER id_docente para que la foreign key coincida
+            $table->string('nombre_director');
+            $table->string('correo_director');
             $table->timestamps();
         });
     }

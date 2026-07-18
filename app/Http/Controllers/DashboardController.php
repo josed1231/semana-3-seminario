@@ -12,18 +12,17 @@ class DashboardController extends Controller
 {
     public function index(Request $request)
     {
-        // 1. Capturamos la búsqueda si el usuario quiere filtrar estudiantes
         $searchTerm = $request->input('search');
 
-        // 2. Traemos los estudiantes con sus relaciones (¡Descripciones en lugar de IDs!)
-        $estudiantes = Estudiante::with(['programa', 'docente', 'riesgo', 'orientacionPsicologica', 'estiloVida'])
+        // 2. Traemos estudiantes con la relación 'directorUnidad' (antes 'docente')
+        $estudiantes = Estudiante::with(['programa', 'directorUnidad', 'riesgo', 'orientacionPsicologica', 'estiloVida'])
             ->when($searchTerm, function ($query, $searchTerm) {
                 return $query->where('nombre_estudiante', 'LIKE', "%{$searchTerm}%")
                              ->orWhere('codigo_estudiante', 'LIKE', "%{$searchTerm}%");
             })
             ->get();
 
-        // 3. Calculamos estadísticas reales basadas en tu Base de Datos para el Dashboard
+        // 3. Estadísticas (sin cambios en la lógica de conteo)
         $statsEstudiantes = [
             'total_estudiantes'    => Estudiante::count(),
             'riesgo_alto'          => RiesgoDesercion::where('nivel_riesgo', 'Alto')->count(),
@@ -32,7 +31,6 @@ class DashboardController extends Controller
             'con_psicoorientacion' => OrientacionPsicologica::count(),
         ];
 
-        // 4. Tus estadísticas de tareas (mantenemos lo que ya tenías)
         $statsTareas = [
             'total'       => Task::count(),
             'completadas' => Task::where('estado', 'completado')->count(),
@@ -40,7 +38,6 @@ class DashboardController extends Controller
             'pendientes'  => Task::where('estado', 'pendiente')->count(),
         ];
 
-        // 5. Retornamos la vista con todas las variables
         return view('dashboard', compact('estudiantes', 'statsEstudiantes', 'statsTareas', 'searchTerm'));
     }
 }

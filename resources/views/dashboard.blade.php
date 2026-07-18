@@ -85,6 +85,7 @@
                 </div>
 
                 <!-- Tabla de Estudiantes -->
+                <!-- Tabla de Estudiantes -->
                 <div class="overflow-x-auto rounded-2xl border border-slate-100">
                     <table class="min-w-full divide-y divide-slate-100">
                         <thead style="background-color: #f8fafc;">
@@ -97,7 +98,6 @@
                                 <th class="px-6 py-4 text-center text-xs font-bold uppercase tracking-wider" style="color: #000000;">Hrs. Estudio</th>
                                 <th class="px-6 py-4 text-center text-xs font-bold uppercase tracking-wider" style="color: #000000;">Nivel de Riesgo</th>
                                 <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider" style="color: #000000;">Orientación</th>
-                                {{-- Cabecera Acciones: Se renderiza solo si el usuario NO es docente --}}
                                 @if(auth()->user()->rol !== 'dir_unidad')
                                     <th class="px-6 py-4 text-center text-xs font-bold uppercase tracking-wider" style="color: #000000;">Acciones</th>
                                 @endif
@@ -114,10 +114,10 @@
                                         <div style="color: #64748b; font-size: 0.75rem;">{{ $estudiante->correo }}</div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm" style="color: #000000;">
-                                        {{ $estudiante->programa->nombre_programa }}
+                                        {{ $estudiante->programa?->nombre_programa ?? 'N/A' }}
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm" style="color: #000000;">
-                                        {{ $estudiante->docente->nombre_docente }}
+                                        {{ $estudiante->docente?->nombre_docente ?? 'Sin asignar' }}
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-center">
                                         <span class="font-black {{ $estudiante->promedio >= 4.0 ? 'text-emerald-600' : 'text-red-500' }}">
@@ -125,7 +125,7 @@
                                         </span>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-center font-medium" style="color: #000000;">
-                                        {{ $estudiante->estiloVida->horas_estudio_semanal ?? '0' }} hrs
+                                        {{ $estudiante->estiloVida?->horas_estudio_semanal ?? '0' }} hrs
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-center">
                                         @if($estudiante->riesgo)
@@ -139,40 +139,27 @@
                                             <span style="color: #94a3b8; font-style: italic;">Sin evaluar</span>
                                         @endif
                                     </td>
-                                    <td class="px-6 py-4 text-sm font-medium" style="color: #000000; max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="{{ $estudiante->orientacionPsicologica->observaciones ?? 'Sin orientación' }}">
-                                        {{ $estudiante->orientacionPsicologica->observaciones ?? 'Sin orientación' }}
+                                    <td class="px-6 py-4 text-sm font-medium" style="color: #000000; max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="{{ $estudiante->orientacionPsicologica?->observaciones ?? 'Sin orientación' }}">
+                                        {{ $estudiante->orientacionPsicologica?->observaciones ?? 'Sin orientación' }}
                                     </td>
-                                    {{-- Bloque de Acciones Dinámico por Roles --}}
                                     @if(auth()->user()->rol !== 'dir_unidad')
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-center font-medium">
                                             <div class="flex items-center justify-center gap-3.5">
-                                                
-                                                {{-- 1. BOTÓN EDITAR --}}
-                                                <a href="{{ route('estudiantes.edit', $estudiante->codigo_estudiante) }}" 
-                                                   style="color: #005a36;" 
-                                                   class="hover:scale-110 transition-transform" 
-                                                   title="Editar Registro">
+                                                <a href="{{ route('estudiantes.edit', $estudiante->codigo_estudiante) }}" style="color: #005a36;" class="hover:scale-110 transition-transform" title="Editar Registro">
                                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.25">
                                                         <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                                     </svg>
                                                 </a>
-                                                
-                                                {{-- 2. BOTÓN ELIMINAR: Oculto para psicólogos y docentes --}}
                                                 @if(auth()->user()->rol !== 'psicologo')
                                                     <form action="{{ route('estudiantes.destroy', $estudiante->codigo_estudiante) }}" method="POST" onsubmit="return confirm('¿Estás seguro de que deseas eliminar este estudiante?');" class="inline">
-                                                        @csrf
-                                                        @method('DELETE')
-                                                        <button type="submit" 
-                                                                style="color: #ef4444;" 
-                                                                class="hover:scale-110 transition-transform bg-transparent border-none p-0 cursor-pointer" 
-                                                                title="Eliminar Registro">
+                                                        @csrf @method('DELETE')
+                                                        <button type="submit" style="color: #ef4444;" class="hover:scale-110 transition-transform bg-transparent border-none p-0 cursor-pointer" title="Eliminar Registro">
                                                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.25">
                                                                 <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                                             </svg>
                                                         </button>
                                                     </form>
                                                 @endif
-                                                
                                             </div>
                                         </td>
                                     @endif

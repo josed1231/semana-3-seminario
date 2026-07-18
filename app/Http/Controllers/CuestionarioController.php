@@ -35,18 +35,22 @@ class CuestionarioController extends Controller
         // 1. Obtener o insertar al estudiante asociado a la cuenta de usuario
         $estudiante = DB::table('estudiantes')->where('correo',$user->email)->first();
 
+        // app/Http/Controllers/CuestionarioController.php
+
         if (!$estudiante) {
-            $codigoEstudiante = 'EST-' . sprintf('\%05d', $user->id);
+            $codigoEstudiante = 'EST-' . sprintf('%05d', $user->id);
             DB::table('estudiantes')->insert([
-                'codigo_estudiante' => $codigoEstudiante,
-                'nombre_estudiante' => $user->name,
-                'correo' => $user->email,
-                'id_programa' => $request->input('id_programa'),
-                'id_docente' => 1, // Asignación por defecto inicial
-                'promedio' => 0.0,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
+            'codigo_estudiante' => $codigoEstudiante,
+            'nombre_estudiante' => $user->name,
+            'correo'            => $user->email,
+            'id_programa'       => $request->input('id_programa'),
+            'id_docente'        => 1,
+            'promedio'          => 0.0,
+            // Aquí asignamos la jornada que el usuario tiene definida en su perfil
+            'jornada'           => $user->jornada ?? 'Diurna', 
+            'created_at'        => now(),
+            'updated_at'        => now(),
+        ]);
         } else {
             $codigoEstudiante =$estudiante->codigo_estudiante;
             // Actualizamos el programa si cambió en el formulario

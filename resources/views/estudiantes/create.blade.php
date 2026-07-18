@@ -35,7 +35,8 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
                             <label for="id_programa" class="block text-sm font-medium text-gray-300">Programa Académico <span class="text-red-500">*</span></label>
-                            <select name="id_programa" id="id_programa" required class="mt-1 block w-full rounded-md border-gray-700 bg-gray-900 text-gray-100 text-sm focus:border-indigo-500 focus:ring-indigo-500">
+                            <!-- Se añadió el evento onchange -->
+                            <select name="id_programa" id="id_programa" required onchange="cargarDocentes(this.value)" class="mt-1 block w-full rounded-md border-gray-700 bg-gray-900 text-gray-100 text-sm focus:border-indigo-500 focus:ring-indigo-500">
                                 <option value="">Seleccione un programa...</option>
                                 @foreach($programas as $programa)
                                     @php 
@@ -53,16 +54,7 @@
                         <div>
                             <label for="id_docente" class="block text-sm font-medium text-gray-300">Docente Tutor <span class="text-red-500">*</span></label>
                             <select name="id_docente" id="id_docente" required class="mt-1 block w-full rounded-md border-gray-700 bg-gray-900 text-gray-100 text-sm focus:border-indigo-500 focus:ring-indigo-500">
-                                <option value="">Seleccione un docente...</option>
-                                @foreach($docentes as $docente)
-                                    @php 
-                                        $docId = $docente->id_docente ?? $docente->id; 
-                                        $docNombre = $docente->nombre_docente ?? $docente->nombre;
-                                    @endphp
-                                    <option value="{{ $docId }}" {{ old('id_docente') == $docId ? 'selected' : '' }}>
-                                        {{ $docNombre }}
-                                    </option>
-                                @endforeach
+                                <option value="">Primero seleccione un programa...</option>
                             </select>
                             @error('id_docente') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
                         </div>
@@ -87,4 +79,32 @@
             </div>
         </div>
     </div>
+
+    <!-- Script para cargar docentes dinámicamente -->
+    <script>
+        function cargarDocentes(id_programa) {
+            const selectDocente = document.getElementById('id_docente');
+            
+            if (!id_programa) {
+                selectDocente.innerHTML = '<option value="">Primero seleccione un programa...</option>';
+                return;
+            }
+
+            // Llamada a la ruta que creamos en web.php
+            fetch(`/get-docentes/${id_programa}`)
+                .then(response => response.json())
+                .then(data => {
+                    selectDocente.innerHTML = '<option value="">Seleccione un docente</option>';
+                    data.forEach(docente => {
+                        // Asegúrate de que las propiedades 'id' y 'nombre_docente' coincidan con tu tabla
+                        // Ajusta 'nombre_docente' si en tu BD el campo se llama distinto (ej. 'nombre')
+                        let docId = docente.id_docente ?? docente.id;
+                        let docNombre = docente.nombre_docente ?? docente.nombre;
+                        
+                        selectDocente.innerHTML += `<option value="${docId}">${docNombre}</option>`;
+                    });
+                })
+                .catch(error => console.error('Error al cargar docentes:', error));
+        }
+    </script>
 </x-app-layout>

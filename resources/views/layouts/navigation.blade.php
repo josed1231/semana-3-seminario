@@ -2,27 +2,20 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between h-16">
             <div class="flex">
+                <!-- Logo -->
                 <div class="shrink-0 flex items-center">
-                    <a href="{{ route('dashboard') }}">
+                    <!-- RUTA CORREGIDA: Apunta a cuestionario.show como está en tu web.php -->
+                    <a href="{{ route('cuestionario.show') }}">
                         <x-application-logo class="block h-9 w-auto fill-current text-white" />
                     </a>
                 </div>
 
+                <!-- ENLACES ELIMINADOS: Dashboard y Psicólogo ya no están aquí -->
                 <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                    @if(Auth::user()->rol !== 'estudiante')
-                        <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')" 
-                            class="text-white hover:text-gray-200 {{ request()->routeIs('dashboard') ? '!border-[#f17a28]' : '' }}">
-                            {{ __('Dashboard') }}
-                        </x-nav-link>
-                        
-                        <x-nav-link :href="route('psicologo.index')" :active="request()->routeIs('psicologo.index')" 
-                            class="text-white hover:text-gray-200 {{ request()->routeIs('psicologo.index') ? '!border-[#f17a28]' : '' }}">
-                            {{ __('Psicólogo') }}
-                        </x-nav-link>
-                    @endif
                 </div>
             </div>
 
+            <!-- Menú de Usuario -->
             <div class="hidden sm:flex sm:items-center sm:ms-6">
                 <x-dropdown align="right" width="48">
                     <x-slot name="trigger">
@@ -47,6 +40,7 @@
                 </x-dropdown>
             </div>
 
+            <!-- Menú móvil -->
             <div class="-me-2 flex items-center sm:hidden">
                 <button @click="open = ! open" class="inline-flex items-center justify-center p-2 rounded-md text-white hover:text-gray-200 hover:bg-[#003e1c] focus:outline-none transition duration-150 ease-in-out">
                     <svg class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
@@ -58,16 +52,10 @@
         </div>
     </div>
 
+    <!-- Menú móvil expandido (vacío para que no muestre Dashboard/Psicólogo) -->
     <div :class="{'block': open, 'hidden': ! open}" class="hidden sm:hidden bg-[#004d2e]">
         <div class="pt-2 pb-3 space-y-1">
-            @if(Auth::user()->rol !== 'estudiante')
-                <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')" class="text-white hover:bg-[#003e1c] {{ request()->routeIs('dashboard') ? '!border-[#f17a28]' : '' }}">
-                    {{ __('Dashboard') }}
-                </x-responsive-nav-link>
-                <x-responsive-nav-link :href="route('psicologo.index')" :active="request()->routeIs('psicologo.index')" class="text-white hover:bg-[#003e1c] {{ request()->routeIs('psicologo.index') ? '!border-[#f17a28]' : '' }}">
-                    {{ __('Psicólogo') }}
-                </x-responsive-nav-link>
-            @endif
+            <!-- Espacio vacío -->
         </div>
     </div>
 </nav>
