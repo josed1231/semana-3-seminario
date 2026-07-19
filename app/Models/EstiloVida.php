@@ -8,7 +8,7 @@ class EstiloVida extends Model
 {
     protected $table = 'estilos_vida';
     protected $primaryKey = 'id_estilo';
-    protected $fillable = ['codigo_estudiante', 'estilo'];
+    protected $fillable = ['codigo_estudiante', 'trabaja'];
 
     public function estudiante()
     {

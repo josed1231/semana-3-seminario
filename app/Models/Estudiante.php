@@ -17,13 +17,13 @@ class Estudiante extends Model
 
     // CORRECCIÓN: Se incluye 'id_director' para permitir el update masivo con la columna real de la base de datos
     protected $fillable = [
-    'codigo_estudiante', 
-    'nombre_estudiante', 
-    'correo', 
-    'id_programa', 
-    'id_docente', // <-- ESTE CAMPO DEBE ESTAR AQUÍ PARA QUE FUNCIONE EL UPDATEORCREATE
-    'promedio', 
-    'jornada',
+        'codigo_estudiante', 
+        'nombre_estudiante', 
+        'correo', 
+        'id_programa', 
+        'id_docente', // <--- Asegúrate de usar este nombre aquí
+        'promedio', 
+        'jornada',
     ];
 
     // ==========================================
@@ -38,9 +38,10 @@ class Estudiante extends Model
     // CORRECCIÓN: La llave foránea en estudiantes es 'id_docente' y la primaria en directores_unidad también es 'id_docente'
     public function directorUnidad()
     {
+        // El segundo parámetro es la llave foránea en 'estudiantes', que es 'id_docente'
+        // El tercer parámetro es la llave primaria en 'directores_unidad', que es 'id_docente'
         return $this->belongsTo(DirectorUnidad::class, 'id_docente', 'id_docente');
     }
-
     public function saberesPrevios()
     {
         return $this->hasOne(SaberesPrevios::class, 'codigo_estudiante', 'codigo_estudiante');

@@ -3,22 +3,27 @@
 use App\Http\Controllers\{ProfileController, TaskController, EstudianteController, CuestionarioController, PsicologoController};
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', fn() => auth()->check() ? redirect()->route('dashboard') : redirect()->route('login'));
+// Redirección inicial
+Route::get('/', function() {
+    if (auth()->check()) {
+        $user = auth()->user();
+        return (in_array($user->rol, ['user', 'estudiante'])) ? redirect()->route('welcome') : redirect()->route('welcome.admin');
+    }
+    return redirect()->route('login');
+});
 
 Route::middleware(['auth', 'prevent-back'])->group(function () {
 
-    // DASHBOARD: Redirección automática
-    Route::get('/dashboard', function () {
-        $user = auth()->user();
-        if (in_array($user->rol, ['user', 'estudiante'])) {
-            return redirect()->route('cuestionario.create');
-        }
-        if (!in_array($user->rol, ['admin', 'psicologo', 'dir_bienestar', 'dir_unidad'])) {
-            abort(403);
-        }
-        return app(EstudianteController::class)->index(request());
-    })->name('dashboard');
+    // BIENVENIDAS
+    Route::get('/welcome', fn() => view('welcome'))->name('welcome');
+    Route::get('/welcome-admin', function () {
+        if (!in_array(auth()->user()->rol, ['admin', 'psicologo', 'dir_bienestar', 'dir_unidad'])) abort(403);
+        return view('welcome_admin');
+    })->name('welcome.admin');
 
+    // DASHBOARD
+    Route::get('/dashboard', fn() => redirect()->route('estudiantes.index_gestion'))->name('dashboard');
+    
     // CUESTIONARIO
     Route::controller(CuestionarioController::class)->group(function () {
         Route::get('/cuestionario', 'create')->name('cuestionario.create');
@@ -33,26 +38,25 @@ Route::middleware(['auth', 'prevent-back'])->group(function () {
         Route::delete('/profile', 'destroy')->name('profile.destroy');
     });
 
-    // GESTIÓN ESTUDIANTES (Admin)
+    // GESTIÓN ESTUDIANTES (Acceso abierto a roles autorizados, restringido mediante el Controlador)
+    Route::resource('estudiantes', EstudianteController::class)->except(['destroy']);
+    
+    // RESULTADOS Y GESTIÓN (Middleware compartido)
+    Route::middleware(['verificar.rol:admin,psicologo,dir_bienestar,dir_unidad'])->group(function () {
+        Route::get('/resultados-cuestionario', [PsicologoController::class, 'index'])->name('resultados.index');
+        Route::get('/resultados-cuestionario/buscar', [PsicologoController::class, 'buscar'])->name('resultados.buscar');
+        Route::get('/gestion-estudiantes', [EstudianteController::class, 'index'])->name('estudiantes.index_gestion');
+        Route::get('/psicologo/estudiante/{codigo}/editar', [PsicologoController::class, 'edit'])->name('psicologo.edit');
+        Route::post('/psicologo/estudiante/{codigo}/actualizar', [PsicologoController::class, 'update'])->name('psicologo.update');
+    });
+
+    // ACCIONES EXCLUSIVAS DE ADMIN
     Route::middleware(['verificar.rol:admin'])->group(function () {
-        Route::resource('estudiantes', EstudianteController::class);
+        Route::delete('/estudiantes/{estudiante}', [EstudianteController::class, 'destroy'])->name('estudiantes.destroy');
         Route::controller(TaskController::class)->group(function () {
             Route::get('/tasks/create', 'create')->name('tasks.create');
             Route::post('/tasks', 'store')->name('tasks.store');
         });
-    });
-    
-    Route::get('/estudiantes/{estudiante}/edit', [EstudianteController::class, 'edit'])->name('estudiantes.edit');
-    Route::put('/estudiantes/{estudiante}', [EstudianteController::class, 'update'])->name('estudiantes.update');
-
-    // RESULTADOS CUESTIONARIO (Acceso para todos menos 'user' y 'estudiante')
-    Route::middleware(['verificar.rol:admin,psicologo,dir_bienestar,dir_unidad'])->group(function () {
-        Route::get('/resultados-cuestionario', [PsicologoController::class, 'index'])->name('resultados.index');
-        Route::get('/resultados-cuestionario/buscar', [PsicologoController::class, 'buscar'])->name('resultados.buscar');
-        
-        // Mantenemos estas rutas por si necesitas editar desde el mismo módulo
-        Route::get('/psicologo/estudiante/{codigo}/editar', [PsicologoController::class, 'edit'])->name('psicologo.edit');
-        Route::post('/psicologo/estudiante/{codigo}/actualizar', [PsicologoController::class, 'update'])->name('psicologo.update');
     });
 
     Route::resource('tasks', TaskController::class)->except(['create', 'store']);

@@ -1,171 +1,218 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
+        <h2 class="font-bold text-xl text-slate-800 leading-tight">
             {{ __('Editar Estudiante: ') }} {{ $estudiante->nombre_estudiante }}
         </h2>
     </x-slot>
 
-    <div class="py-12 bg-gray-100 dark:bg-gray-900 min-h-screen">
+    <div class="py-10 bg-gradient-to-tr from-stone-50 via-green-50/30 to-orange-50/20 min-h-screen">
         <div class="max-w-4xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg p-6">
+            <div class="bg-white overflow-hidden shadow-2xl rounded-3xl p-6 md:p-10 border border-emerald-100">
                 
-                <form action="{{ route('estudiantes.update', $estudiante->codigo_estudiante) }}" method="POST" class="space-y-6">
+                <form id="editEstudianteForm" action="{{ route('estudiantes.update', $estudiante->codigo_estudiante) }}" method="POST" class="space-y-8" onsubmit="prepararEnvio()">
                     @csrf
                     @method('PUT')
 
-                    <!-- SECCIÓN 1: DATOS ACADÉMICOS -->
-                    <div class="border-b border-gray-700 pb-4">
-                        <h3 class="text-md font-bold text-blue-400 mb-4">Datos Académicos</h3>
+                    @php
+                        $esPsicologo = auth()->user()->rol === 'psicologo';
+                        $noEsAdmin = auth()->user()->rol !== 'admin';
+                        $esDirectivo = in_array(auth()->user()->rol, ['dir_bienestar', 'dir_unidad']);
+                    @endphp
+
+                    <div class="bg-emerald-50/40 p-6 md:p-8 rounded-2xl border border-emerald-100/80 space-y-6">
+                        <h3 class="text-lg font-bold text-emerald-950 border-b border-emerald-100 pb-3">Datos Académicos</h3>
+                        
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-400">Código del Estudiante (No modificable)</label>
-                                <input type="text" value="{{ $estudiante->codigo_estudiante }}" disabled class="mt-1 block w-full rounded-md border-gray-700 bg-gray-750 text-gray-400 text-sm cursor-not-allowed">
+                            <div class="space-y-2">
+                                <label class="block text-sm font-semibold text-gray-700">Código del Estudiante (No modificable)</label>
+                                <input type="text" value="{{ $estudiante->codigo_estudiante }}" disabled class="block w-full rounded-xl border-gray-300 bg-gray-50 text-gray-500 text-sm cursor-not-allowed shadow-sm py-2.5">
                             </div>
 
-                            <div>
-                                <label for="correo" class="block text-sm font-medium text-gray-300">Correo Institucional <span class="text-red-500">*</span></label>
-                                <input type="email" name="correo" id="correo" value="{{ old('correo', $estudiante->correo) }}" required 
-                                       {{ auth()->user()->rol === 'psicologo' ? 'disabled' : '' }}
-                                       class="mt-1 block w-full rounded-md border-gray-700 bg-gray-900 {{ auth()->user()->rol === 'psicologo' ? 'text-gray-450 bg-gray-950 cursor-not-allowed' : 'text-gray-100' }} text-sm focus:border-indigo-500 focus:ring-indigo-500">
+                            <div class="space-y-2">
+                                <label for="correo" class="block text-sm font-semibold text-gray-700">Correo Institucional <span class="text-red-500">*</span></label>
+                                <input type="email" id="correo" value="{{ old('correo', $estudiante->correo) }}" required 
+                                       {{ $esPsicologo ? 'disabled' : 'name=correo' }}
+                                       class="block w-full rounded-xl border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 {{ $esPsicologo ? 'bg-gray-50 text-gray-500 cursor-not-allowed' : 'text-gray-900' }} text-sm py-2.5">
+                                @if($esPsicologo)
+                                    <input type="hidden" name="correo" value="{{ old('correo', $estudiante->correo) }}">
+                                @endif
                                 @error('correo') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
                             </div>
                         </div>
 
-                        <div class="mt-4">
-                            <label for="nombre_estudiante" class="block text-sm font-medium text-gray-300">Nombre Completo <span class="text-red-500">*</span></label>
-                            <input type="text" name="nombre_estudiante" id="nombre_estudiante" value="{{ old('nombre_estudiante', $estudiante->nombre_estudiante) }}" required 
-                                   {{ auth()->user()->rol === 'psicologo' ? 'disabled' : '' }}
-                                   class="mt-1 block w-full rounded-md border-gray-700 bg-gray-900 {{ auth()->user()->rol === 'psicologo' ? 'text-gray-450 bg-gray-950 cursor-not-allowed' : 'text-gray-100' }} text-sm focus:border-indigo-500 focus:ring-indigo-500">
+                        <div class="space-y-2">
+                            <label for="nombre_estudiante" class="block text-sm font-semibold text-gray-700">Nombre Completo <span class="text-red-500">*</span></label>
+                            <input type="text" id="nombre_estudiante" value="{{ old('nombre_estudiante', $estudiante->nombre_estudiante) }}" required 
+                                   {{ $esPsicologo ? 'disabled' : 'name=nombre_estudiante' }}
+                                   class="block w-full rounded-xl border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 {{ $esPsicologo ? 'bg-gray-50 text-gray-500 cursor-not-allowed' : 'text-gray-900' }} text-sm py-2.5">
+                            @if($esPsicologo)
+                                <input type="hidden" name="nombre_estudiante" value="{{ old('nombre_estudiante', $estudiante->nombre_estudiante) }}">
+                            @endif
                             @error('nombre_estudiante') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
                         </div>
 
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
-                            <div>
-                                <label for="id_programa" class="block text-sm font-medium text-gray-300">Programa Académico <span class="text-red-500">*</span></label>
-                                <select name="id_programa" id="id_programa" required 
-                                        {{ auth()->user()->rol === 'psicologo' ? 'disabled' : '' }}
-                                        class="mt-1 block w-full rounded-md border-gray-700 bg-gray-900 {{ auth()->user()->rol === 'psicologo' ? 'text-gray-450 bg-gray-950 cursor-not-allowed' : 'text-gray-100' }} text-sm focus:border-indigo-500 focus:ring-indigo-500">
-                                    @foreach($programas as $programa)
-                                        @php 
-                                            $progId = $programa->id_programa ?? $programa->id; 
-                                            $progNombre = $programa->nombre_programa ?? $programa->nombre;
-                                        @endphp
-                                        <option value="{{ $progId }}" {{ old('id_programa', $estudiante->id_programa) == $progId ? 'selected' : '' }}>
-                                            {{ $progNombre }}
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="space-y-2">
+                                <label for="id_programa" class="block text-sm font-semibold text-gray-700">Programa Académico <span class="text-red-500">*</span></label>
+                                <select id="id_programa" name="id_programa" required class="block w-full rounded-xl border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 text-gray-900 text-sm py-2.5">
+                                    <option value="" disabled>-- Seleccione un Programa --</option>
+                                    @foreach($programas as $prog)
+                                        <option value="{{ $prog->id_programa }}" {{ old('id_programa', $estudiante->id_programa) == $prog->id_programa ? 'selected' : '' }}>
+                                            {{ $prog->nombre_programa ?? $prog->nombre }}
                                         </option>
                                     @endforeach
                                 </select>
                                 @error('id_programa') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
                             </div>
 
-                            <div>
-                                <label for="id_director_unidad" class="block text-sm font-medium text-gray-400">Director de Unidad (Asignado Automáticamente)</label>
-                                <select id="id_director_unidad" required 
-                                        class="mt-1 block w-full rounded-md border-gray-700 bg-gray-950 text-gray-400 text-sm pointer-events-none select-none shadow-none focus:ring-0 focus:border-gray-700">
-                                    <option value="" disabled>-- Asignando director --</option>
+                            <div class="space-y-2">
+                                <label for="id_director_unidad_visual" class="block text-sm font-semibold text-gray-700">Director de Unidad <span class="text-red-500">*</span></label>
+                                <select id="id_director_unidad_visual" disabled 
+                                        class="block w-full rounded-xl border-gray-300 bg-gray-50 shadow-sm text-gray-500 text-sm py-2.5 cursor-not-allowed">
+                                    <option value="" disabled selected>-- Seleccione un Director --</option>
                                     @foreach($directores as $director)
                                         @php 
-                                            $dirId = $director->id_director_unidad ?? $director->id; 
-                                            $dirNombre = $director->nombre_director ?? $director->nombre; 
+                                            $dirId = $director->id_director_unidad ?? $director->id ?? $director->id_usuario; 
+                                            $dirNombre = $director->nombre_director ?? $director->nombre ?? $director->nombre_completo; 
                                         @endphp
                                         <option value="{{ $dirId }}" {{ old('id_director_unidad', $estudiante->id_director_unidad) == $dirId ? 'selected' : '' }}>
                                             {{ $dirNombre }}
                                         </option>
                                     @endforeach
                                 </select>
-                                <input type="hidden" name="id_director_unidad" id="hidden_id_director_unidad" value="{{ old('id_director_unidad', $estudiante->id_director_unidad) }}">
+                                
+                                <input type="hidden" id="id_director_unidad" name="id_director_unidad" value="{{ old('id_director_unidad', $estudiante->id_director_unidad) }}">
+                                
                                 @error('id_director_unidad') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
                             </div>
                         </div>
 
-                        <div class="w-full md:w-1/2 mt-4">
-                            <label for="promedio" class="block text-sm font-medium text-gray-300">Promedio <span class="text-red-500">*</span></label>
-                            <input type="number" step="0.01" min="0" max="5.0" name="promedio" id="promedio" value="{{ old('promedio', $estudiante->promedio) }}" required 
-                                   {{ auth()->user()->rol === 'psicologo' ? 'disabled' : '' }}
-                                   class="mt-1 block w-full rounded-md border-gray-700 bg-gray-900 {{ auth()->user()->rol === 'psicologo' ? 'text-gray-450 bg-gray-950 cursor-not-allowed' : 'text-gray-100' }} text-sm focus:border-indigo-500 focus:ring-indigo-500">
-                            @error('promedio') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
-                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div class="space-y-2">
+                                <label for="promedio" class="block text-sm font-semibold text-gray-700">Promedio <span class="text-red-500">*</span></label>
+                                <input type="number" step="0.01" min="0" max="5.0" id="promedio" value="{{ old('promedio', $estudiante->promedio) }}" required 
+                                       {{ $esPsicologo ? 'disabled' : 'name=promedio' }}
+                                       class="block w-full rounded-xl border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 {{ $esPsicologo ? 'bg-gray-50 text-gray-500 cursor-not-allowed' : 'text-gray-900' }} text-sm py-2.5">
+                                @if($esPsicologo)
+                                    <input type="hidden" name="promedio" value="{{ old('promedio', $estudiante->promedio) }}">
+                                @endif
+                                @error('promedio') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
+                            </div>
 
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
-                            <div>
-                                <label for="semestre" class="block text-sm font-medium text-gray-300">Semestre <span class="text-gray-450 text-xs">(Traído del Cuestionario)</span></label>
+                            <div class="space-y-2">
+                                <label for="semestre" class="block text-sm font-semibold text-gray-700">Semestre <span class="text-emerald-700 text-xs">(Del Cuestionario)</span></label>
                                 @php
                                     $semestreActual = old('semestre', optional($estudiante->cuestionario)->semestre ?? $estudiante->semestre);
                                 @endphp
-                                <select name="semestre" id="semestre" required 
-                                        {{ auth()->user()->rol === 'psicologo' ? 'disabled' : '' }}
-                                        class="mt-1 block w-full rounded-md border-gray-700 bg-gray-900 {{ auth()->user()->rol === 'psicologo' ? 'text-gray-450 bg-gray-950 cursor-not-allowed' : 'text-gray-100' }} text-sm focus:border-indigo-500 focus:ring-indigo-500">
+                                <select id="semestre" required 
+                                        {{ $esPsicologo ? 'disabled' : 'name=semestre' }}
+                                        class="block w-full rounded-xl border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 {{ $esPsicologo ? 'bg-gray-50 text-gray-500 cursor-not-allowed' : 'text-gray-900' }} text-sm py-2.5">
                                     @for ($i = 1; $i <= 10; $i++)
                                         <option value="{{ $i }}" {{ $semestreActual == $i ? 'selected' : '' }}>Semestre {{ $i }}</option>
                                     @endfor
                                 </select>
+                                @if($esPsicologo)
+                                    <input type="hidden" name="semestre" value="{{ $semestreActual }}">
+                                @endif
                                 @error('semestre') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
                             </div>
 
-                            <div>
-                                <label for="jornada" class="block text-sm font-medium text-gray-300">Jornada <span class="text-red-500">*</span></label>
-                                <select name="jornada" id="jornada" required 
-                                        {{ auth()->user()->rol === 'psicologo' ? 'disabled' : '' }}
-                                        class="mt-1 block w-full rounded-md border-gray-700 bg-gray-900 {{ auth()->user()->rol === 'psicologo' ? 'text-gray-450 bg-gray-950 cursor-not-allowed' : 'text-gray-100' }} text-sm focus:border-indigo-500 focus:ring-indigo-500">
+                            <div class="space-y-2">
+                                <label for="jornada" class="block text-sm font-semibold text-gray-700">Jornada <span class="text-red-500">*</span></label>
+                                <select id="jornada" required 
+                                        {{ $esPsicologo ? 'disabled' : 'name=jornada' }}
+                                        class="block w-full rounded-xl border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 {{ $esPsicologo ? 'bg-gray-50 text-gray-500 cursor-not-allowed' : 'text-gray-900' }} text-sm py-2.5">
                                     <option value="Diurna" {{ old('jornada', $estudiante->jornada) == 'Diurna' ? 'selected' : '' }}>Diurna</option>
                                     <option value="Nocturna" {{ old('jornada', $estudiante->jornada) == 'Nocturna' ? 'selected' : '' }}>Nocturna</option>
                                     <option value="Sabatina" {{ old('jornada', $estudiante->jornada) == 'Sabatina' ? 'selected' : '' }}>Sabatina</option>
                                 </select>
+                                @if($esPsicologo)
+                                    <input type="hidden" name="jornada" value="{{ old('jornada', $estudiante->jornada) }}">
+                                @endif
                                 @error('jornada') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
                             </div>
                         </div>
+
+                        <div class="space-y-2">
+                            <label for="trabaja" class="block text-sm font-semibold text-gray-700">¿Actualmente trabaja? <span class="text-red-500">*</span></label>
+                            @php
+                                $trabajaActual = old('trabaja', optional($estudiante->cuestionario)->trabaja ?? $estudiante->trabaja);
+                            @endphp
+                            <select id="trabaja" required 
+                                    {{ $noEsAdmin ? 'disabled' : 'name=trabaja' }}
+                                    class="block w-full rounded-xl border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 {{ $noEsAdmin ? 'bg-gray-50 text-gray-500 cursor-not-allowed' : 'text-gray-900' }} text-sm py-2.5">
+                                <option value="" disabled>-- Seleccione --</option>
+                                <option value="Si" {{ $trabajaActual == 'Si' ? 'selected' : '' }}>Sí</option>
+                                <option value="No" {{ $trabajaActual == 'No' ? 'selected' : '' }}>No</option>
+                            </select>
+                            @if($noEsAdmin)
+                                <input type="hidden" name="trabaja" value="{{ $trabajaActual }}">
+                            @endif
+                            @error('trabaja') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
+                        </div>
                     </div>
 
-                    <!-- SECCIÓN 2: ESTILO DE VIDA Y RIESGO -->
-                    <div class="border-b border-gray-700 pb-4">
-                        <h3 class="text-md font-bold text-yellow-500 mb-4">Análisis de Riesgo y Estilos de Vida</h3>
+                    <div class="p-6 md:p-8 bg-white rounded-2xl border border-gray-200 space-y-6">
+                        <h3 class="text-lg font-bold text-orange-600 border-b pb-3">⚠️ Análisis de Riesgo y Estilos de Vida</h3>
+                        
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div>
-                                <label for="nivel_riesgo" class="block text-sm font-medium text-gray-300">Nivel de Riesgo</label>
-                                <select name="nivel_riesgo" id="nivel_riesgo" 
-                                        {{ auth()->user()->rol === 'psicologo' ? 'disabled' : '' }}
-                                        class="mt-1 block w-full rounded-md border-gray-700 bg-gray-900 {{ auth()->user()->rol === 'psicologo' ? 'text-gray-450 bg-gray-950 cursor-not-allowed' : 'text-gray-100' }} text-sm">
+                            <div class="space-y-2">
+                                <label for="nivel_riesgo" class="block text-sm font-semibold text-gray-700">Nivel de Riesgo</label>
+                                <select id="nivel_riesgo" 
+                                        {{ $esPsicologo ? 'disabled' : 'name=nivel_riesgo' }}
+                                        class="block w-full rounded-xl border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 {{ $esPsicologo ? 'bg-gray-50 text-gray-500 cursor-not-allowed' : 'text-gray-900' }} text-sm py-2.5">
                                     <option value="Bajo" {{ old('nivel_riesgo', optional($estudiante->riesgo)->nivel_riesgo) == 'Bajo' ? 'selected' : '' }}>Bajo</option>
                                     <option value="Medio" {{ old('nivel_riesgo', optional($estudiante->riesgo)->nivel_riesgo) == 'Medio' ? 'selected' : '' }}>Medio</option>
                                     <option value="Alto" {{ old('nivel_riesgo', optional($estudiante->riesgo)->nivel_riesgo) == 'Alto' ? 'selected' : '' }}>Alto</option>
                                 </select>
+                                @if($esPsicologo)
+                                    <input type="hidden" name="nivel_riesgo" value="{{ old('nivel_riesgo', optional($estudiante->riesgo)->nivel_riesgo) }}">
+                                @endif
                             </div>
 
-                            <div>
-                                <label for="actividad" class="block text-sm font-medium text-gray-300">Actividades Frecuentes (Estilo de Vida)</label>
-                                <input type="text" name="actividad" id="actividad" 
+                            <div class="space-y-2">
+                                <label for="actividad" class="block text-sm font-semibold text-gray-700">Actividades Frecuentes (Estilo de Vida)</label>
+                                <input type="text" id="actividad" 
                                        value="{{ old('actividad', optional($estudiante->cuestionario)->actividad) }}"
                                        placeholder="Actividades que realiza el estudiante..."
-                                       {{ auth()->user()->rol !== 'admin' ? 'disabled' : '' }}
-                                       class="mt-1 block w-full rounded-md border-gray-700 bg-gray-900 {{ auth()->user()->rol !== 'admin' ? 'text-gray-450 bg-gray-950 cursor-not-allowed' : 'text-gray-100 focus:border-indigo-500 focus:ring-indigo-500' }} text-sm">
+                                       {{ $noEsAdmin ? 'disabled' : 'name=actividad' }}
+                                       class="block w-full rounded-xl border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 {{ $noEsAdmin ? 'bg-gray-50 text-gray-500 cursor-not-allowed' : 'text-gray-900' }} text-sm py-2.5">
+                                @if($noEsAdmin)
+                                    <input type="hidden" name="actividad" value="{{ old('actividad', optional($estudiante->cuestionario)->actividad) }}">
+                                @endif
                             </div>
                         </div>
 
-                        <div class="mt-4">
-                            <label for="detalles" class="block text-sm font-medium text-gray-300">Detalles adicionales del riesgo</label>
-                            <textarea name="detalles" id="detalles" rows="2" 
-                                      {{ auth()->user()->rol === 'psicologo' ? 'disabled' : '' }}
-                                      class="mt-1 block w-full rounded-md border-gray-700 bg-gray-900 {{ auth()->user()->rol === 'psicologo' ? 'text-gray-450 bg-gray-950 cursor-not-allowed' : 'text-gray-100' }} text-sm">{{ old('detalles', optional($estudiante->riesgo)->detalles) }}</textarea>
+                        <div class="space-y-2">
+                            <label for="detalles" class="block text-sm font-semibold text-gray-700">Detalles adicionales del riesgo</label>
+                            <textarea id="detalles" rows="2" 
+                                      {{ $esPsicologo ? 'disabled' : 'name=detalles' }}
+                                      class="block w-full rounded-xl border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 {{ $esPsicologo ? 'bg-gray-50 text-gray-500 cursor-not-allowed' : 'text-gray-900' }} text-sm">{{ old('detalles', optional($estudiante->riesgo)->detalles) }}</textarea>
+                            @if($esPsicologo)
+                                <textarea name="detalles" class="hidden">{{ old('detalles', optional($estudiante->riesgo)->detalles) }}</textarea>
+                            @endif
                         </div>
                     </div>
 
-                    <!-- SECCIÓN 3: ORIENTACIÓN PSICOPEDAGÓGICA -->
-                    <div class="pb-4">
-                        <h3 class="text-md font-bold text-green-500 mb-4">Seguimiento Psicoorientación</h3>
-                        <div>
-                            <label for="observaciones" class="block text-sm font-medium text-gray-300">Observaciones del Psicólogo</label>
-                            <textarea name="observaciones" id="observaciones" rows="4" 
-                                      {{ in_array(auth()->user()->rol, ['dir_bienestar', 'dir_unidad']) ? 'disabled' : '' }}
+                    <div class="p-6 md:p-8 bg-white rounded-2xl border border-gray-200 space-y-6">
+                        <h3 class="text-lg font-bold text-emerald-700 border-b pb-3">💼 Seguimiento Psicoorientación</h3>
+                        <div class="space-y-2">
+                            <label for="observaciones" class="block text-sm font-semibold text-gray-700">Observaciones del Psicólogo</label>
+                            <textarea id="observaciones" rows="4" 
+                                      {{ $esDirectivo ? 'disabled' : 'name=observaciones' }}
                                       placeholder="Espacio reservado para las notas confidenciales de psicoorientación..."
-                                      class="mt-1 block w-full rounded-md border-gray-700 bg-gray-900 {{ in_array(auth()->user()->rol, ['dir_bienestar', 'dir_unidad']) ? 'text-gray-450 bg-gray-950 cursor-not-allowed' : 'text-gray-100' }} text-sm">{{ old('observaciones', optional($estudiante->orientacionPsicologica)->observaciones) }}</textarea>
+                                      class="block w-full rounded-xl border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 {{ $esDirectivo ? 'bg-gray-50 text-gray-500 cursor-not-allowed' : 'text-gray-900' }} text-sm">{{ old('observaciones', optional($estudiante->orientacionPsicologica)->observaciones) }}</textarea>
+                            @if($esDirectivo)
+                                <textarea name="observaciones" class="hidden">{{ old('observaciones', optional($estudiante->orientacionPsicologica)->observaciones) }}</textarea>
+                            @endif
                         </div>
                     </div>
 
-                    <div class="flex justify-end gap-3 pt-4 border-t border-gray-700">
-                        <a href="{{ route('dashboard') }}" class="bg-gray-700 hover:bg-gray-600 text-gray-200 px-4 py-2 rounded-md text-sm font-medium transition-colors">
+                    <div class="flex justify-end gap-3 pt-6 border-t border-gray-100">
+                        <a href="{{ route('dashboard') }}" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-5 py-2.5 rounded-xl text-sm font-bold transition shadow-sm border border-gray-200">
                             Cancelar
                         </a>
-                        <button type="submit" class="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors">
+                        <button type="submit" class="bg-[#f17a28] hover:bg-[#d66213] text-white px-5 py-2.5 rounded-xl text-sm font-bold transition shadow-md">
                             Guardar Cambios
                         </button>
                     </div>
@@ -175,39 +222,55 @@
         </div>
     </div>
 
-    <!-- Script de Automatización del Director según el Programa -->
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            const programaSelect = document.getElementById('id_programa');
-            const directorSelect = document.getElementById('id_director_unidad');
-            const hiddenDirectorInput = document.getElementById('hidden_id_director_unidad');
-
-            const programaAlDirector = {
-                '1': '1', 
-                '2': '2', 
-                '3': '3'  
-            };
+            const programmeSelect = document.getElementById('id_programa');
+            const directorSelectVisual = document.getElementById('id_director_unidad_visual');
+            const directorInputHidden = document.getElementById('id_director_unidad');
 
             function actualizarDirector() {
-                const programaId = programaSelect.value;
-                const directorId = programaAlDirector[programaId];
+                if (!programmeSelect || !directorSelectVisual || !directorInputHidden) return;
 
-                if (directorId) {
-                    directorSelect.value = directorId;
-                    hiddenDirectorInput.value = directorId;
-                } else {
-                    directorSelect.value = "";
-                    hiddenDirectorInput.value = "";
+                const programaTexto = programmeSelect.options[programmeSelect.selectedIndex].text.toLowerCase();
+                let directorObjetivo = "";
+
+                if (programaTexto.includes('sistemas')) {
+                    directorObjetivo = "director ingeniería";
+                } else if (programaTexto.includes('contaduría') || programaTexto.includes('contaduria')) {
+                    directorObjetivo = "director contaduría";
+                } else if (programaTexto.includes('agropecuaria')) {
+                    directorObjetivo = "director agropecuaria";
+                }
+
+                if (directorObjetivo !== "") {
+                    for (let i = 0; i < directorSelectVisual.options.length; i++) {
+                        const opcionTexto = directorSelectVisual.options[i].text.toLowerCase();
+                        if (opcionTexto.includes(directorObjetivo)) {
+                            // Actualizamos la selección visual
+                            directorSelectVisual.selectedIndex = i;
+                            // Sincronizamos el valor numérico real en el input hidden para Laravel
+                            directorInputHidden.value = directorSelectVisual.options[i].value;
+                            return;
+                        }
+                    }
                 }
             }
 
-            if (programaSelect && directorSelect) {
-                programaSelect.addEventListener('change', actualizarDirector);
+            if (programmeSelect) {
+                programmeSelect.addEventListener('change', actualizarDirector);
                 
-                if (!hiddenDirectorInput.value) {
-                    actualizarDirector();
-                }
+                // Ejecutar al inicio de la carga para asegurar sincronización
+                actualizarDirector();
             }
         });
+
+        function prepararEnvio() {
+            const formulario = document.getElementById('editEstudianteForm');
+            // Removemos disabled temporalmente antes del submit tradicional
+            const elementosBloqueados = formulario.querySelectorAll('select[disabled], input[disabled]');
+            elementosBloqueados.forEach(function (elemento) {
+                elemento.removeAttribute('disabled');
+            });
+        }
     </script>
 </x-app-layout>

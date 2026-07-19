@@ -4,22 +4,33 @@
             <div class="flex items-center">
                 <!-- Logo -->
                 <div class="shrink-0 flex items-center">
-                    <a href="{{ route('cuestionario.create') }}"> 
+                    <!-- Si es un usuario o estudiante lo mandamos a la bienvenida, si no, al dashboard administrativo -->
+                    <a href="{{ in_array(auth()->user()->rol, ['user', 'estudiante']) ? route('welcome') : route('dashboard') }}"> 
                         <x-application-logo class="block h-9 w-auto fill-current text-white" />
                     </a>
                 </div>
 
                 <!-- ENLACES HORIZONTALES (Escritorio) -->
-                @if(auth()->user()->rol !== 'user')
-                    <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex h-full">
+                <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex h-full">
+                    <!-- CORREGIDO: Ocultar Dashboard por completo para 'user' y 'estudiante' -->
+                    @if(!in_array(auth()->user()->rol, ['user', 'estudiante']))
                         <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')" class="text-white inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium leading-5 hover:text-gray-200 transition duration-150 ease-in-out">
                             {{ __('Dashboard') }}
                         </x-nav-link>
+                    @endif
+
+                    <!-- Opción Cuestionario accesible para todos los roles -->
+                    <x-nav-link :href="route('cuestionario.create')" :active="request()->routeIs('cuestionario.create')" class="text-white inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium leading-5 hover:text-gray-200 transition duration-150 ease-in-out">
+                        {{ __('Cuestionario') }}
+                    </x-nav-link>
+
+                    <!-- Resultados ocultos para 'user' y 'estudiante' -->
+                    @if(!in_array(auth()->user()->rol, ['user', 'estudiante']))
                         <x-nav-link :href="route('resultados.index')" :active="request()->routeIs('resultados.index')" class="text-white inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium leading-5 hover:text-gray-200 transition duration-150 ease-in-out">
                             {{ __('Resultados Cuestionario') }}
                         </x-nav-link>
-                    </div>
-                @endif
+                    @endif
+                </div>
             </div>
 
             <!-- Menú de Usuario -->
@@ -62,10 +73,20 @@
     <!-- Menú móvil expandido -->
     <div :class="{'block': open, 'hidden': ! open}" class="hidden sm:hidden bg-[#004d2e]">
         <div class="pt-2 pb-3 space-y-1">
-            @if(auth()->user()->rol !== 'user')
+            <!-- CORREGIDO: Ocultar Dashboard en móvil para 'user' y 'estudiante' -->
+            @if(!in_array(auth()->user()->rol, ['user', 'estudiante']))
                 <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')" class="text-white">
                     {{ __('Dashboard') }}
                 </x-responsive-nav-link>
+            @endif
+
+            <!-- Opción Cuestionario visible para todos en móvil -->
+            <x-responsive-nav-link :href="route('cuestionario.create')" :active="request()->routeIs('cuestionario.create')" class="text-white">
+                {{ __('Cuestionario') }}
+            </x-responsive-nav-link>
+
+            <!-- Resultados ocultos para 'user' y 'estudiante' en móvil -->
+            @if(!in_array(auth()->user()->rol, ['user', 'estudiante']))
                 <x-responsive-nav-link :href="route('resultados.index')" :active="request()->routeIs('resultados.index')" class="text-white">
                     {{ __('Resultados Cuestionario') }}
                 </x-responsive-nav-link>
