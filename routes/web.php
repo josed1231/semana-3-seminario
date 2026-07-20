@@ -21,8 +21,14 @@ Route::middleware(['auth', 'prevent-back'])->group(function () {
         return view('welcome_admin');
     })->name('welcome.admin');
 
-    // DASHBOARD
-    Route::get('/dashboard', fn() => redirect()->route('estudiantes.index_gestion'))->name('dashboard');
+    // DASHBOARD (CORREGIDO: Desvía a los estudiantes antes de chocar con el middleware de gestión)
+    Route::get('/dashboard', function() {
+        $user = auth()->user();
+        if (in_array($user->rol, ['user', 'estudiante'])) {
+            return redirect()->route('welcome');
+        }
+        return redirect()->route('estudiantes.index_gestion');
+    })->name('dashboard');
     
     // CUESTIONARIO
     Route::controller(CuestionarioController::class)->group(function () {

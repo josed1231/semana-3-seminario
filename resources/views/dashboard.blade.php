@@ -46,7 +46,7 @@
                                onmouseover="this.style.backgroundColor='#d66213'" 
                                onmouseout="this.style.backgroundColor='#f17a28'"
                                class="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold transition-colors w-full sm:w-auto shadow-sm cursor-pointer">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                <svg xmlns="http://www.w3.org/2000/xl" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
                                 </svg>
                                 Registrar Estudiante
@@ -93,11 +93,11 @@
                                 <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider" style="color: #000000;">Nombre</th>
                                 <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider" style="color: #000000;">Carrera (Programa)</th>
                                 <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider" style="color: #000000;">Director de Unidad</th>
-                                <!-- NUEVO ENCABEZADO -->
                                 <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider" style="color: #000000;">¿Trabaja?</th>
                                 <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider" style="color: #000000;">Semestre</th>
                                 <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider" style="color: #000000;">Jornada</th>
                                 <th class="px-6 py-4 text-center text-xs font-bold uppercase tracking-wider" style="color: #000000;">Nivel de Riesgo</th>
+                                <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider" style="color: #000000;">Actividades</th>
                                 <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider" style="color: #000000;">Orientación</th>
                                 @if(auth()->user()->rol !== 'dir_unidad')
                                     <th class="px-6 py-4 text-center text-xs font-bold uppercase tracking-wider" style="color: #000000;">Acciones</th>
@@ -120,16 +120,17 @@
                                     <td class="px-6 py-4 whitespace-nowrap text-sm" style="color: #000000;">
                                         {{ $estudiante->directorUnidad?->nombre_director ?? 'Sin asignar' }}
                                     </td>
-                                    <!-- NUEVA CELDA: DATOS DE SITUACIÓN LABORAL -->
+                                    
                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium" style="color: #000000;">
-                                        @if($estudiante->estiloVida && $estudiante->estiloVida->trabaja === 'Si')
+                                        @if($estudiante->trabaja === 'Si')
                                             <span class="px-2.5 py-1 text-xs font-bold rounded-lg bg-blue-50 text-blue-700 border border-blue-100">Sí</span>
-                                        @elseif($estudiante->estiloVida && $estudiante->estiloVida->trabaja === 'No')
+                                        @elseif($estudiante->trabaja === 'No')
                                             <span class="px-2.5 py-1 text-xs font-bold rounded-lg bg-slate-50 text-slate-600 border border-slate-100">No</span>
                                         @else
                                             <span style="color: #94a3b8; font-style: italic;">N/A</span>
                                         @endif
                                     </td>
+                                    
                                     <td class="px-6 py-4 whitespace-nowrap text-sm" style="color: #000000;">
                                         {{ $estudiante->saberesPrevios?->semestre ?? 'N/A' }}
                                     </td>
@@ -148,7 +149,14 @@
                                             <span style="color: #94a3b8; font-style: italic;">Sin evaluar</span>
                                         @endif
                                     </td>
-                                    <td class="px-6 py-4 text-sm font-medium" style="color: #000000; max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="{{ $estudiante->orientacionPsicologica?->observaciones ?? 'Sin orientación' }}">
+
+                                    <!-- CELDA CORREGIDA: MUESTRA EL TEXTO COMPLETO Y SALTA DE LÍNEA SI ES MUY LARGO -->
+                                    <td class="px-6 py-4 text-sm font-medium" style="color: #000000; min-width: 200px; white-space: normal; word-break: break-word;">
+                                        {{ $estudiante->actividad ?? $estudiante->actividades_estilo_vida ?? 'Ninguna' }}
+                                    </td>
+
+                                    <!-- CELDA DE ORIENTACIÓN TAMBIÉN AJUSTADA PARA QUE NO SE CORTE -->
+                                    <td class="px-6 py-4 text-sm font-medium" style="color: #000000; min-width: 220px; white-space: normal; word-break: break-word;">
                                         {{ $estudiante->orientacionPsicologica?->observaciones ?? 'Sin orientación' }}
                                     </td>
                                     @if(auth()->user()->rol !== 'dir_unidad')
@@ -175,8 +183,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <!-- Se incrementó el colspan en 1 debido a la nueva columna -->
-                                    <td colspan="{{ auth()->user()->rol !== 'dir_unidad' ? 10 : 9 }}" class="px-6 py-8 whitespace-nowrap text-sm text-center font-bold" style="color: #000000; background-color: #f8fafc;">
+                                    <td colspan="{{ auth()->user()->rol !== 'dir_unidad' ? 11 : 10 }}" class="px-6 py-8 whitespace-nowrap text-sm text-center font-bold" style="color: #000000; background-color: #f8fafc;">
                                         No se encontraron estudiantes registrados en el sistema.
                                     </td>
                                 </tr>

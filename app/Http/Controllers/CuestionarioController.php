@@ -25,13 +25,15 @@ class CuestionarioController extends Controller
 
     public function store(Request $request)
     {
-        // 1. Validar los datos
+        // 1. Validar los datos (Incluyendo trabaja y actividad)
         $request->validate([
             'id_programa'               => 'required',
             'semestre'                  => 'required|integer',
             'jornada'                   => 'required|string',
             'genero'                    => 'required|string',
             'victima_confict'           => 'required|string',
+            'trabaja'                   => 'nullable|string',
+            'actividad'                 => 'nullable|string',
             'afectacion_academico'      => 'required|numeric',
             'afectacion_socioeconomico' => 'required|numeric',
             'afectacion_psicosocial'    => 'required|numeric',
@@ -39,23 +41,37 @@ class CuestionarioController extends Controller
 
         $programa = DB::table('programas_academicos')->where('id_programa', $request->id_programa)->first();
 
-        // 2. Guardar estudiante
+        // Mapeo automático de Directores según el programa al momento de la inscripción del cuestionario
+        $mapeoDirectores = [
+            1 => 1, // Programa ID 1 (Ingeniería) -> Director ID 1
+            2 => 3, // Programa ID 2 (Agropecuaria) -> Director ID 3
+            3 => 2  // Programa ID 3 (Contaduría) -> Director ID 2
+        ];
+        $idDirectorCalculado = $mapeoDirectores[$request->id_programa] ?? 1;
+
+        // 2. Guardar o actualizar estudiante asignando "trabaja" y "actividad"
         $estudiante = Estudiante::updateOrCreate(
-            ['correo' => auth()->user()->email],
             [
-                'codigo_estudiante'  => auth()->user()->codigo_estudiante, 
-                'nombre_estudiante'  => auth()->user()->name,
-                'id_programa'        => $request->id_programa,
-                'id_docente'         => $programa->id_docente ?? 1, 
-                'jornada'            => $request->jornada,
-                'promedio'           => 0,
+                'codigo_estudiante' => auth()->user()->codigo_estudiante
+            ],
+            [
+                'correo'            => auth()->user()->email, 
+                'nombre_estudiante' => auth()->user()->name,
+                'id_programa'       => $request->id_programa,
+                'id_director_unidad'=> $idDirectorCalculado, 
+                'id_docente'        => $programa->id_docente ?? 1, 
+                'jornada'           => $request->jornada,
+                'trabaja'           => $request->trabaja,
+                'actividad'         => $request->actividad, // Se asocia el campo "actividad" del formulario
+                'promedio'          => 0,
             ]
         );
 
-        // 3. Guardar saberes previos
+        // 3. Guardar saberes previos (¡CORREGIDO! Ahora sí incluye la actividad en el JSON)
         $respuestas = [
             'genero'                    => $request->genero,
             'victima_conflicto'         => $request->victima_confict,
+            'actividad'                 => $request->actividad, // <-- AQUÍ SE GUARDA PARA EL RENDEREADO DEL DASHBOARD
             'afectacion_academico'      => $request->afectacion_academico,
             'afectacion_socioeconomico' => $request->afectacion_socioeconomico,
             'afectacion_psicosocial'    => $request->afectacion_psicosocial,

@@ -35,6 +35,28 @@ class EstudianteController extends Controller
 
         $estudiantes = $query->get();
 
+        // SOPORTE Y EXTRACCIÓN DINÁMICA DE ACTIVIDADES / ESTILO DE VIDA
+        foreach ($estudiantes as $estudiante) {
+            // Si el campo nativo de la tabla está vacío, intentamos extraerlo del JSON de saberes previos o de la relación estiloVida
+            if (empty($estudiante->actividad) && empty($estudiante->actividades_estilo_vida)) {
+                
+                // Opción A: Intentar decodificar el campo 'respuestas' en formato JSON de la tabla saberes_previos
+                if ($estudiante->saberesPrevios && !empty($estudiante->saberesPrevios->respuestas)) {
+                    $respuestasJson = json_decode($estudiante->saberesPrevios->respuestas, true);
+                    if (isset($respuestasJson['actividad'])) {
+                        $estudiante->actividad = $respuestasJson['actividad'];
+                    } elseif (isset($respuestasJson['actividades_estilo_vida'])) {
+                        $estudiante->actividad = $respuestasJson['actividades_estilo_vida'];
+                    }
+                }
+
+                // Opción B: Si sigue vacío, buscar en la relación de modelo estiloVida
+                if (empty($estudiante->actividad) && $estudiante->estiloVida) {
+                    $estudiante->actividad = $estudiante->estiloVida->actividad ?? $estudiante->estiloVida->descripcion;
+                }
+            }
+        }
+
         // Cálculo de estadísticas para el dashboard
         $totalEstudiantes = $estudiantes->count();
         $riesgoAlto = $estudiantes->filter(fn($e) => $e->riesgo?->nivel_riesgo === 'Alto')->count();
@@ -70,32 +92,32 @@ class EstudianteController extends Controller
 
         // 1. Validamos los datos básicos
         $request->validate([
-            'id_programa' => 'required',
-            // ... resto de reglas
+            'id_programa'       => 'required',
+            'nombre_estudiante' => 'required|string',
+            'correo'            => 'required|email',
+            'jornada'           => 'required|string',
+            'promedio'          => 'required|numeric',
         ]);
 
         // 2. Definimos el mapeo de programa a director (ID del programa => ID del director)
-        // Asegúrate de que estos IDs coincidan con tu tabla 'directores_unidad'
         $mapeoDirectores = [
             1 => 1, // Programa ID 1 (Ingeniería) -> Director ID 1 (Ingeniería)
-            2 => 3, // Programa ID 2 (Agropecuaria) -> Director ID 3 (Agropecuaria) - ¡Ajusta esto!
-            3 => 2  // Programa ID 3 (Contaduría) -> Director ID 2 (Contaduría) - ¡Ajusta esto!
+            2 => 3, // Programa ID 2 (Agropecuaria) -> Director ID 3 (Agropecuaria)
+            3 => 2  // Programa ID 3 (Contaduría) -> Director ID 2 (Contaduría)
         ];
 
         // 3. Obtenemos el nuevo director basándonos en el programa seleccionado
         $nuevoIdDirector = $mapeoDirectores[$request->id_programa] ?? $estudiante->id_director_unidad;
 
-        // 4. Actualizamos el estudiante forzando el nuevo ID de director
+        // 4. Actualizamos el estudiante forzando el nuevo ID de director en su columna real
         $estudiante->update([
             'nombre_estudiante'  => $request->nombre_estudiante,
             'correo'             => $request->correo,
             'id_programa'        => $request->id_programa,
-            'id_docente'         => $nuevoIdDirector, // <--- CAMBIA ESTO AQUÍ
+            'id_director_unidad' => $nuevoIdDirector, // <-- CORREGIDO: Se cambia la columna id_director_unidad dinámicamente
             'promedio'           => $request->promedio,
             'jornada'            => $request->jornada,
         ]);
-
-        // ... resto de tu lógica (saberes previos y riesgo)
         
         return redirect()->route('dashboard')->with('success', 'Estudiante actualizado correctamente.');
     }
