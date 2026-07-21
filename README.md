@@ -1,68 +1,74 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <title>README - Sistema de Gestion y Notificaciones API</title>
-</head>
-<body>
+# Sistema de Gestión y Notificaciones API
 
-    <h1>Sistema de Gestion y Notificaciones API</h1>
+Aplicación web y API REST desarrollada con Laravel. Está diseñada para la gestión de tareas y el envío automatizado de notificaciones por correo electrónico mediante una arquitectura desacoplada basada en Eventos y Listeners.
 
-    <p>Aplicacion web y API REST desarrollada con Laravel, orientada a la gestion de tareas y envio de notificaciones automatizadas por correo electronico utilizando una arquitectura desacoplada basada en Eventos y Listeners.</p>
+---
 
-    <hr>
+## 1. Requisitos Previos y Justificación
 
-    <h2>Requisitos Previos</h2>
+Antes de comenzar la instalación, asegúrate de tener instaladas las siguientes herramientas en tu sistema operativo:
 
-    <p>Antes de iniciar con la instalacion, asegurate de contar con las siguientes herramientas instaladas en tu sistema operativo:</p>
+* **Git:** Control de versiones necesario para clonar el repositorio y gestionar el código.
+* **Docker Desktop:** Entorno de virtualización necesario para ejecutar la infraestructura (servidor web, base de datos) en contenedores aislados sin necesidad de instalar servicios directamente en tu sistema operativo.
+* **PHP (versión 8.2 o superior):** Lenguaje en el que está construido Laravel. Es necesario localmente para la ejecución de scripts iniciales de Composer.
+* **Composer:** Gestor de dependencias de PHP. Se utiliza para descargar e instalar Laravel y todos los paquetes PHP requeridos por el proyecto.
+* **Node.js (versión 18 o superior) y NPM:** Entorno de ejecución de JavaScript y su gestor de paquetes. Se requiere obligatoriamente para descargar la infraestructura del frontend y compilar estilos/scripts.
 
-    <ul>
-        <li>Git</li>
-        <li>Docker Desktop (necesario para ejecutar Laravel Sail con MySQL)</li>
-        <li>PHP (version 8.2 o superior)</li>
-        <li>Composer</li>
-        <li>Node.js (version 18 o superior) y NPM</li>
-    </ul>
+---
 
-    <hr>
+## 2. Tecnologías e Instalaciones Principales
 
-    <h2>Tecnologias e Instalaciones Principales</h2>
+El proyecto requiere e integra las siguientes herramientas en su arquitectura:
 
-    <p>El proyecto requiere e integra las siguientes herramientas:</p>
+1. **Framework Laravel 11:** Proporciona el núcleo del sistema, el enrutamiento de la API REST y la lógica de negocio.
+2. **Laravel Sail:** Interfaz de línea de comandos integrada que simplifica la interacción con Docker para ejecutar el entorno local de desarrollo.
+3. **MySQL 8.0:** Sistema de gestión de bases de datos relacional para almacenar la información de usuarios, tareas y registros del sistema.
+4. **Laravel Breeze:** Kit de inicio para autenticación que provee el flujo de registro, inicio de sesión y protección de rutas mediante tokens/sesiones.
+5. **Node.js, NPM y Vite:** Herramientas encargadas de procesar, compilar y servir los activos del frontend (CSS/JS) en tiempo real durante el desarrollo.
+6. **Mailtrap / Driver Log:** Servicio SMTP de pruebas para interceptar y previsualizar los correos electrónicos enviados por la aplicación sin afectar a usuarios reales.
 
-    <ol>
-        <li>Framework Laravel 11: Backend principal y API REST.</li>
-        <li>Laravel Sail: Entorno de desarrollo basado en Docker.</li>
-        <li>MySQL 8.0: Base de datos relacional (gestionada mediante el contenedor de Sail).</li>
-        <li>Laravel Breeze: Sistema de autenticacion de usuarios.</li>
-        <li>Node.js y NPM: Compilacion de scripts y estilos frontend con Vite.</li>
-        <li>Mailtrap o Driver Log: Servidor SMTP para pruebas de notificaciones por correo.</li>
-    </ol>
+---
 
-    <hr>
+## 3. Guía Explicativa de Instalación Paso a Paso
 
-    <h2>Guia Explicativa de Instalacion Paso a Paso</h2>
+Sigue detenidamente cada paso para desplegar el proyecto correctamente en tu entorno local.
 
-    <p>Sigue detenidamente cada uno de los siguientes pasos para configurar e iniciar la aplicacion localmente.</p>
+### Paso 1: Clonar el repositorio
+Abre tu terminal, navega hacia el directorio donde organizas tus proyectos y clona el código fuente:
 
-    <h3>Paso 1: Clonar el repositorio</h3>
-    <p>Abre tu terminal, navega a la carpeta donde guardas tus proyectos y clona este repositorio:</p>
-    <pre><code>git clone https://github.com/tu-usuario/tu-repositorio.git
-cd tu-repositorio</code></pre>
+```bash
+git clone https://github.com/tu-usuario/tu-repositorio.git
+cd tu-repositorio
+```
+* **Explicación:** Descarga la copia exacta del proyecto desde GitHub a tu máquina y te ubica dentro del directorio raíz del proyecto.
 
-    <h3>Paso 2: Instalar dependencias de PHP con Composer</h3>
-    <p>Ejecuta el siguiente comando para descargar e instalar los paquetes de Laravel necesarios:</p>
-    <pre><code>composer install</code></pre>
+---
 
-    <h3>Paso 3: Configurar el archivo de variables de entorno</h3>
-    <p>Crea una copia del archivo <code>.env.example</code> y nombralo <code>.env</code>:</p>
-    <pre><code>cp .env.example .env</code></pre>
+### Paso 2: Instalar dependencias de PHP con Composer
+Ejecuta el comando para descargar las librerías necesarias:
 
-    <p>Abre el archivo <code>.env</code> recien creado con tu editor de codigo y verifica/ajusta la configuracion de la base de datos y del correo electronico:</p>
-    <pre><code>APP_NAME=Laravel
+```bash
+composer install
+```
+* **Explicación:** Lee el archivo `composer.json` y crea la carpeta `vendor` con todas las dependencias requeridas por Laravel para que el framework pueda funcionar.
+
+---
+
+### Paso 3: Configurar el archivo de variables de entorno
+Crea una copia del archivo `.env.example` y nómbralo `.env`:
+
+```bash
+cp .env.example .env
+```
+* **Explicación:** El archivo `.env` almacena las credenciales locales y configuraciones sensibles (claves de API, puertos, contraseñas de BD) que no se suben al repositorio de Git por seguridad.
+
+Abre el archivo `.env` en tu editor y verifica la configuración de la base de datos y del servidor de correo:
+
+```env
+APP_NAME=Laravel
 APP_URL=http://localhost
 
-# Configuracion de Base de Datos para Laravel Sail
+# Configuración de Base de Datos para Laravel Sail (Docker)
 DB_CONNECTION=mysql
 DB_HOST=mysql
 DB_PORT=3306
@@ -70,105 +76,104 @@ DB_DATABASE=chat_db
 DB_USERNAME=sail
 DB_PASSWORD=password
 
-# Configuracion de Envio de Correos (Mailtrap)
+# Configuración de Envío de Correos (Mailtrap)
 MAIL_MAILER=smtp
 MAIL_HOST=sandbox.smtp.mailtrap.io
 MAIL_PORT=2525
 MAIL_USERNAME=tu_usuario_mailtrap
 MAIL_PASSWORD=tu_password_mailtrap
 MAIL_FROM_ADDRESS="no-reply@tuapp.com"
-MAIL_FROM_NAME="${APP_NAME}"</code></pre>
+MAIL_FROM_NAME="${APP_NAME}"
+```
 
-    <p>Genera la clave unica de encriptacion de la aplicacion:</p>
-    <pre><code>php artisan key:generate</code></pre>
+Genera la clave única de encriptación para la aplicación:
 
-    <h3>Paso 4: Levantar los contenedores de Docker con Laravel Sail</h3>
-    <p>Asegurate de que <strong>Docker Desktop</strong> este en ejecucion. Luego, inicia los servicios de la aplicacion (Laravel y MySQL) ejecutando:</p>
-    <pre><code>./vendor/bin/sail up -d</code></pre>
-    <p><em>(Nota: Si deseas usar el comando abreviado <code>sail</code> en lugar de <code>./vendor/bin/sail</code>, puedes configurar un alias en tu terminal con: <code>alias sail='[ -f sail ] &amp;&amp; sh sail || ./vendor/bin/sail'</code>).</em></p>
+```bash
+php artisan key:generate
+```
+* **Explicación:** Genera el parámetro `APP_KEY` en tu `.env`. Esta clave se utiliza para cifrar datos sensibles de las sesiones de los usuarios y tokens de seguridad.
 
-    <h3>Paso 5: Ejecutar las migraciones de la base de datos</h3>
-    <p>Una vez que el contenedor de Sail este corriendo, ejecuta las migraciones para crear las tablas necesarias en MySQL:</p>
-    <pre><code>sail artisan migrate</code></pre>
+---
 
-    <p>Si el proyecto cuenta con datos de prueba preconfigurados, puedes ejecutarlos con:</p>
-    <pre><code>sail artisan migrate --seed</code></pre>
+### Paso 4: Levantar los contenedores de Docker con Laravel Sail
+Asegúrate de que **Docker Desktop** esté abierto y ejecutándose. Luego inicia los servicios en segundo plano:
 
-    <h3>Paso 6: Instalar dependencias de Node.js y ejecutar NPM</h3>
-    <p>Este paso es fundamental para que los componentes de la interfaz grafica, estilos y scripts del frontend funcionen correctamente.</p>
-    <ol>
-        <li>
-            <p>Instala los paquetes de Node.js listados en el archivo <code>package.json</code>:</p>
-            <pre><code>npm install</code></pre>
-        </li>
-        <li>
-            <p>Ejecuta el servidor de desarrollo del frontend (Vite) para compilar los assets en tiempo real:</p>
-            <pre><code>npm run dev</code></pre>
-        </li>
-    </ol>
-    <p><strong>Importante:</strong> Deja esta terminal abierta mientras trabajes en la aplicacion para que el frontend responda correctamente.</p>
+```bash
+./vendor/bin/sail up -d
+```
+* **Explicación del comando:**
+  * `./vendor/bin/sail`: Llama al script ejecutable de Sail.
+  * `up`: Descarga las imágenes necesarias y levanta los contenedores (Laravel, MySQL).
+  * `-d` (*detached*): Ejecuta los contenedores en segundo plano, dejando tu terminal libre para ingresar otros comandos.
 
-    <hr>
+*(Nota opcional: Puedes crear un alias ejecutando `alias sail='[ -f sail ] && sh sail || ./vendor/bin/sail'` en tu terminal para utilizar únicamente la palabra `sail` en lugar del comando completo).*
 
-    <h2>Como Acceder a la Aplicacion</h2>
+---
 
-    <p>Una vez completados los pasos anteriores:</p>
-    <ul>
-        <li><strong>Aplicacion Web:</strong> Abre tu navegador e ingresa a <code>http://localhost</code>.</li>
-        <li><strong>Registro de Usuario:</strong> Ingresa a <code>http://localhost/register</code> para crear una cuenta.</li>
-        <li><strong>Inicio de Sesion:</strong> Accede mediante <code>http://localhost/login</code>.</li>
-    </ul>
+### Paso 5: Ejecutar las migraciones de la base de datos
+Crea la estructura de tablas dentro del contenedor de MySQL ejecutando:
 
-    <hr>
+```bash
+sail artisan migrate
+```
+* **Explicación:** Toma los archivos de migración ubicados en `database/migrations` y genera las tablas correspondientes en la base de datos dentro de Docker.
 
-    <h2>Documentacion de la API y Pruebas con Postman</h2>
+Si el proyecto cuenta con datos iniciales o de prueba configurados, puedes ejecutarlos con:
 
-    <p>La API REST acepta peticiones en formato JSON agregando el encabezado <code>Accept: application/json</code>.</p>
+```bash
+sail artisan migrate --seed
+```
+* **Explicación:** Limpia las tablas y las puebla automáticamente con datos ficticios para facilitar las pruebas.
 
-    <h3>Endpoints Disponibles</h3>
+---
 
-    <table border="1" cellpadding="5" cellspacing="0">
-        <thead>
-            <tr>
-                <th>Metodo</th>
-                <th>Ruta</th>
-                <th>Descripcion</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td>POST</td>
-                <td><code>/api/login</code></td>
-                <td>Autenticacion y obtencion de token de acceso</td>
-            </tr>
-            <tr>
-                <td>GET</td>
-                <td><code>/api/tasks</code></td>
-                <td>Obtener la lista de tareas</td>
-            </tr>
-            <tr>
-                <td>POST</td>
-                <td><code>/api/tasks</code></td>
-                <td>Crear una tarea (Dispara el evento TaskCreated enviando correo)</td>
-            </tr>
-            <tr>
-                <td>PUT</td>
-                <td><code>/api/tasks/{id}</code></td>
-                <td>Actualizar una tarea (Dispara el evento TaskUpdated enviando correo)</td>
-            </tr>
-            <tr>
-                <td>DELETE</td>
-                <td><code>/api/tasks/{id}</code></td>
-                <td>Eliminar una tarea</td>
-            </tr>
-        </tbody>
-    </table>
+### Paso 6: Instalar dependencias de Node.js y compilar el Frontend con NPM
+Este paso es indispensable para que los scripts, componentes interactivos y estilos gráficos del frontend carguen correctamente.
 
-    <hr>
+1. Instala los paquetes de Node.js requeridos por el proyecto:
 
-    <h2>Recordatorio de Mantenimiento</h2>
+```bash
+npm install
+```
+* **Explicación:** Lee el archivo `package.json` e instala las librerías necesarias en la carpeta `node_modules` (incluyendo Vite, Tailwind CSS y componentes de interfaz).
 
-    <p>Este documento sera actualizado progresivamente si el proyecto requiere la incorporacion de nuevos paquetes de Composer, dependencias de NPM, configuraciones de colas de correo o herramientas adicionales.</p>
+2. Inicia el servidor de desarrollo del frontend:
 
-</body>
-</html>
+```bash
+npm run dev
+```
+* **Explicación:** Arranca el servidor de desarrollo de Vite. Este proceso compila y sirve los activos de código JavaScript y CSS en tiempo real con recarga automática (*Hot Module Replacement*).
+
+> **Importante:** Debes mantener esta terminal abierta mientras estés trabajando en la aplicación para asegurar la carga continua de los estilos e interfaces del frontend.
+
+---
+
+## 4. Cómo Acceder a la Aplicación
+
+Una vez que los contenedores estén corriendo (`sail up -d`) y el servidor de Vite esté activo (`npm run dev`), ingresa desde tu navegador web:
+
+* **Aplicación Web Principal:** `http://localhost`
+* **Registro de Usuarios:** `http://localhost/register`
+* **Inicio de Sesión:** `http://localhost/login`
+
+---
+
+## 5. Documentación de la API y Pruebas con Postman
+
+Para interactuar con los endpoints de la API, asegúrate de incluir siempre el encabezado HTTP: `Accept: application/json`.
+
+### Endpoints Disponibles
+
+| Método | Ruta | Descripción |
+| :--- | :--- | :--- |
+| `POST` | `/api/login` | Autenticación de usuario y retorno del token de acceso (Sanctum) |
+| `GET` | `/api/tasks` | Obtiene la lista completa de tareas almacenadas |
+| `POST` | `/api/tasks` | Crea una nueva tarea (Dispara el evento `TaskCreated` que envía notificación por correo) |
+| `PUT` | `/api/tasks/{id}` | Actualiza una tarea existente (Dispara el evento `TaskUpdated` enviando correo) |
+| `DELETE` | `/api/tasks/{id}` | Elimina una tarea por su identificador único |
+
+---
+
+## 6. Recordatorio de Mantenimiento
+
+A medida que el proyecto incorpore nuevas características (como gestión de colas con Redis, WebSockets para chat en tiempo real o nuevos paquetes de Composer/NPM), las instrucciones de este archivo `README.md` serán actualizadas para reflejar los nuevos requisitos.
