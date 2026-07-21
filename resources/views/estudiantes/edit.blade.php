@@ -17,6 +17,13 @@
                         $esPsicologo = auth()->user()->rol === 'psicologo';
                         $noEsAdmin = auth()->user()->rol !== 'admin';
                         $esDirectivo = in_array(auth()->user()->rol, ['dir_bienestar', 'dir_unidad']);
+                        
+                        // Extracción dinámica del valor de la actividad desde cuestionario o campo nativo
+                        $actividadValor = old('actividad', 
+                            optional($estudiante->cuestionario)->actividad 
+                            ?? $estudiante->actividades_estilo_vida 
+                            ?? optional($estudiante->estiloVida)->actividad
+                        );
                     @endphp
 
                     <div class="bg-emerald-50/40 p-6 md:p-8 rounded-2xl border border-emerald-100/80 space-y-6">
@@ -87,18 +94,7 @@
                             </div>
                         </div>
 
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                            <div class="space-y-2">
-                                <label for="promedio" class="block text-sm font-semibold text-gray-700">Promedio <span class="text-red-500">*</span></label>
-                                <input type="number" step="0.01" min="0" max="5.0" id="promedio" value="{{ old('promedio', $estudiante->promedio) }}" required 
-                                       {{ $esPsicologo ? 'disabled' : 'name=promedio' }}
-                                       class="block w-full rounded-xl border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 {{ $esPsicologo ? 'bg-gray-50 text-gray-500 cursor-not-allowed' : 'text-gray-900' }} text-sm py-2.5">
-                                @if($esPsicologo)
-                                    <input type="hidden" name="promedio" value="{{ old('promedio', $estudiante->promedio) }}">
-                                @endif
-                                @error('promedio') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
-                            </div>
-
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div class="space-y-2">
                                 <label for="semestre" class="block text-sm font-semibold text-gray-700">Semestre <span class="text-emerald-700 text-xs">(Del Cuestionario)</span></label>
                                 @php
@@ -173,12 +169,12 @@
                             <div class="space-y-2">
                                 <label for="actividad" class="block text-sm font-semibold text-gray-700">Actividades Frecuentes (Estilo de Vida)</label>
                                 <input type="text" id="actividad" 
-                                       value="{{ old('actividad', optional($estudiante->cuestionario)->actividad) }}"
+                                       value="{{ $actividadValor }}"
                                        placeholder="Actividades que realiza el estudiante..."
                                        {{ $noEsAdmin ? 'disabled' : 'name=actividad' }}
                                        class="block w-full rounded-xl border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 {{ $noEsAdmin ? 'bg-gray-50 text-gray-500 cursor-not-allowed' : 'text-gray-900' }} text-sm py-2.5">
                                 @if($noEsAdmin)
-                                    <input type="hidden" name="actividad" value="{{ old('actividad', optional($estudiante->cuestionario)->actividad) }}">
+                                    <input type="hidden" name="actividad" value="{{ $actividadValor }}">
                                 @endif
                             </div>
                         </div>
@@ -246,9 +242,7 @@
                     for (let i = 0; i < directorSelectVisual.options.length; i++) {
                         const opcionTexto = directorSelectVisual.options[i].text.toLowerCase();
                         if (opcionTexto.includes(directorObjetivo)) {
-                            // Actualizamos la selección visual
                             directorSelectVisual.selectedIndex = i;
-                            // Sincronizamos el valor numérico real en el input hidden para Laravel
                             directorInputHidden.value = directorSelectVisual.options[i].value;
                             return;
                         }
@@ -258,15 +252,12 @@
 
             if (programmeSelect) {
                 programmeSelect.addEventListener('change', actualizarDirector);
-                
-                // Ejecutar al inicio de la carga para asegurar sincronización
                 actualizarDirector();
             }
         });
 
         function prepararEnvio() {
             const formulario = document.getElementById('editEstudianteForm');
-            // Removemos disabled temporalmente antes del submit tradicional
             const elementosBloqueados = formulario.querySelectorAll('select[disabled], input[disabled]');
             elementosBloqueados.forEach(function (elemento) {
                 elemento.removeAttribute('disabled');

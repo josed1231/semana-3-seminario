@@ -15,7 +15,6 @@ class Estudiante extends Model
     public $incrementing = false;
     protected $keyType = 'string';
 
-    // CORRECCIÓN: Se incluyen 'trabaja' y 'actividades_estilo_vida' para la persistencia del cuestionario
     protected $fillable = [
         'codigo_estudiante', 
         'nombre_estudiante', 
@@ -24,9 +23,55 @@ class Estudiante extends Model
         'id_docente',
         'promedio', 
         'jornada',
-        'trabaja',                  // <-- Agregado
-        'actividades_estilo_vida',   // <-- Agregado
+        'trabaja',
+        'actividades_estilo_vida',
     ];
+
+    // ==========================================
+    // Scopes de Búsqueda y Filtrado
+    // ==========================================
+
+    /**
+     * Scope para buscar por nombre o código del estudiante
+     */
+    public function scopeBuscar($query,$texto)
+    {
+        if (empty($texto)) return$query;
+
+        return $query->where(function($q) use ($texto) {
+            $q->where('nombre_estudiante', 'LIKE', "\%{$texto}%")
+              ->orWhere('codigo_estudiante', 'LIKE', "%{$texto}%");
+        });
+    }
+
+    /**
+     * Scope para filtrar por Carrera / Programa académico
+     */
+    public function scopeFiltrarPrograma($query,$programaId)
+    {
+        if (empty($programaId)) return$query;
+        return $query->where('id_programa',$programaId);
+    }
+
+    /**
+     * Scope para filtrar por Semestre a través de la relación saberesPrevios
+     */
+    public function scopeFiltrarSemestre($query,$semestre)
+    {
+        if (empty($semestre)) return$query;
+        return $query->whereHas('saberesPrevios', function($q) use ($semestre) {
+            $q->where('semestre',$semestre);
+        });
+    }
+
+    /**
+     * Scope para filtrar por Jornada
+     */
+    public function scopeFiltrarJornada($query,$jornada)
+    {
+        if (empty($jornada)) return$query;
+        return $query->where('jornada',$jornada);
+    }
 
     // ==========================================
     // Relaciones
@@ -64,6 +109,11 @@ class Estudiante extends Model
 
     public function actividades()
     {
-        return $this->belongsToMany(Actividad::class, 'estudiante_actividad', 'codigo_estudiante', 'id_actividad');
+        return $this->belongsToMany(
+            Actividad::class, 
+            'estudiante_actividad',
+            'codigo_estudiante',
+            'id_actividad'
+        );
     }
 }

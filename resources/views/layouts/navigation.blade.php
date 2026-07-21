@@ -2,38 +2,42 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between h-16">
             <div class="flex items-center">
-                <!-- Logo -->
                 <div class="shrink-0 flex items-center">
-                    <!-- Si es un usuario o estudiante lo mandamos a la bienvenida, si no, al dashboard administrativo -->
                     <a href="{{ in_array(auth()->user()->rol, ['user', 'estudiante']) ? route('welcome') : route('dashboard') }}"> 
                         <x-application-logo class="block h-9 w-auto fill-current text-white" />
                     </a>
                 </div>
 
-                <!-- ENLACES HORIZONTALES (Escritorio) -->
                 <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex h-full">
-                    <!-- CORREGIDO: Ocultar Dashboard por completo para 'user' y 'estudiante' -->
+                    
                     @if(!in_array(auth()->user()->rol, ['user', 'estudiante']))
                         <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')" class="text-white inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium leading-5 hover:text-gray-200 transition duration-150 ease-in-out">
                             {{ __('Dashboard') }}
                         </x-nav-link>
+
+                        <x-nav-link :href="route('alertas.monitoreo')" :active="request()->routeIs('alertas.monitoreo')" class="text-white inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium leading-5 hover:text-gray-200 transition duration-150 ease-in-out">
+                            {{ __('Monitoreo Alertas') }}
+                        </x-nav-link>
                     @endif
 
-                    <!-- Opción Cuestionario accesible para todos los roles -->
                     <x-nav-link :href="route('cuestionario.create')" :active="request()->routeIs('cuestionario.create')" class="text-white inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium leading-5 hover:text-gray-200 transition duration-150 ease-in-out">
                         {{ __('Cuestionario') }}
                     </x-nav-link>
 
-                    <!-- Resultados ocultos para 'user' y 'estudiante' -->
-                    @if(!in_array(auth()->user()->rol, ['user', 'estudiante']))
+                    @if(in_array(auth()->user()->rol, ['admin', 'psicologo', 'dir_bienestar']))
                         <x-nav-link :href="route('resultados.index')" :active="request()->routeIs('resultados.index')" class="text-white inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium leading-5 hover:text-gray-200 transition duration-150 ease-in-out">
                             {{ __('Resultados Cuestionario') }}
+                        </x-nav-link>
+                    @endif
+
+                    @if(auth()->user()->rol === 'admin')
+                        <x-nav-link :href="route('usuarios.index')" :active="request()->routeIs('usuarios.*')" class="text-white inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium leading-5 hover:text-gray-200 transition duration-150 ease-in-out">
+                            {{ __('Gestión de Usuarios') }}
                         </x-nav-link>
                     @endif
                 </div>
             </div>
 
-            <!-- Menú de Usuario -->
             <div class="hidden sm:flex sm:items-center sm:ms-6">
                 <x-dropdown align="right" width="48">
                     <x-slot name="trigger">
@@ -58,7 +62,6 @@
                 </x-dropdown>
             </div>
 
-            <!-- Botón de Menú móvil -->
             <div class="-me-2 flex items-center sm:hidden">
                 <button @click="open = ! open" class="inline-flex items-center justify-center p-2 rounded-md text-white hover:text-gray-200 hover:bg-[#003e1c] focus:outline-none transition duration-150 ease-in-out">
                     <svg class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
@@ -70,30 +73,35 @@
         </div>
     </div>
 
-    <!-- Menú móvil expandido -->
     <div :class="{'block': open, 'hidden': ! open}" class="hidden sm:hidden bg-[#004d2e]">
         <div class="pt-2 pb-3 space-y-1">
-            <!-- CORREGIDO: Ocultar Dashboard en móvil para 'user' y 'estudiante' -->
             @if(!in_array(auth()->user()->rol, ['user', 'estudiante']))
                 <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')" class="text-white">
                     {{ __('Dashboard') }}
                 </x-responsive-nav-link>
+
+                <x-responsive-nav-link :href="route('alertas.monitoreo')" :active="request()->routeIs('alertas.monitoreo')" class="text-white">
+                    {{ __('Monitoreo Alertas') }}
+                </x-responsive-nav-link>
             @endif
 
-            <!-- Opción Cuestionario visible para todos en móvil -->
             <x-responsive-nav-link :href="route('cuestionario.create')" :active="request()->routeIs('cuestionario.create')" class="text-white">
                 {{ __('Cuestionario') }}
             </x-responsive-nav-link>
 
-            <!-- Resultados ocultos para 'user' y 'estudiante' en móvil -->
-            @if(!in_array(auth()->user()->rol, ['user', 'estudiante']))
+            @if(in_array(auth()->user()->rol, ['admin', 'psicologo', 'dir_bienestar']))
                 <x-responsive-nav-link :href="route('resultados.index')" :active="request()->routeIs('resultados.index')" class="text-white">
                     {{ __('Resultados Cuestionario') }}
                 </x-responsive-nav-link>
             @endif
+
+            @if(auth()->user()->rol === 'admin')
+                <x-responsive-nav-link :href="route('usuarios.index')" :active="request()->routeIs('usuarios.*')" class="text-white">
+                    {{ __('Gestión de Usuarios') }}
+                </x-responsive-nav-link>
+            @endif
         </div>
         
-        <!-- Opciones de perfil en móvil -->
         <div class="pt-4 pb-1 border-t border-[#003e1c]">
             <div class="px-4">
                 <div class="font-medium text-base text-white">{{ Auth::user()->name }}</div>

@@ -1,4 +1,9 @@
 <x-app-layout>
+    {{-- Protección visual de nivel de vista para excluir a dir_unidad y perfiles no autorizados --}}
+    @if(!in_array(auth()->user()->rol, ['admin', 'psicologo', 'dir_bienestar']))
+        @php abort(403, 'No tienes permisos para acceder a esta vista.'); @endphp
+    @endif
+
     <div class="max-w-4xl mx-auto py-10 px-4">
         <h2 class="text-3xl font-bold text-center text-[#004d2e] mb-6">Resultados Cuestionario</h2>
         
@@ -65,8 +70,7 @@
             <div class="alert alert-danger text-center mb-4 text-red-600 font-semibold">{{ $errors->first() }}</div>
         @endif
 
-        {{-- Al usar return view() desde el controlador cuando falla, $respuestas no existirá, --}}
-        {{-- ocultando de manera efectiva la tabla vieja del estudiante anterior --}}
+        {{-- Mostrar resultados si existen --}}
         @if(isset($respuestas))
             <!-- Resultados obtenidos -->
             <div class="bg-white p-8 rounded-lg shadow-sm border border-gray-200 mb-8">
@@ -87,21 +91,6 @@
                             </tr>
                         @endforeach
                     </table>
-                </div>
-            </div>
-
-            <!-- Sección de Ponderación de Riesgo -->
-            <div class="bg-white p-8 rounded-lg shadow-sm border border-gray-200">
-                <div class="flex items-center space-x-2 mb-4 border-b border-gray-100 pb-3">
-                    <svg class="w-6 h-6 text-[#f17a28]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                    </svg>
-                    <h3 class="text-xl font-bold text-[#004d2e]">Metodología y Fórmulas de Ponderación del Riesgo</h3>
-                </div>
-
-                <div class="text-sm text-gray-600 space-y-4 leading-relaxed">
-                    <p>El sistema cuantifica de forma automatizada la <strong>Ponderación de Condiciones Socio-Educativas</strong> mediante un modelo analítico de puntuación acumulativa...</p>
-                    <!-- ... Conservar el resto del texto explicativo igual ... -->
                 </div>
             </div>
         @endif

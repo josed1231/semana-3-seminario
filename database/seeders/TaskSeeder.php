@@ -6,19 +6,21 @@ use App\Models\User;
 use App\Models\Task;
 use App\Models\Category;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
 
 class TaskSeeder extends Seeder
 {
     public function run(): void
     {
-        // Buscamos al usuario base que quieras usar para estas tareas
+        // Creamos o buscamos un usuario de prueba pero estrictamente con rol 'user'
+        // De esta forma deja de tener privilegios de Administrador y se eliminan las brechas
         $user = User::firstOrCreate(
-            ['email' => 'test@example.com'],
+            ['email' => 'test_user@example.com'],
             [
-                'name' => 'Jose D',
-                'username' => 'josed',
-                'password' => \Illuminate\Support\Facades\Hash::make('password123'),
-                'rol' => 'admin'
+                'name' => 'Usuario de Prueba',
+                'username' => 'testuser',
+                'password' => Hash::make('password123'),
+                'rol' => 'user' // Cambiado a rol básico de manera estricta
             ]
         );
 

@@ -9,14 +9,26 @@ class Actividad extends Model
 {
     use HasFactory;
 
-    protected $table = 'actividades';
+    // Nombre exacto de la tabla en la base de datos
+    protected $table = 'actividad'; 
+
     protected $primaryKey = 'id_actividad';
 
-    protected $fillable = ['nombre_actividad'];
+    // Campos que se pueden llenar masivamente
+    protected $fillable = [
+        'nombre',
+        'descripcion',
+        // Agrega aquí los demás campos de tu tabla si existen
+    ];
 
-    // Relación muchos a muchos con Estudiantes
+    // Relación de muchos a muchos con Estudiante
     public function estudiantes()
     {
-        return $this->belongsToMany(Estudiante::class, 'estudiante_actividad', 'id_actividad', 'codigo_estudiante');
+        return $this->belongsToMany(
+            Estudiante::class,
+            'estudiante_actividad', // Tabla intermedia
+            'id_actividad',         // FK de Actividad en la intermedia
+            'codigo_estudiante'     // FK de Estudiante en la intermedia
+        );
     }
 }
