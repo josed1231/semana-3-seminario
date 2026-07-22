@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Estudiante;
 use App\Models\ProgramaAcademico;
 use App\Models\RiesgoDesercion;
+use App\Models\User;
 use App\Models\OrientacionPsicologica;
 use Illuminate\Http\Request;
 
@@ -12,15 +13,32 @@ class AlertasController extends Controller
 {
     /**
      * Muestra las estadísticas y gráficos institucionales (Dashboard)
+     * Adaptado para filtrar por Director de Unidad si aplica.
      */
     public function dashboard()
     {
+        $user = auth()->user();
+        
+        $queryEstudiantes = Estudiante::query();
+        $queryRiesgos = RiesgoDesercion::query();
+        $queryOrientaciones = OrientacionPsicologica::query();
+
+        // Filtrado por Director de Unidad si el rol es dir_unidad
+        if ($user && $user->rol === 'dir_unidad') {
+            $programasDelDirector = ProgramaAcademico::where('id_docente', $user->id)->pluck('id_programa');
+            $codigosEstudiantes = Estudiante::whereIn('id_programa', $programasDelDirector)->pluck('codigo_estudiante');
+
+            $queryEstudiantes->whereIn('id_programa', $programasDelDirector);
+            $queryRiesgos->whereIn('codigo_estudiante', $codigosEstudiantes);
+            $queryOrientaciones->whereIn('codigo_estudiante', $codigosEstudiantes);
+        }
+
         $statsEstudiantes = [
-            'total_estudiantes'    => Estudiante::count(),
-            'riesgo_alto'          => RiesgoDesercion::where('nivel_riesgo', 'Alto')->count(),
-            'riesgo_medio'         => RiesgoDesercion::where('nivel_riesgo', 'Medio')->count(),
-            'riesgo_bajo'          => RiesgoDesercion::where('nivel_riesgo', 'Bajo')->count(),
-            'con_psicoorientacion' => OrientacionPsicologica::count(),
+            'total_estudiantes'    => $queryEstudiantes->count(),
+            'riesgo_alto'          => (clone $queryRiesgos)->where('nivel_riesgo', 'Alto')->count(),
+            'riesgo_medio'         => (clone $queryRiesgos)->where('nivel_riesgo', 'Medio')->count(),
+            'riesgo_bajo'          => (clone $queryRiesgos)->where('nivel_riesgo', 'Bajo')->count(),
+            'con_psicoorientacion' => $queryOrientaciones->count(),
         ];
 
         return view('dashboard', compact('statsEstudiantes'));
@@ -34,35 +52,26 @@ class AlertasController extends Controller
         $user = auth()->user();
 
         $query = Estudiante::with([
-            'programa', 
-            'directorUnidad', 
+            'programa.directorUnidad', 
             'riesgo', 
             'orientacionPsicologica', 
             'saberesPrevios',
             'estiloVida'
         ]);
 
-        // Restricción por rol: Si es Director de Unidad, filtra solo sus estudiantes asignados por programa
         if ($user && $user->rol === 'dir_unidad') {
-            $map = [
-                'dir_ingenieria'   => 1, 
-                'dir_agropecuaria' => 2, 
-                'dir_contaduria'   => 3
-            ];
-            if (isset($map[$user->username])) {
-                $query->where('id_programa', $map[$user->username]);
-            }
+            $programasDelDirector = ProgramaAcademico::where('id_docente', $user->id)->pluck('id_programa');
+            $query->whereIn('id_programa', $programasDelDirector);
         }
 
-        // Aplicar Scopes de búsqueda y filtrado
+        // Aplicar Scopes
         $estudiantes = $query->buscar($request->input('buscar'))
                              ->filtrarPrograma($request->input('programa'))
                              ->filtrarSemestre($request->input('semestre'))
                              ->filtrarJornada($request->input('jornada'))
                              ->paginate(15)
-                             ->appends($request->query()); // Mantiene los filtros en los enlaces de paginación
+                             ->appends($request->query());
 
-        // Obtener programas para cargar en el select de la vista
         $programas = ProgramaAcademico::all();
 
         return view('alertas.monitoreo', compact('estudiantes', 'programas'));

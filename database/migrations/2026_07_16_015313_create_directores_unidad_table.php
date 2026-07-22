@@ -11,10 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('docentes', function (Blueprint $table) {
-            $table->id('id_docente'); // <--- DEBE SER id_docente para que la foreign key coincida
+        Schema::create('directores_unidad', function (Blueprint $table) {
+            $table->id('id_docente'); // <-- Debe llamarse id_docente y ser Primary Key
             $table->string('nombre_director');
-            $table->string('correo_director');
+            $table->string('correo_director')->nullable();
             $table->timestamps();
         });
     }

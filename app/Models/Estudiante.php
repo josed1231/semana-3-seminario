@@ -25,52 +25,41 @@ class Estudiante extends Model
         'jornada',
         'trabaja',
         'actividades_estilo_vida',
+        'orientacion_automatica', // Permitir asignación masiva
     ];
 
     // ==========================================
     // Scopes de Búsqueda y Filtrado
     // ==========================================
 
-    /**
-     * Scope para buscar por nombre o código del estudiante
-     */
-    public function scopeBuscar($query,$texto)
+    public function scopeBuscar($query, $texto)
     {
-        if (empty($texto)) return$query;
+        if (empty($texto)) return $query;
 
         return $query->where(function($q) use ($texto) {
-            $q->where('nombre_estudiante', 'LIKE', "\%{$texto}%")
+            $q->where('nombre_estudiante', 'LIKE', "%{$texto}%")
               ->orWhere('codigo_estudiante', 'LIKE', "%{$texto}%");
         });
     }
 
-    /**
-     * Scope para filtrar por Carrera / Programa académico
-     */
-    public function scopeFiltrarPrograma($query,$programaId)
+    public function scopeFiltrarPrograma($query, $programaId)
     {
-        if (empty($programaId)) return$query;
-        return $query->where('id_programa',$programaId);
+        if (empty($programaId)) return $query;
+        return $query->where('id_programa', $programaId);
     }
 
-    /**
-     * Scope para filtrar por Semestre a través de la relación saberesPrevios
-     */
-    public function scopeFiltrarSemestre($query,$semestre)
+    public function scopeFiltrarSemestre($query, $semestre)
     {
-        if (empty($semestre)) return$query;
+        if (empty($semestre)) return $query;
         return $query->whereHas('saberesPrevios', function($q) use ($semestre) {
-            $q->where('semestre',$semestre);
+            $q->where('semestre', $semestre);
         });
     }
 
-    /**
-     * Scope para filtrar por Jornada
-     */
-    public function scopeFiltrarJornada($query,$jornada)
+    public function scopeFiltrarJornada($query, $jornada)
     {
-        if (empty($jornada)) return$query;
-        return $query->where('jornada',$jornada);
+        if (empty($jornada)) return $query;
+        return $query->where('jornada', $jornada);
     }
 
     // ==========================================

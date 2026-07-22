@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\{
     ProfileController, 
     TaskController, 
@@ -7,11 +8,16 @@ use App\Http\Controllers\{
     CuestionarioController, 
     PsicologoController, 
     AlertasController, 
-    UserController
+    UserController,
+    ProgramController,        
+    DirectorUnidadController
 };
-use Illuminate\Support\Facades\Route;
 
-// Redirección inicial según el rol
+/*
+|--------------------------------------------------------------------------
+| Ruta Raíz / Redirección Inicial
+|--------------------------------------------------------------------------
+*/
 Route::get('/', function() {
     if (auth()->check()) {
         $user = auth()->user();
@@ -22,9 +28,16 @@ Route::get('/', function() {
     return redirect()->route('login');
 });
 
+/*
+|--------------------------------------------------------------------------
+| Rutas Autenticadas (Manejo de Sesión Activa)
+|--------------------------------------------------------------------------
+*/
 Route::middleware(['auth', 'prevent-back'])->group(function () {
 
-    // BIENVENIDAS
+    // ----------------------------------------------------------------------
+    // 1. BIENVENIDAS Y DASHBOARD GENERAL
+    // ----------------------------------------------------------------------
     Route::get('/welcome', fn() => view('welcome'))->name('welcome');
     
     Route::get('/welcome-admin', function () {
@@ -34,7 +47,6 @@ Route::middleware(['auth', 'prevent-back'])->group(function () {
         return view('welcome_admin');
     })->name('welcome.admin');
 
-    // DASHBOARD ADMINISTRATIVO (Accesible para admin, psicologo, dir_bienestar, dir_unidad)
     Route::get('/dashboard', function() {
         $user = auth()->user();
         if (in_array($user->rol, ['user', 'estudiante'])) {
@@ -42,63 +54,88 @@ Route::middleware(['auth', 'prevent-back'])->group(function () {
         }
         return app(AlertasController::class)->dashboard();
     })->name('dashboard');
-    
-    // CUESTIONARIO (Accesible para todos los usuarios autenticados)
+
+    // ----------------------------------------------------------------------
+    // 2. MÓDULO DE CUESTIONARIOS
+    // ----------------------------------------------------------------------
     Route::controller(CuestionarioController::class)->group(function () {
         Route::get('/cuestionario', 'create')->name('cuestionario.create');
         Route::post('/cuestionario', 'store')->name('cuestionario.store');
         Route::get('/cuestionario/finalizado', fn() => view('cuestionario_success'))->name('cuestionario.success');
     });
 
-    // PERFIL DE USUARIO
+    // ----------------------------------------------------------------------
+    // 3. PERFIL DE USUARIO
+    // ----------------------------------------------------------------------
     Route::controller(ProfileController::class)->group(function () {
         Route::get('/profile', 'edit')->name('profile.edit');
         Route::patch('/profile', 'update')->name('profile.update');
         Route::delete('/profile', 'destroy')->name('profile.destroy');
     });
 
-    // --------------------------------------------------------------------------
-    // GESTIÓN DE ESTUDIANTES Y MONITOREO (ADMIN, PSICÓLOGO, DIR_BIENESTAR, DIR_UNIDAD)
-    // Permite que el Psicólogo consulte y edite estudiantes en el Monitoreo
-    // --------------------------------------------------------------------------
+    // ----------------------------------------------------------------------
+    // 4. GESTIÓN DE MONITOREO Y ESTUDIANTES
+    // (Roles: admin, psicologo, dir_bienestar, dir_unidad)
+    // ----------------------------------------------------------------------
     Route::middleware(['verificar.rol:admin,psicologo,dir_bienestar,dir_unidad'])->group(function () {
-        // Monitoreo de Alertas
         Route::get('/monitoreo-alertas', [AlertasController::class, 'index'])->name('alertas.monitoreo');
-
-        // Recursos de estudiantes (index, show, create, store, edit, update)
         Route::resource('estudiantes', EstudianteController::class)->except(['destroy']);
     });
 
-    // --------------------------------------------------------------------------
-    // RUTAS PARA VER RESULTADOS DE CUESTIONARIOS Y SEGUIMIENTO PSICOLÓGICO
-    // --------------------------------------------------------------------------
+    // ----------------------------------------------------------------------
+    // 5. RESULTADOS DE CUESTIONARIOS Y SEGUIMIENTO PSICOLÓGICO
+    // (Roles: admin, psicologo, dir_bienestar)
+    // ----------------------------------------------------------------------
     Route::middleware(['verificar.rol:admin,psicologo,dir_bienestar'])->group(function () {
         Route::get('/resultados-cuestionario', [PsicologoController::class, 'index'])->name('resultados.index');
         Route::get('/resultados-cuestionario/buscar', [PsicologoController::class, 'buscar'])->name('resultados.buscar');
         
-        // Seguimiento específico del psicólogo
+        // Seguimiento específico de Psicología
         Route::get('/psicologo/estudiante/{codigo}/editar', [PsicologoController::class, 'edit'])->name('psicologo.edit');
         Route::post('/psicologo/estudiante/{codigo}/actualizar', [PsicologoController::class, 'update'])->name('psicologo.update');
     });
 
-    // --------------------------------------------------------------------------
-    // ACCIONES EXCLUSIVAS DEL ADMINISTRADOR
-    // --------------------------------------------------------------------------
+    // ----------------------------------------------------------------------
+    // 6. MÓDULOS EXCLUSIVOS DE ADMINISTRADOR
+    // (Rol: admin)
+    // ----------------------------------------------------------------------
     Route::middleware(['verificar.rol:admin'])->group(function () {
+        // Eliminación de estudiantes
         Route::delete('/estudiantes/{estudiante}', [EstudianteController::class, 'destroy'])->name('estudiantes.destroy');
         
-        // Módulo de Gestión de Usuarios
+        // Gestión de Entidades
         Route::resource('usuarios', UserController::class)->except(['show', 'create', 'edit']);
+        Route::resource('programas', ProgramController::class)->except(['create', 'show', 'edit']);
+        Route::resource('directores', DirectorUnidadController::class)->except(['create', 'show', 'edit']);
         
-        // Tareas Administrativas
+        // Creación de Tareas Administrativas
         Route::controller(TaskController::class)->group(function () {
             Route::get('/tasks/create', 'create')->name('tasks.create');
             Route::post('/tasks', 'store')->name('tasks.store');
         });
     });
 
-    // TAREAS GENERALES
+    // ----------------------------------------------------------------------
+    // 7. TAREAS GENERALES
+    // ----------------------------------------------------------------------
     Route::resource('tasks', TaskController::class)->except(['create', 'store']);
+
+    // ----------------------------------------------------------------------
+    // 8. PRUEBAS / DEBURGING DE NOTIFICACIONES
+    // ----------------------------------------------------------------------
+    Route::get('/probar-correo/{codigo}', function ($codigo) {
+        $estudiante = App\Models\Estudiante::where('codigo_estudiante', $codigo)->firstOrFail();
+        
+        // Disparar evento para notificación por correo
+        event(new App\Events\EstudianteActualizado($estudiante));
+
+        return "¡Evento de correo disparado correctamente para el estudiante: {$estudiante->nombre_estudiante}! Revisa el archivo storage/logs/laravel.log.";
+    });
 });
 
+/*
+|--------------------------------------------------------------------------
+| Rutas de Autenticación Básica (Breeze / Fortify / Auth)
+|--------------------------------------------------------------------------
+*/
 require __DIR__.'/auth.php';

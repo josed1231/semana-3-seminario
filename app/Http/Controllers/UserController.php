@@ -42,17 +42,10 @@ class UserController extends Controller
         // Extraer el username del correo (o ajustarlo según prefieras)
         $username = explode('@', $request->email)[0];
         
-        // Asegurar que sea único si es necesario, o dejarlo así si tu BD lo maneja
-        // $originalUsername = $username;
-        // $count = 1;
-        // while (\App\Models\User::where('username', $username)->exists()) {
-        //     $username = $originalUsername . $count++;
-        // }
-
         User::create([
             'name' => $request->name,
             'email' => $request->email,
-            'username' => $username, // <-- Agregado aquí
+            'username' => $username,
             'rol' => $request->rol,
             'password' => Hash::make($request->password),
         ]);
@@ -60,6 +53,9 @@ class UserController extends Controller
         return redirect()->route('usuarios.index')->with('success', 'Usuario creado exitosamente.');
     }
 
+    /**
+     * Update the specified resource in storage.
+     */
     public function update(Request $request, User $usuario)
     {
         $request->validate([
@@ -80,5 +76,20 @@ class UserController extends Controller
         $usuario->save();
 
         return redirect()->route('usuarios.index')->with('success', 'Usuario actualizado exitosamente.');
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     */
+    public function destroy(User $usuario)
+    {
+        // Evitar que el usuario elimine su propia cuenta activa
+        if (auth()->id() === $usuario->id) {
+            return redirect()->route('usuarios.index')->with('error', 'No puedes eliminar tu propia cuenta.');
+        }
+
+        $usuario->delete();
+
+        return redirect()->route('usuarios.index')->with('success', 'Usuario eliminado exitosamente.');
     }
 }

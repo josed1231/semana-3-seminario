@@ -6,17 +6,18 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Models\DirectorUnidad;
 use App\Models\Estudiante;
+use App\Models\OrientacionPsicologica;
+use App\Models\ProgramaAcademico;
+use App\Models\User;
 
 class EstudianteController extends Controller
 {
-    // Listado de estudiantes y estadísticas del Dashboard / Monitoreo
     public function index(Request $request)
     {
         $user = auth()->user();
-        $rol = $user->rol;
+        $rol = $user->rol ?? '';
         $searchTerm = $request->input('search');
 
-        // Carga de relaciones necesarias para el dashboard / monitoreo
         $query = Estudiante::with([
             'programa', 
             'directorUnidad', 
@@ -26,17 +27,12 @@ class EstudianteController extends Controller
             'saberesPrevios'
         ]);
 
-        // Filtro por unidad académica únicamente para directores de unidad
+        // Restricción dinámica por Director de Unidad
         if ($rol === 'dir_unidad') {
-            $map = [
-                'dir_ingenieria'   => 1, 
-                'dir_agropecuaria' => 2, 
-                'dir_contaduria'   => 3
-            ];
-            $query->where('id_programa', $map[$user->username] ?? 0);
+            $programasDelDirector = ProgramaAcademico::where('id_docente', $user->id)->pluck('id_programa');
+            $query->whereIn('id_programa', $programasDelDirector);
         }
 
-        // Buscador por nombre o código
         if ($searchTerm) {
             $query->where(function($q) use ($searchTerm) {
                 $q->where('nombre_estudiante', 'like', "%{$searchTerm}%")
@@ -46,34 +42,35 @@ class EstudianteController extends Controller
 
         $estudiantes = $query->get();
 
-        // SOPORTE Y EXTRACCIÓN DINÁMICA DE ACTIVIDADES / ESTILO DE VIDA
+        // Extracción limpia de la actividad del JSON o relaciones alternativas
         foreach ($estudiantes as $estudiante) {
-            if (empty($estudiante->actividad) && empty($estudiante->actividades_estilo_vida)) {
-                
-                // Opción A: Intentar decodificar el campo 'respuestas' en formato JSON de saberes_previos
+            if (empty($estudiante->actividades_estilo_vida)) {
                 if ($estudiante->saberesPrevios && !empty($estudiante->saberesPrevios->respuestas)) {
-                    $respuestasJson = json_decode($estudiante->saberesPrevios->respuestas, true);
-                    if (isset($respuestasJson['actividad'])) {
-                        $estudiante->actividad = $respuestasJson['actividad'];
-                    } elseif (isset($respuestasJson['actividades_estilo_vida'])) {
-                        $estudiante->actividad = $respuestasJson['actividades_estilo_vida'];
-                    }
+                    $respuestasJson = is_string($estudiante->saberesPrevios->respuestas) 
+                        ? json_decode($estudiante->saberesPrevios->respuestas, true) 
+                        : $estudiante->saberesPrevios->respuestas;
+
+                    $estudiante->actividad = $respuestasJson['actividad'] ?? $respuestasJson['actividades_estilo_vida'] ?? null;
                 }
 
-                // Opción B: Buscar en la relación cuestionario o estiloVida
                 if (empty($estudiante->actividad)) {
-                    $estudiante->actividad = optional($estudiante->cuestionario)->actividad 
-                        ?? optional($estudiante->estiloVida)->actividad 
+                    $estudiante->actividad = optional($estudiante->estiloVida)->actividad 
                         ?? optional($estudiante->estiloVida)->descripcion;
                 }
+            } else {
+                $estudiante->actividad = $estudiante->actividades_estilo_vida;
             }
         }
 
-        // Cálculo de estadísticas para el dashboard
+        // Estadísticas alineadas con la Orientación Automática y relaciones psicológicas
         $totalEstudiantes = $estudiantes->count();
-        $riesgoAlto = $estudiantes->filter(fn($e) => $e->riesgo?->nivel_riesgo === 'Alto')->count();
-        $riesgoMedio = $estudiantes->filter(fn($e) => $e->riesgo?->nivel_riesgo === 'Medio')->count();
-        $conPsico = $estudiantes->filter(fn($e) => $e->orientacionPsicologica?->observaciones && $e->orientacionPsicologica->observaciones !== 'Sin orientación')->count();
+        $riesgoAlto       = $estudiantes->filter(fn($e) => $e->riesgo?->nivel_riesgo === 'Alto')->count();
+        $riesgoMedio      = $estudiantes->filter(fn($e) => $e->riesgo?->nivel_riesgo === 'Medio')->count();
+        
+        $conPsico = $estudiantes->filter(fn($e) => 
+            !empty($e->orientacion_automatica) || 
+            ($e->orientacionPsicologica !== null && !empty($e->orientacionPsicologica->observaciones))
+        )->count();
 
         $statsEstudiantes = [
             'total_estudiantes'    => $totalEstudiantes,
@@ -85,67 +82,109 @@ class EstudianteController extends Controller
         return view('dashboard', compact('estudiantes', 'statsEstudiantes', 'searchTerm'));
     }
 
-    // Muestra el formulario de edición
     public function edit($codigo_estudiante)
     {
-        $estudiante = Estudiante::with(['programa', 'directorUnidad', 'riesgo', 'orientacionPsicologica', 'estiloVida', 'saberesPrevios'])
-            ->where('codigo_estudiante', $codigo_estudiante)
-            ->firstOrFail();
+        $estudiante = Estudiante::with([
+            'programa', 
+            'directorUnidad', 
+            'riesgo', 
+            'orientacionPsicologica', 
+            'estiloVida', 
+            'saberesPrevios'
+        ])
+        ->where('codigo_estudiante', $codigo_estudiante)
+        ->firstOrFail();
 
-        $programas = DB::table('programas_academicos')->get();
-        $directores = DirectorUnidad::all(); 
+        $programas  = ProgramaAcademico::all();
+        $directores = User::where('rol', 'dir_unidad')->get(); 
 
         return view('estudiantes.edit', compact('estudiante', 'programas', 'directores'));
     }
 
     public function update(Request $request, $codigo_estudiante)
     {
+        $user = auth()->user();
         $estudiante = Estudiante::where('codigo_estudiante', $codigo_estudiante)->firstOrFail();
 
-        // 1. Validamos los datos
-        $request->validate([
-            'id_programa'       => 'required',
-            'nombre_estudiante' => 'required|string',
-            'correo'            => 'required|email',
-            'jornada'           => 'required|string',
-            'actividad'         => 'nullable|string',
-        ]);
-
-        // 2. Definimos el mapeo de programa a director
-        $mapeoDirectores = [
-            1 => 1, // Programa ID 1 (Ingeniería) -> Director ID 1
-            2 => 3, // Programa ID 2 (Agropecuaria) -> Director ID 3
-            3 => 2  // Programa ID 3 (Contaduría) -> Director ID 2
+        // 1. Reglas de validación completas (incluyendo encuesta y campos de riesgo/orientación)
+        $rules = [
+            'id_programa'            => 'required|exists:programas_academicos,id_programa',
+            'nombre_estudiante'      => 'required|string|max:255',
+            'correo'                 => 'nullable|email|max:255',
+            'jornada'                => 'required|string',
+            'semestre'               => 'nullable|integer',
+            'trabaja'                => 'nullable|string',
+            'actividad'              => 'nullable|string',
+            'nivel_riesgo'           => 'nullable|string',
+            'detalles'               => 'nullable|string',
+            'orientacion_automatica' => 'nullable|string',
+            'observaciones'          => 'nullable|string',
+            'nivel_servicio'         => 'nullable|string',
         ];
 
-        // 3. Obtenemos el nuevo director
-        $nuevoIdDirector = $mapeoDirectores[$request->id_programa] ?? $estudiante->id_director_unidad;
+        $request->validate($rules);
 
-        // 4. Actualizamos la información base del estudiante
-        $estudiante->update([
+        // 2. Mapeo de Director según el programa asignado
+        $programa = ProgramaAcademico::find($request->id_programa);
+        $nuevoIdDirector = $estudiante->id_docente;
+
+        if ($programa && $programa->id_docente) {
+            $existeDirector = DirectorUnidad::where('id_docente', $programa->id_docente)->exists();
+            if ($existeDirector) {
+                $nuevoIdDirector = $programa->id_docente;
+            }
+        }
+
+        // 3. Actualizar datos base del Estudiante
+        $datosEstudiante = [
             'nombre_estudiante'       => $request->nombre_estudiante,
             'correo'                  => $request->correo,
             'id_programa'             => $request->id_programa,
-            'id_director_unidad'      => $nuevoIdDirector,
+            'id_docente'              => $nuevoIdDirector,
             'jornada'                 => $request->jornada,
-            'actividades_estilo_vida' => $request->actividad,
-        ]);
+            'actividades_estilo_vida' => $request->input('actividad') ?? '',
+            'orientacion_automatica'  => $request->input('orientacion_automatica'),
+        ];
 
-        // Actualización opcional de la relación Cuestionario o EstiloVida si aplica
-        if ($estudiante->cuestionario) {
-            $estudiante->cuestionario->update(['actividad' => $request->actividad]);
+        if ($request->has('semestre')) {
+            $datosEstudiante['semestre'] = $request->semestre;
+        }
+        if ($request->has('trabaja')) {
+            $datosEstudiante['trabaja'] = $request->trabaja;
         }
 
-        // Redirige al monitoreo de alertas para evitar bloqueos si el psicólogo no usa el dashboard general
+        $estudiante->update($datosEstudiante);
+
+        // 4. Actualizar / Crear información de Riesgo (si existe relación o tabla)
+        if ($request->filled('nivel_riesgo') && method_exists($estudiante, 'riesgo')) {
+            $estudiante->riesgo()->updateOrCreate(
+                ['codigo_estudiante' => $estudiante->codigo_estudiante],
+                [
+                    'nivel_riesgo' => $request->input('nivel_riesgo', 'Bajo'),
+                    'detalles'     => $request->input('detalles') ?? '',
+                ]
+            );
+        }
+
+        // 5. Persistir Orientación Psicológica DIRECTAMENTE desde el Modelo
+        // Se pasa cadena vacía ('') en lugar de NULL para evitar la falla SQL 1048
+        OrientacionPsicologica::updateOrCreate(
+            ['codigo_estudiante' => $estudiante->codigo_estudiante],
+            [
+                'nivel_servicio' => $request->input('nivel_servicio') ?? 'Tutoría Académica Standard',
+                'observaciones'  => $request->input('observaciones') ?? '',
+            ]
+        );
+
         return redirect()->route('alertas.monitoreo')->with('success', 'Estudiante actualizado correctamente.');
     }
 
-    // Elimina el registro (Solo Administrador según las rutas)
     public function destroy($codigo_estudiante)
     {
         try {
             $estudiante = Estudiante::where('codigo_estudiante', $codigo_estudiante)->firstOrFail();
             $estudiante->delete();
+
             return redirect()->route('alertas.monitoreo')->with('success', 'Estudiante eliminado.');
         } catch (\Exception $e) {
             return redirect()->route('alertas.monitoreo')->with('error', 'Error al eliminar el estudiante.');

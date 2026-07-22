@@ -30,31 +30,44 @@
                             <!-- Fila 1: Programa, Semestre, Jornada -->
                             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                                 <div class="space-y-2">
-                                    <label class="block text-sm font-semibold text-gray-700">Programa Académico:</label>
-                                    <select name="id_programa" class="w-full rounded-xl border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 py-2.5 text-sm" required>
-                                        <option value="" disabled selected>-- Seleccione --</option>
-                                        <option value="1">Ingeniería de Sistemas</option>
-                                        <option value="2">Tecnología Agropecuaria</option>
-                                        <option value="3">Contaduría Pública</option>
+                                    <label class="block text-sm font-semibold text-gray-700">Programa Académico: <span class="text-red-500">*</span></label>
+                                    <select name="id_programa" id="id_programa" class="w-full rounded-xl border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 py-2.5 text-sm" required>
+                                        <option value="" disabled {{ old('id_programa') ? '' : 'selected' }}>-- Seleccione su programa --</option>
+                                        @foreach($programas as $prog)
+                                            <option value="{{ $prog->id_programa }}" {{ old('id_programa') == $prog->id_programa ? 'selected' : '' }}>
+                                                {{ $prog->nombre_programa }}
+                                            </option>
+                                        @endforeach
                                     </select>
+                                    @error('id_programa') 
+                                        <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> 
+                                    @enderror
                                 </div>
+
                                 <div class="space-y-2">
-                                    <label class="block text-sm font-semibold text-gray-700">Semestre Actual:</label>
+                                    <label class="block text-sm font-semibold text-gray-700">Semestre Actual: <span class="text-red-500">*</span></label>
                                     <select name="semestre" id="semestre" class="w-full rounded-xl border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 py-2.5 text-sm" required onchange="toggleSaberesPrevios()">
-                                        <option value="" disabled selected>-- Seleccione --</option>
+                                        <option value="" disabled {{ old('semestre') ? '' : 'selected' }}>-- Seleccione --</option>
                                         @for ($i = 1; $i <= 10; $i++) 
-                                            <option value="{{ $i }}">Semestre {{ $i }}</option> 
+                                            <option value="{{ $i }}" {{ old('semestre') == $i ? 'selected' : '' }}>Semestre {{ $i }}</option> 
                                         @endfor
                                     </select>
+                                    @error('semestre') 
+                                        <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> 
+                                    @enderror
                                 </div>
+
                                 <div class="space-y-2">
-                                    <label class="block text-sm font-semibold text-gray-700">Jornada:</label>
+                                    <label class="block text-sm font-semibold text-gray-700">Jornada: <span class="text-red-500">*</span></label>
                                     <select name="jornada" class="w-full rounded-xl border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 py-2.5 text-sm" required>
-                                        <option value="" disabled selected>-- Seleccione --</option>
-                                        <option value="Diurna">Diurna</option>
-                                        <option value="Nocturna">Nocturna</option>
-                                        <option value="Sabatina">Sabatina</option>
+                                        <option value="" disabled {{ old('jornada') ? '' : 'selected' }}>-- Seleccione --</option>
+                                        <option value="Diurna" {{ old('jornada') == 'Diurna' ? 'selected' : '' }}>Diurna</option>
+                                        <option value="Nocturna" {{ old('jornada') == 'Nocturna' ? 'selected' : '' }}>Nocturna</option>
+                                        <option value="Sabatina" {{ old('jornada') == 'Sabatina' ? 'selected' : '' }}>Sabatina</option>
                                     </select>
+                                    @error('jornada') 
+                                        <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> 
+                                    @enderror
                                 </div>
                             </div>
 
@@ -63,9 +76,9 @@
                                 <div class="space-y-2">
                                     <label class="block text-sm font-semibold text-gray-700">¿Actualmente trabaja? <span class="text-red-500">*</span></label>
                                     <select name="trabaja" id="trabaja" class="w-full rounded-xl border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 py-2.5 text-sm text-gray-900" required>
-                                        <option value="" disabled selected>-- Seleccione --</option>
-                                        <option value="Si">Sí</option>
-                                        <option value="No">No</option>
+                                        <option value="" disabled {{ old('trabaja') ? '' : 'selected' }}>-- Seleccione --</option>
+                                        <option value="Si" {{ old('trabaja') == 'Si' ? 'selected' : '' }}>Sí</option>
+                                        <option value="No" {{ old('trabaja') == 'No' ? 'selected' : '' }}>No</option>
                                     </select>
                                     @error('trabaja') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
                                 </div>
@@ -77,22 +90,24 @@
                             <h3 class="text-lg font-bold text-slate-800 border-b pb-3">Información Sociodemográfica</h3>
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div class="space-y-2">
-                                    <label class="block text-sm font-semibold text-gray-700">Género:</label>
+                                    <label class="block text-sm font-semibold text-gray-700">Género: <span class="text-red-500">*</span></label>
                                     <select name="genero" class="w-full rounded-xl border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 py-2.5 text-sm" required>
-                                        <option value="" disabled selected>-- Seleccione --</option>
-                                        <option value="Hombre">Hombre</option>
-                                        <option value="Mujer">Mujer</option>
-                                        <option value="Hombre trans">Hombre trans</option>
-                                        <option value="Mujer trans">Mujer trans</option>
-                                        <option value="No binario">No binario</option>
+                                        <option value="" disabled {{ old('genero') ? '' : 'selected' }}>-- Seleccione --</option>
+                                        <option value="Hombre" {{ old('genero') == 'Hombre' ? 'selected' : '' }}>Hombre</option>
+                                        <option value="Mujer" {{ old('genero') == 'Mujer' ? 'selected' : '' }}>Mujer</option>
+                                        <option value="Hombre trans" {{ old('genero') == 'Hombre trans' ? 'selected' : '' }}>Hombre trans</option>
+                                        <option value="Mujer trans" {{ old('genero') == 'Mujer trans' ? 'selected' : '' }}>Mujer trans</option>
+                                        <option value="No binario" {{ old('genero') == 'No binario' ? 'selected' : '' }}>No binario</option>
                                     </select>
+                                    @error('genero') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
                                 </div>
                                 <div class="space-y-2">
-                                    <label class="block text-sm font-semibold text-gray-700">¿Víctima del conflicto?</label>
+                                    <label class="block text-sm font-semibold text-gray-700">¿Víctima del conflicto? <span class="text-red-500">*</span></label>
                                     <select name="victima_confict" class="w-full rounded-xl border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 py-2.5 text-sm" required>
-                                        <option value="No">No</option>
-                                        <option value="Si">Sí</option>
+                                        <option value="No" {{ old('victima_confict', 'No') == 'No' ? 'selected' : '' }}>No</option>
+                                        <option value="Si" {{ old('victima_confict') == 'Si' ? 'selected' : '' }}>Sí</option>
                                     </select>
+                                    @error('victima_confict') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
                                 </div>
                             </div>
                         </div>
@@ -111,30 +126,30 @@
                                 <div class="flex flex-col justify-between space-y-2">
                                     <label class="block text-sm font-medium text-gray-800 leading-relaxed">1. ¿Considera que los contenidos aprendidos en el colegio son suficientes para iniciar su programa?</label>
                                     <select name="saberes_colegio" id="saberes_colegio" class="w-full rounded-xl border-gray-300 shadow-sm bg-white focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 py-2.5 text-sm">
-                                        <option value="" selected disabled>-- Seleccione una opción --</option>
-                                        <option value="Suficientes en su mayoría">Suficientes en su mayoría</option>
-                                        <option value="Medianamente suficientes">Medianamente suficientes</option>
-                                        <option value="Insuficientes">Insuficientes</option>
+                                        <option value="" disabled {{ old('saberes_colegio') ? '' : 'selected' }}>-- Seleccione una opción --</option>
+                                        <option value="Suficientes en su mayoría" {{ old('saberes_colegio') == 'Suficientes en su mayoría' ? 'selected' : '' }}>Suficientes en su mayoría</option>
+                                        <option value="Medianamente suficientes" {{ old('saberes_colegio') == 'Medianamente suficientes' ? 'selected' : '' }}>Medianamente suficientes</option>
+                                        <option value="Insuficientes" {{ old('saberes_colegio') == 'Insuficientes' ? 'selected' : '' }}>Insuficientes</option>
                                     </select>
                                 </div>
 
                                 <div class="flex flex-col justify-between space-y-2">
                                     <label class="block text-sm font-medium text-gray-800 leading-relaxed">2. En lectura y comprensión de textos académicos se siente:</label>
                                     <select name="saberes_lectura" id="saberes_lectura" class="w-full rounded-xl border-gray-300 shadow-sm bg-white focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 py-2.5 text-sm">
-                                        <option value="" selected disabled>-- Seleccione una opción --</option>
-                                        <option value="Muy Competente">Muy Competente</option>
-                                        <option value="Competente">Competente</option>
-                                        <option value="Necesita mejorar">Necesita mejorar</option>
+                                        <option value="" disabled {{ old('saberes_lectura') ? '' : 'selected' }}>-- Seleccione una opción --</option>
+                                        <option value="Muy Competente" {{ old('saberes_lectura') == 'Muy Competente' ? 'selected' : '' }}>Muy Competente</option>
+                                        <option value="Competente" {{ old('saberes_lectura') == 'Competente' ? 'selected' : '' }}>Competente</option>
+                                        <option value="Necesita mejorar" {{ old('saberes_lectura') == 'Necesita mejorar' ? 'selected' : '' }}>Necesita mejorar</option>
                                     </select>
                                 </div>
 
                                 <div class="flex flex-col justify-between space-y-2 md:col-span-2">
                                     <label class="block text-sm font-medium text-gray-800 leading-relaxed">3. En matemáticas o razonamiento lógico se siente:</label>
                                     <select name="saberes_matematicas" id="saberes_matematicas" class="w-full rounded-xl border-gray-300 shadow-sm bg-white focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 py-2.5 text-sm">
-                                        <option value="" selected disabled>-- Seleccione una opción --</option>
-                                        <option value="Muy Competente">Muy Competente</option>
-                                        <option value="Competente">Competente</option>
-                                        <option value="Necesita mejorar">Necesita mejorar</option>
+                                        <option value="" disabled {{ old('saberes_matematicas') ? '' : 'selected' }}>-- Seleccione una opción --</option>
+                                        <option value="Muy Competente" {{ old('saberes_matematicas') == 'Muy Competente' ? 'selected' : '' }}>Muy Competente</option>
+                                        <option value="Competente" {{ old('saberes_matematicas') == 'Competente' ? 'selected' : '' }}>Competente</option>
+                                        <option value="Necesita mejorar" {{ old('saberes_matematicas') == 'Necesita mejorar' ? 'selected' : '' }}>Necesita mejorar</option>
                                     </select>
                                 </div>
                             </div>
@@ -146,33 +161,36 @@
                             
                             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                                 <div class="space-y-2">
-                                    <label class="block text-sm font-semibold text-gray-700">Exigencias académicas:</label>
+                                    <label class="block text-sm font-semibold text-gray-700">Exigencias académicas: <span class="text-red-500">*</span></label>
                                     <select name="afectacion_academico" class="w-full rounded-xl border-gray-300 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 py-2.5 text-sm" required>
-                                        <option value="" disabled selected>-- Seleccione --</option>
-                                        <option value="0">Sin afectación</option>
-                                        <option value="2">Moderada</option>
-                                        <option value="4">Alta</option>
+                                        <option value="" disabled {{ old('afectacion_academico') !== null ? '' : 'selected' }}>-- Seleccione --</option>
+                                        <option value="0" {{ old('afectacion_academico') == '0' ? 'selected' : '' }}>Sin afectación</option>
+                                        <option value="2" {{ old('afectacion_academico') == '2' ? 'selected' : '' }}>Moderada</option>
+                                        <option value="4" {{ old('afectacion_academico') == '4' ? 'selected' : '' }}>Alta</option>
                                     </select>
+                                    @error('afectacion_academico') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
                                 </div>
 
                                 <div class="space-y-2">
-                                    <label class="block text-sm font-semibold text-gray-700">Situación económica:</label>
+                                    <label class="block text-sm font-semibold text-gray-700">Situación económica: <span class="text-red-500">*</span></label>
                                     <select name="afectacion_socioeconomico" class="w-full rounded-xl border-gray-300 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 py-2.5 text-sm" required>
-                                        <option value="" disabled selected>-- Seleccione --</option>
-                                        <option value="0">No representa problema</option>
-                                        <option value="2">Afectación leve</option>
-                                        <option value="4">Afectación grave</option>
+                                        <option value="" disabled {{ old('afectacion_socioeconomico') !== null ? '' : 'selected' }}>-- Seleccione --</option>
+                                        <option value="0" {{ old('afectacion_socioeconomico') == '0' ? 'selected' : '' }}>No representa problema</option>
+                                        <option value="2" {{ old('afectacion_socioeconomico') == '2' ? 'selected' : '' }}>Afectación leve</option>
+                                        <option value="4" {{ old('afectacion_socioeconomico') == '4' ? 'selected' : '' }}>Afectación grave</option>
                                     </select>
+                                    @error('afectacion_socioeconomico') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
                                 </div>
 
                                 <div class="space-y-2">
-                                    <label class="block text-sm font-semibold text-gray-700">Estrés/Ansiedad:</label>
+                                    <label class="block text-sm font-semibold text-gray-700">Estrés/Ansiedad: <span class="text-red-500">*</span></label>
                                     <select name="afectacion_psicosocial" class="w-full rounded-xl border-gray-300 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 py-2.5 text-sm" required>
-                                        <option value="" disabled selected>-- Seleccione --</option>
-                                        <option value="0">Casi nunca</option>
-                                        <option value="2">Ocasionalmente</option>
-                                        <option value="4">Constantemente</option>
+                                        <option value="" disabled {{ old('afectacion_psicosocial') !== null ? '' : 'selected' }}>-- Seleccione --</option>
+                                        <option value="0" {{ old('afectacion_psicosocial') == '0' ? 'selected' : '' }}>Casi nunca</option>
+                                        <option value="2" {{ old('afectacion_psicosocial') == '2' ? 'selected' : '' }}>Ocasionalmente</option>
+                                        <option value="4" {{ old('afectacion_psicosocial') == '4' ? 'selected' : '' }}>Constantemente</option>
                                     </select>
+                                    @error('afectacion_psicosocial') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
                                 </div>
                             </div>
 
@@ -180,8 +198,8 @@
                             <div class="space-y-2 pt-2">
                                 <label class="block text-sm font-semibold text-gray-700">Actividades más frecuentes (Estilo de vida) <span class="text-red-500">*</span></label>
                                 <textarea name="actividad" id="actividad" rows="3" required
-                                         placeholder="Describe brevemente las actividades que realizas con más frecuencia fuera de tu jornada académica (ej: practicar algún deporte, cuidar familiares, pasatiempos, etc.)..."
-                                         class="block w-full rounded-xl border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 text-sm p-3 placeholder-gray-400 text-gray-900"></textarea>
+                                          placeholder="Describe brevemente las actividades que realizas con más frecuencia fuera de tu jornada académica (ej: practicar algún deporte, cuidar familiares, pasatiempos, etc.)..."
+                                          class="block w-full rounded-xl border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 text-sm p-3 placeholder-gray-400 text-gray-900">{{ old('actividad') }}</textarea>
                                 <p class="text-xs text-gray-400 mt-1">Esta información nos ayuda a entender tus entornos cotidianos de estilo de vida.</p>
                                 @error('actividad') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
                             </div>
@@ -234,5 +252,10 @@
                 q3.value = "";
             }
         }
+
+        // Ejecutar al cargar la página por si hay valores previos de 'old()' en caso de error de validación
+        document.addEventListener('DOMContentLoaded', function () {
+            toggleSaberesPrevios();
+        });
     </script>
 </x-app-layout>

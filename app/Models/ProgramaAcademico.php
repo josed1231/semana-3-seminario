@@ -11,10 +11,21 @@ class ProgramaAcademico extends Model
 
     protected $table = 'programas_academicos';
     protected $primaryKey = 'id_programa';
+    public $timestamps = false;
 
-    protected $fillable = ['nombre_programa'];
+    protected $fillable = [
+        'nombre_programa',
+        'id_docente',
+    ];
 
-    // Un programa tiene muchos estudiantes
+    /**
+     * Relación directa con el usuario con rol de director de unidad
+     */
+    public function directorUnidad()
+    {
+        return $this->belongsTo(User::class, 'id_docente', 'id');
+    }
+
     public function estudiantes()
     {
         return $this->hasMany(Estudiante::class, 'id_programa', 'id_programa');

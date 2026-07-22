@@ -6,41 +6,35 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
-        Schema::create('estudiantes', function (Blueprint $table) {
-            // Usamos el código del estudiante como PK (Primary Key)
-            $table->string('codigo_estudiante')->primary(); 
-            
-            $table->string('nombre_estudiante');
-            $table->string('jornada'); // Campo añadido
-            $table->string('correo');
-            $table->unsignedBigInteger('id_programa');
-            $table->unsignedBigInteger('id_docente');
-            $table->decimal('promedio', 3, 2);
-            $table->timestamps();
+        // Desactivar temporalmente la verificación de llaves foráneas
+        Schema::disableForeignKeyConstraints();
 
-            // Relaciones
-            $table->foreign('id_programa')
-                ->references('id_programa')
-                ->on('programas_academicos')
-                ->onDelete('cascade');
-                
+        Schema::create('estudiantes', function (Blueprint $table) {
+            $table->id();
+            $table->string('codigo_estudiante')->unique();
+            $table->unsignedBigInteger('id_programa');
+            $table->unsignedBigInteger('id_docente'); // Debe ser unsignedBigInteger
+            
+            // ... resto de tus columnas ...
+            
             $table->foreign('id_docente')
-                ->references('id_docente') // Asegúrate de que esta columna exista en directores_unidad
-                ->on('directores_unidad')  // <--- APUNTA A LA TABLA ACTUAL
-                ->onDelete('cascade');
+                  ->references('id_docente')
+                  ->on('directores_unidad')
+                  ->onDelete('cascade');
+
+            $table->timestamps();
         });
+
+        // Reactivar las verificaciones
+        Schema::enableForeignKeyConstraints();
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
+        Schema::disableForeignKeyConstraints();
         Schema::dropIfExists('estudiantes');
+        Schema::enableForeignKeyConstraints();
     }
 };

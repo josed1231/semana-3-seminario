@@ -1,14 +1,36 @@
-<nav x-data="{ open: false }" class="bg-[#004d2e]">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex justify-between h-16">
-            <div class="flex items-center">
-                <div class="shrink-0 flex items-center">
-                    <a href="{{ in_array(auth()->user()->rol, ['user', 'estudiante']) ? route('welcome') : route('dashboard') }}"> 
-                        <x-application-logo class="block h-9 w-auto fill-current text-white" />
-                    </a>
-                </div>
+<nav x-data="{ open: false }" class="bg-[#004d2e] sticky top-0 z-50 shadow-md">
+    <!-- Estilos de la barra de desplazamiento -->
+    <style>
+        .nav-scroll::-webkit-scrollbar {
+            height: 4px;
+        }
+        .nav-scroll::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.15);
+            border-radius: 10px;
+        }
+        .nav-scroll::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.35);
+            border-radius: 10px;
+        }
+        .nav-scroll::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.6);
+        }
+    </style>
 
-                <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex h-full">
+    <div class="w-full px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between h-16 gap-4">
+            
+            <!-- LOGO INSTITUCIONAL -->
+            <div class="flex items-center shrink-0">
+                <a href="{{ in_array(auth()->user()->rol, ['user', 'estudiante']) ? route('welcome') : route('dashboard') }}"> 
+                    <x-application-logo class="block h-9 w-auto fill-current text-white" />
+                </a>
+            </div>
+
+            <!-- CONTENEDOR CON SCROLL FLUIDO POR RUEDA DE RATÓN -->
+            <div class="hidden sm:flex sm:items-center flex-1 overflow-x-auto nav-scroll min-w-0 px-2 scroll-smooth"
+                 @wheel.prevent="$el.scrollBy({ left: $event.deltaY * 1.2, behavior: 'smooth' })">
+                <div class="flex space-x-6 whitespace-nowrap items-center h-full">
                     
                     @if(!in_array(auth()->user()->rol, ['user', 'estudiante']))
                         <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')" class="text-white inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium leading-5 hover:text-gray-200 transition duration-150 ease-in-out">
@@ -30,15 +52,26 @@
                         </x-nav-link>
                     @endif
 
+                    <!-- Módulos Exclusivos para Administrador -->
                     @if(auth()->user()->rol === 'admin')
                         <x-nav-link :href="route('usuarios.index')" :active="request()->routeIs('usuarios.*')" class="text-white inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium leading-5 hover:text-gray-200 transition duration-150 ease-in-out">
                             {{ __('Gestión de Usuarios') }}
                         </x-nav-link>
+
+                        <x-nav-link :href="route('programas.index')" :active="request()->routeIs('programas.*')" class="text-white inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium leading-5 hover:text-gray-200 transition duration-150 ease-in-out">
+                            {{ __('Gestión de Programas') }}
+                        </x-nav-link>
+
+                        <x-nav-link :href="route('directores.index')" :active="request()->routeIs('directores.*')" class="text-white inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium leading-5 hover:text-gray-200 transition duration-150 ease-in-out">
+                            {{ __('Directores de Unidad') }}
+                        </x-nav-link>
                     @endif
+
                 </div>
             </div>
 
-            <div class="hidden sm:flex sm:items-center sm:ms-6">
+            <!-- MENU PERFIL DE USUARIO -->
+            <div class="hidden sm:flex sm:items-center shrink-0 sm:ms-2">
                 <x-dropdown align="right" width="48">
                     <x-slot name="trigger">
                         <button class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-[#004d2e] hover:text-gray-200 focus:outline-none transition ease-in-out duration-150">
@@ -62,6 +95,7 @@
                 </x-dropdown>
             </div>
 
+            <!-- BOTÓN HAMBURGUESA MÓVIL -->
             <div class="-me-2 flex items-center sm:hidden">
                 <button @click="open = ! open" class="inline-flex items-center justify-center p-2 rounded-md text-white hover:text-gray-200 hover:bg-[#003e1c] focus:outline-none transition duration-150 ease-in-out">
                     <svg class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
@@ -73,6 +107,7 @@
         </div>
     </div>
 
+    <!-- MENÚ RESPONSIVE MÓVIL -->
     <div :class="{'block': open, 'hidden': ! open}" class="hidden sm:hidden bg-[#004d2e]">
         <div class="pt-2 pb-3 space-y-1">
             @if(!in_array(auth()->user()->rol, ['user', 'estudiante']))
@@ -98,6 +133,14 @@
             @if(auth()->user()->rol === 'admin')
                 <x-responsive-nav-link :href="route('usuarios.index')" :active="request()->routeIs('usuarios.*')" class="text-white">
                     {{ __('Gestión de Usuarios') }}
+                </x-responsive-nav-link>
+
+                <x-responsive-nav-link :href="route('programas.index')" :active="request()->routeIs('programas.*')" class="text-white">
+                    {{ __('Gestión de Programas') }}
+                </x-responsive-nav-link>
+
+                <x-responsive-nav-link :href="route('directores.index')" :active="request()->routeIs('directores.*')" class="text-white">
+                    {{ __('Directores de Unidad') }}
                 </x-responsive-nav-link>
             @endif
         </div>

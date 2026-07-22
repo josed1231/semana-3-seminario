@@ -7,16 +7,17 @@
         </div>
     </x-slot>
 
-    <div class="py-12 min-h-screen bg-[#f4f6f8]">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
+    <div class="py-6 min-h-screen bg-[#f4f6f8]">
+        <!-- Usamos el ancho completo de la pantalla con mínimos márgenes laterales -->
+        <div class="w-full px-3 sm:px-6 space-y-6">
 
             <div class="bg-white overflow-hidden shadow-md sm:rounded-3xl p-6 border border-slate-200">
                 <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 mb-6">
-                    <h3 class="text-lg font-bold text-slate-900 m-0">Monitoreo de Estudiantes en Alerta</h3>
+                    <h3 class="text-xl font-bold text-slate-900 m-0">Monitoreo de Estudiantes en Alerta</h3>
                     
                     @if(in_array(auth()->user()->rol, ['admin', 'dir_bienestar']))
                         <a href="{{ route('estudiantes.create') }}" 
-                           class="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold bg-[#f17a28] hover:bg-[#d66213] text-white transition-colors shadow-sm cursor-pointer border-none decoration-none">
+                           class="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold bg-[#f17a28] hover:bg-[#d66213] text-white transition-colors shadow-sm cursor-pointer border-none decoration-none whitespace-nowrap">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
                             </svg>
@@ -86,83 +87,82 @@
 
                 </form>
 
+                <!-- Se ajusta la tabla con w-full y paddings px-3 para caber limpia sin scrollbar -->
                 <div class="overflow-x-auto rounded-2xl border border-slate-100 shadow-sm">
-                    <table class="min-w-full divide-y divide-slate-100">
+                    <table class="w-full divide-y divide-slate-100 text-left">
                         <thead class="bg-slate-50">
                             <tr>
-                                <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-700">Código</th>
-                                <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-700">Nombre</th>
-                                <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-700">Carrera (Programa)</th>
-                                <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-700">Director de Unidad</th>
-                                <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-700">¿Trabaja?</th>
-                                <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-700">Semestre</th>
-                                <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-700">Jornada</th>
-                                <th class="px-6 py-4 text-center text-xs font-bold uppercase tracking-wider text-slate-700">Nivel de Riesgo</th>
-                                <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-700">Actividades</th>
-                                <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-700">Orientación</th>
+                                <th class="px-3 py-3.5 text-xs font-bold uppercase tracking-wider text-slate-700">Código</th>
+                                <th class="px-3 py-3.5 text-xs font-bold uppercase tracking-wider text-slate-700">Nombre</th>
+                                <th class="px-3 py-3.5 text-xs font-bold uppercase tracking-wider text-slate-700">Carrera (Programa)</th>
+                                <th class="px-3 py-3.5 text-xs font-bold uppercase tracking-wider text-slate-700">Director de Unidad</th>
+                                <th class="px-3 py-3.5 text-xs font-bold uppercase tracking-wider text-slate-700 text-center">¿Trabaja?</th>
+                                <th class="px-3 py-3.5 text-xs font-bold uppercase tracking-wider text-slate-700 text-center">Semestre</th>
+                                <th class="px-3 py-3.5 text-xs font-bold uppercase tracking-wider text-slate-700 text-center">Jornada</th>
+                                <th class="px-3 py-3.5 text-xs font-bold uppercase tracking-wider text-slate-700 text-center">Nivel Riesgo</th>
+                                <th class="px-3 py-3.5 text-xs font-bold uppercase tracking-wider text-slate-700">Actividades</th>
+                                <th class="px-3 py-3.5 text-xs font-bold uppercase tracking-wider text-slate-700">Orientación</th>
                                 
-                                {{-- Solo mostrar columna de Acciones a admin y dir_bienestar --}}
                                 @if(in_array(auth()->user()->rol, ['admin', 'dir_bienestar']))
-                                    <th class="px-6 py-4 text-center text-xs font-bold uppercase tracking-wider text-slate-700">Acciones</th>
+                                    <th class="px-3 py-3.5 text-center text-xs font-bold uppercase tracking-wider text-slate-700">Acciones</th>
                                 @endif
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-slate-100">
                             @forelse($estudiantes as $estudiante)
                                 <tr class="hover:bg-slate-50/80 transition-colors duration-150">
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-slate-900">
+                                    <td class="px-3 py-3 text-xs font-bold text-slate-900 whitespace-nowrap">
                                         {{ $estudiante->codigo_estudiante }}
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                    <td class="px-3 py-3 text-xs">
                                         <div class="font-extrabold text-slate-900">{{ $estudiante->nombre_estudiante }}</div>
-                                        <div class="text-slate-500 text-xs">{{ $estudiante->correo }}</div>
+                                        <div class="text-slate-500 text-[11px]">{{ $estudiante->correo }}</div>
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-800">
+                                    <td class="px-3 py-3 text-xs text-slate-800">
                                         {{ $estudiante->programa?->nombre_programa ?? 'N/A' }}
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-800">
-                                        {{ $estudiante->directorUnidad?->nombre_director ?? 'Sin asignar' }}
+                                    <td class="px-3 py-3 text-xs text-slate-800">
+                                        {{ $estudiante->programa?->directorUnidad?->name ?? 'Sin asignar' }}
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                    <td class="px-3 py-3 text-xs font-medium text-center whitespace-nowrap">
                                         @if($estudiante->trabaja === 'Si')
-                                            <span class="px-2.5 py-1 text-xs font-bold rounded-lg bg-blue-50 text-blue-700 border border-blue-100">Sí</span>
+                                            <span class="px-2 py-0.5 text-[11px] font-bold rounded-md bg-blue-50 text-blue-700 border border-blue-100">Sí</span>
                                         @elseif($estudiante->trabaja === 'No')
-                                            <span class="px-2.5 py-1 text-xs font-bold rounded-lg bg-slate-50 text-slate-600 border border-slate-100">No</span>
+                                            <span class="px-2 py-0.5 text-[11px] font-bold rounded-md bg-slate-50 text-slate-600 border border-slate-100">No</span>
                                         @else
                                             <span class="text-slate-400 italic">N/A</span>
                                         @endif
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-800">
+                                    <td class="px-3 py-3 text-xs text-slate-800 text-center whitespace-nowrap">
                                         {{ $estudiante->saberesPrevios?->semestre ?? 'N/A' }}
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-800">
+                                    <td class="px-3 py-3 text-xs text-slate-800 text-center whitespace-nowrap">
                                         {{ $estudiante->jornada ?? 'N/A' }}
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-center">
+                                    <td class="px-3 py-3 text-xs text-center whitespace-nowrap">
                                         @if($estudiante->riesgo)
-                                            <span class="px-3 py-1 inline-flex text-xs leading-5 font-bold rounded-full 
+                                            <span class="px-2.5 py-0.5 inline-flex text-[11px] leading-5 font-bold rounded-full 
                                                 {{ $estudiante->riesgo->nivel_riesgo == 'Alto' ? 'bg-red-50 text-red-700 border border-red-200' : '' }}
                                                 {{ $estudiante->riesgo->nivel_riesgo == 'Medio' ? 'bg-orange-50 text-orange-700 border border-orange-200' : '' }}
                                                 {{ $estudiante->riesgo->nivel_riesgo == 'Bajo' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : '' }}">
                                                 {{ $estudiante->riesgo->nivel_riesgo }}
                                             </span>
                                         @else
-                                            <span class="text-slate-400 italic">Sin evaluar</span>
+                                            <span class="text-slate-400 italic text-[11px]">Sin evaluar</span>
                                         @endif
                                     </td>
-                                    <td class="px-6 py-4 text-sm font-medium text-slate-800 min-w-[200px] whitespace-normal break-words">
+                                    <td class="px-3 py-3 text-xs font-medium text-slate-800 break-words leading-tight">
                                         {{ $estudiante->actividades_estilo_vida ?? $estudiante->estiloVida?->actividades_estilo_vida ?? $estudiante->actividad ?? 'Ninguna' }}
                                     </td>
-                                    <td class="px-6 py-4 text-sm font-medium text-slate-800 min-w-[220px] whitespace-normal break-words">
-                                        {{ $estudiante->orientacionPsicologica?->observaciones ?? 'Sin orientación' }}
+                                    <td class="px-3 py-3 text-xs font-medium text-slate-800 break-words leading-tight">
+                                        {{ $estudiante->orientacionPsicologica?->nivel_servicio ?? 'Sin orientación' }}
                                     </td>
                                     
-                                    {{-- Botones de acción limitados por Rol --}}
                                     @if(in_array(auth()->user()->rol, ['admin', 'dir_bienestar']))
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-center font-medium">
-                                            <div class="flex items-center justify-center gap-2">
+                                        <td class="px-3 py-3 whitespace-nowrap text-xs text-center font-medium">
+                                            <div class="flex items-center justify-center gap-1.5">
                                                 <a href="{{ route('estudiantes.edit', $estudiante->codigo_estudiante) }}" 
-                                                   class="inline-flex items-center justify-center p-2 rounded-xl bg-[#dcece4] hover:bg-[#004d2e] text-[#005a36] hover:text-white shadow-sm transition-all duration-200 group" 
+                                                   class="inline-flex items-center justify-center p-1.5 rounded-lg bg-[#dcece4] hover:bg-[#004d2e] text-[#005a36] hover:text-white shadow-sm transition-all duration-200 group" 
                                                    title="Editar Registro">
                                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 scale-100 group-hover:scale-110 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                                         <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
@@ -178,7 +178,7 @@
                                                         @csrf 
                                                         @method('DELETE')
                                                         <button type="submit" 
-                                                                class="inline-flex items-center justify-center p-2 rounded-xl bg-red-50 hover:bg-red-600 text-red-600 hover:text-white border-none shadow-sm cursor-pointer transition-all duration-200 group" 
+                                                                class="inline-flex items-center justify-center p-1.5 rounded-lg bg-red-50 hover:bg-red-600 text-red-600 hover:text-white border-none shadow-sm cursor-pointer transition-all duration-200 group" 
                                                                 title="Eliminar Registro">
                                                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 scale-100 group-hover:scale-110 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                                                 <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1-1 v3M4 7h16" />
@@ -221,7 +221,7 @@
                 <div class="text-sm text-slate-600 space-y-6 leading-relaxed">
                     <p>El sistema PIAE cuantifica de forma automatizada la <strong>Ponderación de Condiciones Socio-Educativas</strong> mediante un modelo analítico matricial de puntuación acumulativa basado en cuatro dimensiones estratégicas:</p>
                     
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                         <div class="p-4 rounded-2xl bg-slate-50 border border-slate-100">
                             <span class="font-bold text-slate-900 block mb-1">📊 Dimensión Académica</span>
                             Mide competencias básicas, regularidad de estudios y el volumen de créditos críticos reprobados u homologados.
