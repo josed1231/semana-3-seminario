@@ -20,10 +20,16 @@
                         </div>
 
                         <div>
-                            <label for="correo" class="block text-sm font-medium text-gray-300">Correo Institucional <span class="text-red-500">*</span></label>
-                            <input type="email" name="correo" id="correo" value="{{ old('correo') }}" required placeholder="ejemplo@cotecnova.edu.co" class="mt-1 block w-full rounded-md border-gray-700 bg-gray-900 text-gray-100 text-sm focus:border-indigo-500 focus:ring-indigo-500">
-                            @error('correo') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
+                            <label for="cedula" class="block text-sm font-medium text-gray-300">Cédula / Documento de Identidad <span class="text-red-500">*</span></label>
+                            <input type="text" name="cedula" id="cedula" value="{{ old('cedula') }}" required placeholder="Ej: 1114150832" class="mt-1 block w-full rounded-md border-gray-700 bg-gray-900 text-gray-100 text-sm focus:border-indigo-500 focus:ring-indigo-500">
+                            @error('cedula') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
                         </div>
+                    </div>
+
+                    <div>
+                        <label for="correo" class="block text-sm font-medium text-gray-300">Correo Institucional <span class="text-red-500">*</span></label>
+                        <input type="email" name="correo" id="correo" value="{{ old('correo') }}" required placeholder="ejemplo@cotecnova.edu.co" class="mt-1 block w-full rounded-md border-gray-700 bg-gray-900 text-gray-100 text-sm focus:border-indigo-500 focus:ring-indigo-500">
+                        @error('correo') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
                     </div>
 
                     <div>
@@ -120,9 +126,9 @@
 
             // MAPEO: ID de Programa Académico => ID de su Director de Unidad correspondiente
             const programaAlDirector = {
-                '1': '1', // Ejemplo: 1 (Ingeniería de Sistemas) -> 1 (Director Ingeniería)
-                '2': '2', // Ejemplo: 2 (Tec. Agropecuaria)   -> 2 (Director Agro)
-                '3': '3'  // Ejemplo: 3 (Contaduría Pública) -> 3 (Director Contaduría)
+                '1': '1', 
+                '2': '2', 
+                '3': '3'  
             };
 
             function actualizarDirector() {

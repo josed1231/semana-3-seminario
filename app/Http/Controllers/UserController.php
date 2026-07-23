@@ -38,15 +38,14 @@ class UserController extends Controller
             'email'    => ['required', 'string', 'email', 'max:255', 'unique:users'],
             'rol'      => ['required', 'string', 'in:admin,dir_bienestar,dir_unidad,psicologo,docente,user,estudiante'],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
-            'username' => ['nullable', 'string', 'max:50', 'unique:users,username'],
+            'username' => ['required', 'string', 'max:50', 'unique:users,username'], // Obligatorio (corresponde a la cédula)
         ]);
 
-        $username = $request->username ?? explode('@', $request->email)[0];
-        
+        // Se asigna directamente la cédula ingresada en el formulario, sin autocompletar con el correo
         User::create([
             'name'     => $request->name,
             'email'    => $request->email,
-            'username' => $username,
+            'username' => $request->username, 
             'rol'      => $request->rol,
             'password' => Hash::make($request->password),
         ]);
