@@ -13,7 +13,8 @@ RUN npm run build
 FROM composer:2 AS composer
 WORKDIR /app
 COPY . .
-RUN composer install --no-dev --optimize-autoloader --no-interaction
+# Se añade --no-scripts para evitar errores al ejecutar 'php artisan package:discover' durante el build
+RUN composer install --no-dev --optimize-autoloader --no-interaction --no-scripts
 
 # Etapa 3: Servidor PHP de producción (PHP 8.4)
 FROM php:8.4-fpm-alpine
