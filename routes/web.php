@@ -1,8 +1,6 @@
-PHP
 <?php
 
 use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\Artisan;
 use App\Http\Controllers\{
     ProfileController, 
     TaskController, 
@@ -14,28 +12,6 @@ use App\Http\Controllers\{
     ProgramController,        
     DirectorUnidadController
 };
-
-/*
-|--------------------------------------------------------------------------
-| Ruta Raíz (TEMPORAL PARA EJECUTAR MIGRACIONES Y SEEDER)
-|--------------------------------------------------------------------------
-*/
-Route::get('/', function() {
-    try {
-        // 1. Ejecuta las migraciones por si falta alguna
-        Artisan::call('migrate', ['--force' => true]);
-
-        // 2. Ejecuta el seeder para crear el usuario webmaster
-        Artisan::call('db:seed', [
-            '--class' => 'UserSeeder',
-            '--force' => true,
-        ]);
-
-        return '<h1>¡Éxito!</h1><p>Base de datos migrada y usuario webmaster creado correctamente en PostgreSQL.</p><a href="/login">Ir al Login</a>';
-    } catch (\Exception $e) {
-        return '<h1>Error durante la configuración:</h1><pre>' . $e->getMessage() . '</pre>';
-    }
-});
 
 /*
 |--------------------------------------------------------------------------
