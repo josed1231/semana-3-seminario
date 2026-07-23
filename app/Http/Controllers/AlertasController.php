@@ -8,13 +8,10 @@ use App\Models\RiesgoDesercion;
 use App\Models\User;
 use App\Models\OrientacionPsicologica;
 use Illuminate\Http\Request;
+use Barryvdh\DomPDF\Facade\Pdf; // 👈 Importar Fachada de DomPDF
 
 class AlertasController extends Controller
 {
-    /**
-     * Muestra las estadísticas y gráficos institucionales (Dashboard)
-     * Adaptado para filtrar por Director de Unidad si aplica.
-     */
     public function dashboard()
     {
         $user = auth()->user();
@@ -23,7 +20,6 @@ class AlertasController extends Controller
         $queryRiesgos = RiesgoDesercion::query();
         $queryOrientaciones = OrientacionPsicologica::query();
 
-        // Filtrado por Director de Unidad si el rol es dir_unidad
         if ($user && $user->rol === 'dir_unidad') {
             $programasDelDirector = ProgramaAcademico::where('id_docente', $user->id)->pluck('id_programa');
             $codigosEstudiantes = Estudiante::whereIn('id_programa', $programasDelDirector)->pluck('codigo_estudiante');
@@ -44,9 +40,6 @@ class AlertasController extends Controller
         return view('dashboard', compact('statsEstudiantes'));
     }
 
-    /**
-     * Módulo operativo con el listado, filtrado y búsqueda de estudiantes (Monitoreo)
-     */
     public function index(Request $request)
     {
         $user = auth()->user();
@@ -75,5 +68,40 @@ class AlertasController extends Controller
         $programas = ProgramaAcademico::all();
 
         return view('alertas.monitoreo', compact('estudiantes', 'programas'));
+    }
+
+    /**
+     * Exportar el listado completo de Monitoreo a PDF respetando filtros y rol
+     */
+    public function exportPdf(Request $request)
+    {
+        $user = auth()->user();
+
+        $query = Estudiante::with([
+            'programa.directorUnidad', 
+            'riesgo', 
+            'orientacionPsicologica', 
+            'saberesPrevios',
+            'estiloVida'
+        ]);
+
+        // Si es Director de Unidad, filtra únicamente sus programas
+        if ($user && $user->rol === 'dir_unidad') {
+            $programasDelDirector = ProgramaAcademico::where('id_docente', $user->id)->pluck('id_programa');
+            $query->whereIn('id_programa', $programasDelDirector);
+        }
+
+        // Aplica EXACTAMENTE los mismos filtros de la vista Web
+        $estudiantes = $query->buscar($request->input('buscar'))
+                             ->filtrarPrograma($request->input('programa'))
+                             ->filtrarSemestre($request->input('semestre'))
+                             ->filtrarJornada($request->input('jornada'))
+                             ->get(); // Se usa get() para traer todo el resultado filtrado sin paginación
+
+        // Cargar vista PDF en formato horizontal (landscape) para tablas anchas
+        $pdf = Pdf::loadView('pdf.monitoreo', compact('estudiantes'))
+                  ->setPaper('a4', 'landscape');
+
+        return $pdf->download('reporte-monitoreo-estudiantes-' . date('Y-m-d') . '.pdf');
     }
 }

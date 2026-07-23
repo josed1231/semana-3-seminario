@@ -2,7 +2,6 @@
 
 namespace App\Mail;
 
-use App\Models\Estudiante; // O tu modelo de usuario general
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
@@ -13,10 +12,10 @@ class AlertaEstudianteMail extends Mailable
 {
     use Queueable, SerializesModels;
 
-    public $usuario; // Puede ser estudiante o usuario administrativo
+    public $usuario; 
     public string $tipoAlerta;
 
-    public function __construct($usuario, string $tipoAlerta)
+    public function __construct($usuario, string $tipoAlerta = 'registro')
     {
         $this->usuario = $usuario;
         $this->tipoAlerta = $tipoAlerta; 
@@ -24,9 +23,10 @@ class AlertaEstudianteMail extends Mailable
 
     public function envelope(): Envelope
     {
-        $asunto = $this->tipoAlerta === 'registro_admin' 
-            ? '¡Registro Exitoso en el Aplicativo Institucional!' 
-            : 'Actualización de Cuestionario Semestral - COTECNOVA';
+        $asunto = match ($this->tipoAlerta) {
+            'registro', 'registro_admin' => '¡Bienvenido(a) al Aplicativo Institucional COTECNOVA!',
+            default                      => 'Actualización de Cuestionario Semestral - COTECNOVA',
+        };
 
         return new Envelope(subject: $asunto);
     }

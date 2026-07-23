@@ -15,15 +15,27 @@
                 <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 mb-6">
                     <h3 class="text-xl font-bold text-slate-900 m-0">Monitoreo de Estudiantes en Alerta</h3>
                     
-                    @if(in_array(auth()->user()->rol, ['admin', 'dir_bienestar']))
-                        <a href="{{ route('estudiantes.create') }}" 
-                           class="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold bg-[#f17a28] hover:bg-[#d66213] text-white transition-colors shadow-sm cursor-pointer border-none decoration-none whitespace-nowrap">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+                    <div class="flex flex-wrap items-center gap-3">
+                        <!-- Botón Exportar PDF -->
+                        <a href="{{ route('alertas.export-pdf', request()->query()) }}" 
+                           target="_blank" 
+                           class="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold bg-red-600 hover:bg-red-700 text-white transition-colors shadow-sm cursor-pointer border-none decoration-none whitespace-nowrap">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                             </svg>
-                            Registrar Estudiante
+                            Exportar PDF
                         </a>
-                    @endif
+
+                        @if(in_array(auth()->user()->rol, ['admin', 'dir_bienestar']))
+                            <a href="{{ route('estudiantes.create') }}" 
+                               class="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold bg-[#f17a28] hover:bg-[#d66213] text-white transition-colors shadow-sm cursor-pointer border-none decoration-none whitespace-nowrap">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+                                </svg>
+                                Registrar Estudiante
+                            </a>
+                        @endif
+                    </div>
                 </div>
 
                 <form method="GET" action="{{ route('alertas.monitoreo') }}" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 mb-6 bg-slate-50 p-4 rounded-2xl border border-slate-100">
@@ -87,7 +99,6 @@
 
                 </form>
 
-                <!-- Se ajusta la tabla con w-full y paddings px-3 para caber limpia sin scrollbar -->
                 <div class="overflow-x-auto rounded-2xl border border-slate-100 shadow-sm">
                     <table class="w-full divide-y divide-slate-100 text-left">
                         <thead class="bg-slate-50">

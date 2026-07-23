@@ -12,9 +12,10 @@ class EnviarCorreoEstudiante
     {
         $estudiante = $event->estudiante;
 
-        // Validamos que el estudiante tenga registrado un correo válido
         if ($estudiante && $estudiante->correo) {
-            Mail::to($estudiante->correo)->send(new AlertaEstudianteMail($estudiante, 'actualizacion'));
+            // Se envía tipo 'registro' si es nuevo o 'actualizacion' si es una edición
+            $tipo = $event->tipo ?? 'registro'; 
+            Mail::to($estudiante->correo)->send(new AlertaEstudianteMail($estudiante, $tipo));
         }
     }
 }

@@ -79,6 +79,7 @@ Route::middleware(['auth', 'prevent-back'])->group(function () {
     // ----------------------------------------------------------------------
     Route::middleware(['verificar.rol:admin,psicologo,dir_bienestar,dir_unidad'])->group(function () {
         Route::get('/monitoreo-alertas', [AlertasController::class, 'index'])->name('alertas.monitoreo');
+        Route::get('/monitoreo-alertas/export-pdf', [AlertasController::class, 'exportPdf'])->name('alertas.export-pdf'); // 👈 Ruta para exportar PDF con filtros
         Route::resource('estudiantes', EstudianteController::class)->except(['destroy']);
     });
 
@@ -121,7 +122,7 @@ Route::middleware(['auth', 'prevent-back'])->group(function () {
     Route::resource('tasks', TaskController::class)->except(['create', 'store']);
 
     // ----------------------------------------------------------------------
-    // 8. PRUEBAS / DEBURGING DE NOTIFICACIONES
+    // 8. PRUEBAS / DEBUGGING DE NOTIFICACIONES
     // ----------------------------------------------------------------------
     Route::get('/probar-correo/{codigo}', function ($codigo) {
         $estudiante = App\Models\Estudiante::where('codigo_estudiante', $codigo)->firstOrFail();
