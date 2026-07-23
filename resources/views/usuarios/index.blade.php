@@ -7,7 +7,6 @@
         </div>
     </x-slot>
 
-    <!-- Contenedor Principal con Alpine.js para Modal de Edición y Búsqueda en Tiempo Real -->
     <div x-data="{ 
         openEditModal: false, 
         editUser: { id: '', name: '', username: '', email: '', rol: '' },
@@ -15,14 +14,12 @@
     }" class="py-12 min-h-screen" style="background-color: #f4f6f8;">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
 
-            <!-- Mensajes de Éxito -->
             @if(session('success'))
                 <div class="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm font-bold">
                     {{ session('success') }}
                 </div>
             @endif
 
-            <!-- BLOQUE DE ERRORES DE VALIDACIÓN -->
             @if ($errors->any())
                 <div class="p-4 rounded-xl bg-red-50 border border-red-200 text-red-800 text-sm font-bold space-y-1">
                     <p class="font-black text-base mb-1">⚠️ Por favor corrige los siguientes errores:</p>
@@ -34,7 +31,6 @@
                 </div>
             @endif
 
-            <!-- SECCIÓN 1: Formulario para Crear Usuario -->
             <div class="bg-white overflow-hidden shadow-md sm:rounded-3xl p-6" style="border: 1px solid #e2e8f0;">
                 <div class="flex items-center space-x-3 mb-6 border-b border-gray-100 pb-4">
                     <div class="p-2 rounded-xl bg-orange-50 text-[#f17a28]">
@@ -48,28 +44,24 @@
                 <form method="POST" action="{{ route('usuarios.store') }}" class="space-y-4">
                     @csrf
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <!-- Campo Cédula (username) -->
                         <div>
                             <label class="block text-xs font-bold uppercase mb-1 text-slate-700">Cédula</label>
                             <input type="text" name="username" value="{{ old('username') }}" required placeholder="Ej: 1088123456"
                                    class="w-full rounded-xl px-4 py-2.5 text-sm border border-slate-300 text-black bg-white focus:border-[#005a36] focus:ring-2 focus:ring-[#dcece4] outline-none">
                         </div>
 
-                        <!-- Nombre Completo -->
                         <div>
                             <label class="block text-xs font-bold uppercase mb-1 text-slate-700">Nombre Completo</label>
                             <input type="text" name="name" value="{{ old('name') }}" required placeholder="Ej: Juan Pérez"
                                    class="w-full rounded-xl px-4 py-2.5 text-sm border border-slate-300 text-black bg-white focus:border-[#005a36] focus:ring-2 focus:ring-[#dcece4] outline-none">
                         </div>
 
-                        <!-- Correo Electrónico -->
                         <div>
                             <label class="block text-xs font-bold uppercase mb-1 text-slate-700">Correo Electrónico</label>
                             <input type="email" name="email" value="{{ old('email') }}" required placeholder="usuario@cotecnova.edu.co"
                                    class="w-full rounded-xl px-4 py-2.5 text-sm border border-slate-300 text-black bg-white focus:border-[#005a36] focus:ring-2 focus:ring-[#dcece4] outline-none">
                         </div>
 
-                        <!-- Rol del Usuario -->
                         <div>
                             <label class="block text-xs font-bold uppercase mb-1 text-slate-700">Rol del Usuario</label>
                             <select name="rol" required class="w-full rounded-xl px-4 py-2.5 text-sm border border-slate-300 text-black bg-white focus:border-[#005a36] focus:ring-2 focus:ring-[#dcece4] outline-none">
@@ -83,13 +75,11 @@
                             </select>
                         </div>
 
-                        <!-- Contraseña -->
                         <div>
                             <label class="block text-xs font-bold uppercase mb-1 text-slate-700">Contraseña</label>
                             <input type="password" name="password" required placeholder="••••••••" class="w-full rounded-xl px-4 py-2.5 text-sm border border-slate-300 text-black bg-white focus:border-[#005a36] outline-none">
                         </div>
 
-                        <!-- Confirmar Contraseña -->
                         <div>
                             <label class="block text-xs font-bold uppercase mb-1 text-slate-700">Confirmar Contraseña</label>
                             <input type="password" name="password_confirmation" required placeholder="••••••••" class="w-full rounded-xl px-4 py-2.5 text-sm border border-slate-300 text-black bg-white focus:border-[#005a36] outline-none">
@@ -104,12 +94,10 @@
                 </form>
             </div>
 
-            <!-- SECCIÓN 2: Tabla de Usuarios -->
             <div class="bg-white overflow-hidden shadow-md sm:rounded-3xl p-6" style="border: 1px solid #e2e8f0;">
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
                     <h3 class="text-lg font-bold text-slate-900 m-0">Usuarios Registrados</h3>
                     
-                    <!-- Buscador Avanzado con filtro en tiempo real -->
                     <div class="w-full sm:w-80">
                         <form method="GET" action="{{ route('usuarios.index') }}" class="flex gap-2 w-full">
                             <div class="relative flex-1 flex items-center">
@@ -160,10 +148,8 @@
                                             {{ strtoupper(str_replace('_', ' ', $user->rol)) }}
                                         </span>
                                     </td>
-                                    <!-- ACCIONES MEJORADAS -->
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-center">
                                         <div class="flex items-center justify-center gap-2">
-                                            <!-- Botón Editar -->
                                             <button type="button" 
                                                     @click="editUser = { id: '{{ $user->id }}', username: '{{ $user->username }}', name: '{{ $user->name }}', email: '{{ $user->email }}', rol: '{{ $user->rol }}' }; openEditModal = true;" 
                                                     class="inline-flex items-center justify-center p-2 rounded-xl bg-[#dcece4] hover:bg-[#004d2e] text-[#005a36] hover:text-white shadow-sm transition-all duration-200 group cursor-pointer border-none" 
@@ -173,7 +159,6 @@
                                                 </svg>
                                             </button>
 
-                                            <!-- Botón Eliminar -->
                                             @if($user->id !== auth()->id())
                                                 <form action="{{ route('usuarios.destroy', $user->id) }}" method="POST" onsubmit="return confirm('¿Seguro que deseas eliminar este usuario?');" class="inline m-0">
                                                     @csrf 
@@ -191,13 +176,12 @@
                                     </td>
                                 </tr>
                             @empty
-                                <tr><td colspan="5" class="px-6 py-8 text-center font-bold text-slate-500">No hay usuarios.</td></tr>
+                                <tr><td colspan="5" class="px-6 py-8 text-center font-bold text-slate-500">No hay usuarios registradas.</td></tr>
                             @endforelse
                         </tbody>
                     </table>
                 </div>
 
-                <!-- PAGINACIÓN -->
                 <div class="mt-4 custom-pagination-wrapper">
                     {{ $usuarios->links() }}
                 </div>
@@ -205,7 +189,6 @@
 
         </div>
 
-        <!-- MODAL DE EDICIÓN FLOTANTE (Alpine.js) -->
         <div x-show="openEditModal" class="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto" x-cloak>
             <div class="fixed inset-0 bg-black/50 transition-opacity" @click="openEditModal = false"></div>
 
@@ -221,22 +204,22 @@
 
                     <div>
                         <label class="block text-xs font-bold uppercase mb-1 text-slate-700">Cédula</label>
-                        <input type="text" name="username" x-model="editUser.username" required class="w-full rounded-xl px-4 py-2 text-sm border border-slate-300 text-black bg-white outline-none">
+                        <input type="text" name="username" x-model="editUser.username" required class="w-full rounded-xl px-4 py-2 text-sm border border-slate-300 text-black bg-white outline-none focus:border-[#005a36]">
                     </div>
 
                     <div>
                         <label class="block text-xs font-bold uppercase mb-1 text-slate-700">Nombre Completo</label>
-                        <input type="text" name="name" x-model="editUser.name" required class="w-full rounded-xl px-4 py-2 text-sm border border-slate-300 text-black bg-white outline-none">
+                        <input type="text" name="name" x-model="editUser.name" required class="w-full rounded-xl px-4 py-2 text-sm border border-slate-300 text-black bg-white outline-none focus:border-[#005a36]">
                     </div>
 
                     <div>
                         <label class="block text-xs font-bold uppercase mb-1 text-slate-700">Correo Electrónico</label>
-                        <input type="email" name="email" x-model="editUser.email" required class="w-full rounded-xl px-4 py-2 text-sm border border-slate-300 text-black bg-white outline-none">
+                        <input type="email" name="email" x-model="editUser.email" required class="w-full rounded-xl px-4 py-2 text-sm border border-slate-300 text-black bg-white outline-none focus:border-[#005a36]">
                     </div>
 
                     <div>
                         <label class="block text-xs font-bold uppercase mb-1 text-slate-700">Rol del Usuario</label>
-                        <select name="rol" x-model="editUser.rol" required class="w-full rounded-xl px-4 py-2 text-sm border border-slate-300 text-black bg-white outline-none">
+                        <select name="rol" x-model="editUser.rol" required class="w-full rounded-xl px-4 py-2 text-sm border border-slate-300 text-black bg-white outline-none focus:border-[#005a36]">
                             <option value="admin">Administrador</option>
                             <option value="dir_bienestar">Director de Bienestar</option>
                             <option value="dir_unidad">Director de Unidad</option>
@@ -246,14 +229,20 @@
                         </select>
                     </div>
 
-                    <div class="bg-slate-50 p-3 rounded-xl border border-slate-100">
-                        <label class="block text-xs font-bold uppercase mb-1 text-slate-700">Nueva Contraseña (Opcional)</label>
-                        <input type="password" name="password" placeholder="Dejar en blanco para no cambiar" class="w-full rounded-xl px-4 py-2 text-sm border border-slate-300 text-black bg-white outline-none">
+                    <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 space-y-3">
+                        <div>
+                            <label class="block text-xs font-bold uppercase mb-1 text-slate-700">Nueva Contraseña (Opcional)</label>
+                            <input type="password" name="password" placeholder="Dejar en blanco para no cambiar" class="w-full rounded-xl px-4 py-2 text-sm border border-slate-300 text-black bg-white outline-none focus:border-[#005a36]">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold uppercase mb-1 text-slate-700">Confirmar Nueva Contraseña</label>
+                            <input type="password" name="password_confirmation" placeholder="Repite la nueva contraseña" class="w-full rounded-xl px-4 py-2 text-sm border border-slate-300 text-black bg-white outline-none focus:border-[#005a36]">
+                        </div>
                     </div>
 
                     <div class="flex justify-end space-x-3 pt-4 border-t border-gray-100">
-                        <button type="button" @click="openEditModal = false" class="px-4 py-2 rounded-xl text-sm font-bold bg-slate-100 text-slate-700 cursor-pointer">Cancelar</button>
-                        <button type="submit" style="background-color: #f17a28; color: #ffffff;" class="px-5 py-2 rounded-xl text-sm font-bold cursor-pointer">Guardar Cambios</button>
+                        <button type="button" @click="openEditModal = false" class="px-4 py-2 rounded-xl text-sm font-bold bg-slate-100 text-slate-700 hover:bg-slate-200 cursor-pointer transition-colors">Cancelar</button>
+                        <button type="submit" style="background-color: #f17a28; color: #ffffff;" class="px-5 py-2 rounded-xl text-sm font-bold cursor-pointer hover:opacity-90 transition-opacity">Guardar Cambios</button>
                     </div>
                 </form>
             </div>

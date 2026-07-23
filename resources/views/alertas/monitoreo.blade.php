@@ -99,53 +99,53 @@
 
                 </form>
 
-                <!-- Tabla de Estudiantes -->
-                <div class="overflow-x-auto rounded-2xl border border-slate-100 shadow-sm">
-                    <table class="w-full divide-y divide-slate-100 text-left">
-                        <thead class="bg-slate-50">
+                <!-- Tabla de Estudiantes Optimizada -->
+                <div class="w-full overflow-x-auto rounded-2xl border border-slate-200 bg-white shadow-sm">
+                    <table class="w-full divide-y divide-slate-100 text-left min-w-[1100px]">
+                        <thead class="bg-slate-50 border-b border-slate-200">
                             <tr>
-                                <th class="px-3 py-3.5 text-xs font-bold uppercase tracking-wider text-slate-700">Código</th>
-                                <th class="px-3 py-3.5 text-xs font-bold uppercase tracking-wider text-slate-700">Cédula</th>
-                                <th class="px-3 py-3.5 text-xs font-bold uppercase tracking-wider text-slate-700">Nombre</th>
-                                <th class="px-3 py-3.5 text-xs font-bold uppercase tracking-wider text-slate-700">Carrera (Programa)</th>
-                                <th class="px-3 py-3.5 text-xs font-bold uppercase tracking-wider text-slate-700">Director de Unidad</th>
-                                <th class="px-3 py-3.5 text-xs font-bold uppercase tracking-wider text-slate-700 text-center">¿Trabaja?</th>
-                                <th class="px-3 py-3.5 text-xs font-bold uppercase tracking-wider text-slate-700 text-center">Semestre</th>
-                                <th class="px-3 py-3.5 text-xs font-bold uppercase tracking-wider text-slate-700 text-center">Jornada</th>
-                                <th class="px-3 py-3.5 text-xs font-bold uppercase tracking-wider text-slate-700 text-center">Nivel Riesgo</th>
-                                <th class="px-3 py-3.5 text-xs font-bold uppercase tracking-wider text-slate-700">Actividades</th>
-                                <th class="px-3 py-3.5 text-xs font-bold uppercase tracking-wider text-slate-700">Orientación</th>
+                                <th class="px-3.5 py-3.5 text-xs font-bold uppercase tracking-wider text-slate-700">Código</th>
+                                <th class="px-3.5 py-3.5 text-xs font-bold uppercase tracking-wider text-slate-700">Cédula</th>
+                                <th class="px-3.5 py-3.5 text-xs font-bold uppercase tracking-wider text-slate-700">Nombre</th>
+                                <th class="px-3.5 py-3.5 text-xs font-bold uppercase tracking-wider text-slate-700">Carrera (Programa)</th>
+                                <th class="px-3.5 py-3.5 text-xs font-bold uppercase tracking-wider text-slate-700">Director de Unidad</th>
+                                <th class="px-3.5 py-3.5 text-xs font-bold uppercase tracking-wider text-slate-700 text-center">¿Trabaja?</th>
+                                <th class="px-3.5 py-3.5 text-xs font-bold uppercase tracking-wider text-slate-700 text-center">Semestre</th>
+                                <th class="px-3.5 py-3.5 text-xs font-bold uppercase tracking-wider text-slate-700 text-center">Jornada</th>
+                                <th class="px-3.5 py-3.5 text-xs font-bold uppercase tracking-wider text-slate-700 text-center">Nivel Riesgo</th>
+                                <th class="px-3.5 py-3.5 text-xs font-bold uppercase tracking-wider text-slate-700">Actividades</th>
+                                <th class="px-3.5 py-3.5 text-xs font-bold uppercase tracking-wider text-slate-700">Orientación</th>
                                 
                                 @if(in_array(auth()->user()->rol, ['admin', 'dir_bienestar']))
-                                    <th class="px-3 py-3.5 text-center text-xs font-bold uppercase tracking-wider text-slate-700">Acciones</th>
+                                    <th class="px-3.5 py-3.5 text-center text-xs font-bold uppercase tracking-wider text-slate-700">Acciones</th>
                                 @endif
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-slate-100">
                             @forelse($estudiantes as $estudiante)
                                 <tr class="hover:bg-slate-50/80 transition-colors duration-150">
-                                    <td class="px-3 py-3 text-xs font-bold text-slate-900 whitespace-nowrap">
+                                    <td class="px-3.5 py-3 text-xs font-bold text-slate-900 whitespace-nowrap">
                                         {{ $estudiante->codigo_estudiante }}
                                     </td>
 
-                                    <td class="px-3 py-3 text-xs font-bold text-slate-700 whitespace-nowrap">
+                                    <td class="px-3.5 py-3 text-xs font-bold text-slate-700 whitespace-nowrap">
                                         {{ $estudiante->user->username ?? $estudiante->username ?? $estudiante->cedula ?? 'N/A' }}
                                     </td>
 
-                                    <td class="px-3 py-3 text-xs">
+                                    <td class="px-3.5 py-3 text-xs">
                                         <div class="font-extrabold text-slate-900">{{ $estudiante->nombre_estudiante }}</div>
                                         <div class="text-slate-500 text-[11px]">{{ $estudiante->correo }}</div>
                                     </td>
 
-                                    <td class="px-3 py-3 text-xs text-slate-800">
+                                    <td class="px-3.5 py-3 text-xs text-slate-800">
                                         {{ $estudiante->programa?->nombre_programa ?? 'N/A' }}
                                     </td>
 
-                                    <td class="px-3 py-3 text-xs text-slate-800">
+                                    <td class="px-3.5 py-3 text-xs text-slate-800">
                                         {{ $estudiante->programa?->directorUnidad?->name ?? 'Sin asignar' }}
                                     </td>
 
-                                    <td class="px-3 py-3 text-xs font-medium text-center whitespace-nowrap">
+                                    <td class="px-3.5 py-3 text-xs font-medium text-center whitespace-nowrap">
                                         @if($estudiante->trabaja === 'Si')
                                             <span class="px-2 py-0.5 text-[11px] font-bold rounded-md bg-blue-50 text-blue-700 border border-blue-100">Sí</span>
                                         @elseif($estudiante->trabaja === 'No')
@@ -155,15 +155,15 @@
                                         @endif
                                     </td>
 
-                                    <td class="px-3 py-3 text-xs text-slate-800 text-center whitespace-nowrap">
+                                    <td class="px-3.5 py-3 text-xs text-slate-800 text-center whitespace-nowrap">
                                         {{ $estudiante->saberesPrevios?->semestre ?? 'N/A' }}
                                     </td>
 
-                                    <td class="px-3 py-3 text-xs text-slate-800 text-center whitespace-nowrap">
+                                    <td class="px-3.5 py-3 text-xs text-slate-800 text-center whitespace-nowrap">
                                         {{ $estudiante->jornada ?? 'N/A' }}
                                     </td>
 
-                                    <td class="px-3 py-3 text-xs text-center whitespace-nowrap">
+                                    <td class="px-3.5 py-3 text-xs text-center whitespace-nowrap">
                                         @if($estudiante->riesgo)
                                             <span class="px-2.5 py-0.5 inline-flex text-[11px] leading-5 font-bold rounded-full 
                                                 {{ $estudiante->riesgo->nivel_riesgo == 'Alto' ? 'bg-red-50 text-red-700 border border-red-200' : '' }}
@@ -176,16 +176,16 @@
                                         @endif
                                     </td>
 
-                                    <td class="px-3 py-3 text-xs font-medium text-slate-800 break-words leading-tight">
+                                    <td class="px-3.5 py-3 text-xs font-medium text-slate-800 break-words leading-tight">
                                         {{ $estudiante->actividades_estilo_vida ?? $estudiante->estiloVida?->actividades_estilo_vida ?? 'Ninguna' }}
                                     </td>
 
-                                    <td class="px-3 py-3 text-xs font-medium text-slate-800 break-words leading-tight">
+                                    <td class="px-3.5 py-3 text-xs font-medium text-slate-800 break-words leading-tight">
                                         {{ $estudiante->orientacionPsicologica?->nivel_servicio ?? 'Sin orientación' }}
                                     </td>
                                     
                                     @if(in_array(auth()->user()->rol, ['admin', 'dir_bienestar']))
-                                        <td class="px-3 py-3 whitespace-nowrap text-xs text-center font-medium">
+                                        <td class="px-3.5 py-3 whitespace-nowrap text-xs text-center font-medium">
                                             <div class="flex items-center justify-center gap-1.5">
                                                 <a href="{{ route('estudiantes.edit', $estudiante->codigo_estudiante) }}" 
                                                    class="inline-flex items-center justify-center p-1.5 rounded-lg bg-[#dcece4] hover:bg-[#004d2e] text-[#005a36] hover:text-white shadow-sm transition-all duration-200 group" 
@@ -234,7 +234,7 @@
                 @endif
             </div>
 
-            <!-- Metodología -->
+            <!-- Metodología y Fórmulas -->
             <div class="bg-white overflow-hidden shadow-md sm:rounded-3xl p-8 border border-slate-200">
                 <div class="flex items-center space-x-3 mb-4 border-b border-slate-100 pb-4">
                     <div class="p-2 rounded-xl bg-orange-50 text-[#f17a28]">

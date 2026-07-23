@@ -24,6 +24,25 @@
                     $puedeEditarAcademico = $esAdmin || $esDirectivo;
                     $puedeEditarOrientacion = $esAdmin || $esPsicologo;
 
+                    // Fallback robusto para Correo Institucional
+                    $correoActual = old('correo', 
+                        $estudiante->correo 
+                        ?? optional($estudiante->usuario)->email 
+                        ?? optional($estudiante->usuario)->correo 
+                        ?? optional($estudiante->user)->email 
+                        ?? optional($estudiante->cuestionario)->correo 
+                        ?? ''
+                    );
+
+                    // Fallback para Cédula / Documento de Identidad
+                    $cedulaActual = old('cedula', 
+                        $estudiante->cedula 
+                        ?? $estudiante->numero_documento 
+                        ?? $estudiante->documento 
+                        ?? optional($estudiante->cuestionario)->cedula 
+                        ?? ''
+                    );
+
                     // Valor dinámico de la actividad de estilo de vida
                     $actividadValor = old('actividad', 
                         optional($estudiante->cuestionario)->actividad 
@@ -58,7 +77,19 @@
                             @endif
                         </div>
 
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <!-- Cédula / Documento -->
+                            <div class="space-y-2">
+                                <label for="cedula" class="block text-sm font-semibold text-gray-700">Cédula / Documento <span class="text-red-500">*</span></label>
+                                <input type="text" id="cedula" value="{{ $cedulaActual }}" required 
+                                       {{ !$puedeEditarAcademico ? 'readonly' : 'name=cedula' }}
+                                       class="block w-full rounded-xl border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 {{ !$puedeEditarAcademico ? 'bg-gray-50 text-gray-500' : 'text-gray-900 bg-white' }} text-sm py-2.5">
+                                @if(!$puedeEditarAcademico)
+                                    <input type="hidden" name="cedula" value="{{ $cedulaActual }}">
+                                @endif
+                                @error('cedula') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
+                            </div>
+
                             <!-- Código del Estudiante -->
                             <div class="space-y-2">
                                 <label class="block text-sm font-semibold text-gray-700">Código del Estudiante</label>
@@ -68,11 +99,11 @@
                             <!-- Correo Institucional -->
                             <div class="space-y-2">
                                 <label for="correo" class="block text-sm font-semibold text-gray-700">Correo Institucional <span class="text-red-500">*</span></label>
-                                <input type="email" id="correo" value="{{ old('correo', $estudiante->correo) }}" required 
+                                <input type="email" id="correo" value="{{ $correoActual }}" required 
                                        {{ !$puedeEditarAcademico ? 'readonly' : 'name=correo' }}
                                        class="block w-full rounded-xl border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 {{ !$puedeEditarAcademico ? 'bg-gray-50 text-gray-500' : 'text-gray-900 bg-white' }} text-sm py-2.5">
                                 @if(!$puedeEditarAcademico)
-                                    <input type="hidden" name="correo" value="{{ old('correo', $estudiante->correo) }}">
+                                    <input type="hidden" name="correo" value="{{ $correoActual }}">
                                 @endif
                                 @error('correo') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
                             </div>
@@ -125,7 +156,6 @@
                                         </option>
                                     @endforeach
                                 </select>
-                                <!-- Inputs ocultos duales para compatibilidad con la base de datos y controlador -->
                                 <input type="hidden" id="id_director_unidad" name="id_director_unidad" value="{{ old('id_director_unidad', $estudiante->id_docente) }}">
                                 <input type="hidden" id="id_docente" name="id_docente" value="{{ old('id_docente', $estudiante->id_docente) }}">
                             </div>
@@ -190,7 +220,6 @@
                             <h3 class="text-lg font-bold text-amber-800 flex items-center gap-2">
                                 ⚠️ Análisis de Riesgo y Estilos de Vida
                             </h3>
-                            <!-- Badge visual del nivel de riesgo -->
                             <span class="px-3 py-1 text-xs font-bold rounded-full 
                                 {{ $riesgoActual === 'Alto' ? 'bg-red-100 text-red-800 border border-red-200' : '' }}
                                 {{ $riesgoActual === 'Medio' ? 'bg-amber-100 text-amber-800 border border-amber-200' : '' }}
@@ -322,9 +351,7 @@
         </div>
     </div>
 
-    <!-- ======================================================== -->
-    <!-- JAVASCRIPT DE ASIGNACIÓN DINÁMICA                        -->
-    <!-- ======================================================== -->
+    <!-- JAVASCRIPT DE ASIGNACIÓN DINÁMICA -->
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             const programmeSelect = document.getElementById('id_programa');
@@ -338,7 +365,6 @@
                 const selectedOption = programmeSelect.options[programmeSelect.selectedIndex];
                 if (!selectedOption) return;
 
-                // Normalización de texto sin tildes para evitar errores de coincidencia
                 const programaTexto = selectedOption.text.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
                 let palabrasClave = [];
 
@@ -359,7 +385,6 @@
                             directorSelectVisual.selectedIndex = i;
                             const valorDirector = directorSelectVisual.options[i].value;
                             
-                            // Actualiza ambos inputs ocultos
                             directorInputHidden.value = valorDirector;
                             if (docenteInputHidden) {
                                 docenteInputHidden.value = valorDirector;

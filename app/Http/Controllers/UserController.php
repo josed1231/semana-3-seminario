@@ -38,10 +38,9 @@ class UserController extends Controller
             'email'    => ['required', 'string', 'email', 'max:255', 'unique:users'],
             'rol'      => ['required', 'string', 'in:admin,dir_bienestar,dir_unidad,psicologo,docente,user,estudiante'],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
-            'username' => ['required', 'string', 'max:50', 'unique:users,username'], // Obligatorio (corresponde a la cédula)
+            'username' => ['required', 'string', 'max:50', 'unique:users,username'],
         ]);
 
-        // Se asigna directamente la cédula ingresada en el formulario, sin autocompletar con el correo
         User::create([
             'name'     => $request->name,
             'email'    => $request->email,
@@ -54,20 +53,22 @@ class UserController extends Controller
     }
 
     /**
-     * Actualiza la información de un usuario.
+     * Actualiza la información de un usuario (CORREGIDO).
      */
     public function update(Request $request, User $usuario)
     {
         $request->validate([
             'name'     => ['required', 'string', 'max:255'],
             'email'    => ['required', 'string', 'email', 'max:255', 'unique:users,email,' . $usuario->id],
+            'username' => ['required', 'string', 'max:50', 'unique:users,username,' . $usuario->id], // <--- Cédula obligatoria e ignora el ID propio
             'rol'      => ['required', 'string', 'in:admin,dir_bienestar,dir_unidad,psicologo,docente,user,estudiante'],
             'password' => ['nullable', 'confirmed', Rules\Password::defaults()],
         ]);
 
-        $usuario->name  = $request->name;
-        $usuario->email = $request->email;
-        $usuario->rol   = $request->rol;
+        $usuario->name     = $request->name;
+        $usuario->email    = $request->email;
+        $usuario->username = $request->username; // <--- Asigna la nueva cédula
+        $usuario->rol      = $request->rol;
 
         if ($request->filled('password')) {
             $usuario->password = Hash::make($request->password);
@@ -79,7 +80,7 @@ class UserController extends Controller
     }
 
     /**
-     * Elimina un usuario especifico.
+     * Elimina un usuario específico.
      */
     public function destroy(User $usuario)
     {
