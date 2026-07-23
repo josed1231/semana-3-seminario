@@ -8,7 +8,6 @@
     </x-slot>
 
     <div class="py-6 min-h-screen bg-[#f4f6f8]">
-        <!-- Usamos el ancho completo de la pantalla con mínimos márgenes laterales -->
         <div class="w-full px-3 sm:px-6 space-y-6">
 
             <div class="bg-white overflow-hidden shadow-md sm:rounded-3xl p-6 border border-slate-200">
@@ -38,6 +37,7 @@
                     </div>
                 </div>
 
+                <!-- Filtros -->
                 <form method="GET" action="{{ route('alertas.monitoreo') }}" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 mb-6 bg-slate-50 p-4 rounded-2xl border border-slate-100">
                     
                     <div>
@@ -99,6 +99,7 @@
 
                 </form>
 
+                <!-- Tabla de Estudiantes -->
                 <div class="overflow-x-auto rounded-2xl border border-slate-100 shadow-sm">
                     <table class="w-full divide-y divide-slate-100 text-left">
                         <thead class="bg-slate-50">
@@ -123,33 +124,27 @@
                         <tbody class="bg-white divide-y divide-slate-100">
                             @forelse($estudiantes as $estudiante)
                                 <tr class="hover:bg-slate-50/80 transition-colors duration-150">
-                                    <!-- CÓDIGO -->
                                     <td class="px-3 py-3 text-xs font-bold text-slate-900 whitespace-nowrap">
                                         {{ $estudiante->codigo_estudiante }}
                                     </td>
 
-                                    <!-- CÉDULA (Obtenida desde user->username o atributo de estudiante) -->
                                     <td class="px-3 py-3 text-xs font-bold text-slate-700 whitespace-nowrap">
                                         {{ $estudiante->user->username ?? $estudiante->username ?? $estudiante->cedula ?? 'N/A' }}
                                     </td>
 
-                                    <!-- NOMBRE -->
                                     <td class="px-3 py-3 text-xs">
                                         <div class="font-extrabold text-slate-900">{{ $estudiante->nombre_estudiante }}</div>
                                         <div class="text-slate-500 text-[11px]">{{ $estudiante->correo }}</div>
                                     </td>
 
-                                    <!-- CARRERA -->
                                     <td class="px-3 py-3 text-xs text-slate-800">
                                         {{ $estudiante->programa?->nombre_programa ?? 'N/A' }}
                                     </td>
 
-                                    <!-- DIRECTOR -->
                                     <td class="px-3 py-3 text-xs text-slate-800">
                                         {{ $estudiante->programa?->directorUnidad?->name ?? 'Sin asignar' }}
                                     </td>
 
-                                    <!-- ¿TRABAJA? -->
                                     <td class="px-3 py-3 text-xs font-medium text-center whitespace-nowrap">
                                         @if($estudiante->trabaja === 'Si')
                                             <span class="px-2 py-0.5 text-[11px] font-bold rounded-md bg-blue-50 text-blue-700 border border-blue-100">Sí</span>
@@ -160,17 +155,14 @@
                                         @endif
                                     </td>
 
-                                    <!-- SEMESTRE -->
                                     <td class="px-3 py-3 text-xs text-slate-800 text-center whitespace-nowrap">
                                         {{ $estudiante->saberesPrevios?->semestre ?? 'N/A' }}
                                     </td>
 
-                                    <!-- JORNADA -->
                                     <td class="px-3 py-3 text-xs text-slate-800 text-center whitespace-nowrap">
                                         {{ $estudiante->jornada ?? 'N/A' }}
                                     </td>
 
-                                    <!-- RIESGO -->
                                     <td class="px-3 py-3 text-xs text-center whitespace-nowrap">
                                         @if($estudiante->riesgo)
                                             <span class="px-2.5 py-0.5 inline-flex text-[11px] leading-5 font-bold rounded-full 
@@ -184,17 +176,14 @@
                                         @endif
                                     </td>
 
-                                    <!-- ACTIVIDADES -->
                                     <td class="px-3 py-3 text-xs font-medium text-slate-800 break-words leading-tight">
-                                        {{ $estudiante->actividades_estilo_vida ?? $estudiante->estiloVida?->actividades_estilo_vida ?? $estudiante->actividad ?? 'Ninguna' }}
+                                        {{ $estudiante->actividades_estilo_vida ?? $estudiante->estiloVida?->actividades_estilo_vida ?? 'Ninguna' }}
                                     </td>
 
-                                    <!-- ORIENTACIÓN -->
                                     <td class="px-3 py-3 text-xs font-medium text-slate-800 break-words leading-tight">
                                         {{ $estudiante->orientacionPsicologica?->nivel_servicio ?? 'Sin orientación' }}
                                     </td>
                                     
-                                    <!-- ACCIONES -->
                                     @if(in_array(auth()->user()->rol, ['admin', 'dir_bienestar']))
                                         <td class="px-3 py-3 whitespace-nowrap text-xs text-center font-medium">
                                             <div class="flex items-center justify-center gap-1.5">
@@ -245,6 +234,7 @@
                 @endif
             </div>
 
+            <!-- Metodología -->
             <div class="bg-white overflow-hidden shadow-md sm:rounded-3xl p-8 border border-slate-200">
                 <div class="flex items-center space-x-3 mb-4 border-b border-slate-100 pb-4">
                     <div class="p-2 rounded-xl bg-orange-50 text-[#f17a28]">

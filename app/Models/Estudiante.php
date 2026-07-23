@@ -25,7 +25,7 @@ class Estudiante extends Model
         'jornada',
         'trabaja',
         'actividades_estilo_vida',
-        'orientacion_automatica', // Permitir asignación masiva
+        'orientacion_automatica',
     ];
 
     // ==========================================
@@ -38,7 +38,10 @@ class Estudiante extends Model
 
         return $query->where(function($q) use ($texto) {
             $q->where('nombre_estudiante', 'LIKE', "%{$texto}%")
-              ->orWhere('codigo_estudiante', 'LIKE', "%{$texto}%");
+              ->orWhere('codigo_estudiante', 'LIKE', "%{$texto}%")
+              ->orWhereHas('user', function($userQuery) use ($texto) {
+                  $userQuery->where('username', 'LIKE', "%{$texto}%");
+              });
         });
     }
 
@@ -66,10 +69,6 @@ class Estudiante extends Model
     // Relaciones
     // ==========================================
 
-    /**
-     * Relación con el usuario del sistema (Cédula / Username)
-     * Si en tu BD la relación es por correo, cambia a: return $this->belongsTo(User::class, 'correo', 'email');
-     */
     public function user()
     {
         return $this->belongsTo(User::class, 'codigo_estudiante', 'username');
@@ -90,6 +89,7 @@ class Estudiante extends Model
         return $this->hasOne(SaberesPrevios::class, 'codigo_estudiante', 'codigo_estudiante');
     }
 
+    // Si tu modelo se llama RiesgoEstudiante, cambia RiesgoDesercion::class por RiesgoEstudiante::class
     public function riesgo()
     {
         return $this->hasOne(RiesgoDesercion::class, 'codigo_estudiante', 'codigo_estudiante');
