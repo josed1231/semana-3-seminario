@@ -16,18 +16,23 @@ use App\Http\Controllers\{
 
 /*
 |--------------------------------------------------------------------------
-| Ruta Temporal para Poblar BD en Render (Ejecuta Seeder)
+| Ruta Temporal para Poblar BD en Render (Migraciones + Seeder)
 |--------------------------------------------------------------------------
 */
 Route::get('/setup-admin', function () {
     try {
+        // 1. Crear todas las tablas en PostgreSQL
+        Artisan::call('migrate', ['--force' => true]);
+
+        // 2. Insertar el usuario admin
         Artisan::call('db:seed', [
             '--class' => 'UserSeeder',
             '--force' => true,
         ]);
-        return '¡Usuario webmaster configurado con éxito en PostgreSQL!';
+
+        return '¡Base de datos migrada y usuario webmaster creado con éxito en PostgreSQL!';
     } catch (\Exception $e) {
-        return 'Error al ejecutar el seeder: ' . $e->getMessage();
+        return 'Error durante la configuración: ' . $e->getMessage();
     }
 });
 
