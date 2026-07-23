@@ -17,6 +17,7 @@ class Estudiante extends Model
 
     protected $fillable = [
         'codigo_estudiante', 
+        'cedula', 
         'nombre_estudiante', 
         'correo', 
         'id_programa', 
@@ -36,11 +37,14 @@ class Estudiante extends Model
     {
         if (empty($texto)) return $query;
 
-        return $query->where(function($q) use ($texto) {
-            $q->where('nombre_estudiante', 'LIKE', "%{$texto}%")
-              ->orWhere('codigo_estudiante', 'LIKE', "%{$texto}%")
-              ->orWhereHas('user', function($userQuery) use ($texto) {
-                  $userQuery->where('username', 'LIKE', "%{$texto}%");
+        // Convertir el texto ingresado a minúsculas
+        $termino = mb_strtolower(trim($texto));
+
+        return $query->where(function($q) use ($termino) {
+            $q->whereRaw('LOWER(nombre_estudiante) LIKE ?', ["%{$termino}%"])
+              ->orWhereRaw('LOWER(codigo_estudiante) LIKE ?', ["%{$termino}%"])
+              ->orWhereHas('user', function($userQuery) use ($termino) {
+                  $userQuery->whereRaw('LOWER(username) LIKE ?', ["%{$termino}%"]);
               });
         });
     }
@@ -89,7 +93,6 @@ class Estudiante extends Model
         return $this->hasOne(SaberesPrevios::class, 'codigo_estudiante', 'codigo_estudiante');
     }
 
-    // Si tu modelo se llama RiesgoEstudiante, cambia RiesgoDesercion::class por RiesgoEstudiante::class
     public function riesgo()
     {
         return $this->hasOne(RiesgoDesercion::class, 'codigo_estudiante', 'codigo_estudiante');

@@ -7,7 +7,6 @@
     <div class="max-w-4xl mx-auto py-10 px-4">
         <h2 class="text-3xl font-bold text-center text-[#004d2e] mb-6">Resultados Cuestionario</h2>
         
-        <!-- Contenedor del buscador centrado con AlpineJS -->
         <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200 mb-8"
              x-data="{ 
                 query: '{{ old('codigo', request('codigo')) }}', 
@@ -42,11 +41,10 @@
                            @input.debounce.300ms="buscarEnTiempoReal()"
                            @click.away="sugerencias = []"
                            class="w-full form-control" 
-                           placeholder="Ingrese ID o Nombre del Estudiante" 
+                           placeholder="Ingrese Cédula, ID o Nombre" 
                            required
                            autocomplete="off">
 
-                    <!-- DESPLEGABLE DE AUTOCOMPLETADO FLOTANTE -->
                     <ul x-show="sugerencias.length > 0" 
                         class="absolute z-50 w-full bg-white border border-gray-200 mt-1 rounded-lg shadow-lg text-left divide-y divide-gray-100 overflow-hidden"
                         style="display: none;">
@@ -56,7 +54,7 @@
                                         @click="query = estudiante.codigo_estudiante; sugerencias = []; $nextTick(() => $el.form.submit());"
                                         class="w-full px-4 py-3 hover:bg-gray-50 flex flex-col transition duration-150 text-left">
                                     <span class="font-semibold text-gray-900 text-sm" x-text="estudiante.nombre_estudiante"></span>
-                                    <span class="text-xs text-gray-400" x-text="'Código: ' + estudiante.codigo_estudiante"></span>
+                                    <span class="text-xs text-gray-400" x-text="'Código/Cédula: ' + (estudiante.cedula ?? estudiante.codigo_estudiante)"></span>
                                 </button>
                             </li>
                         </template>
@@ -72,7 +70,6 @@
 
         {{-- Mostrar resultados si existen --}}
         @if(isset($respuestas))
-            <!-- Resultados obtenidos -->
             <div class="bg-white p-8 rounded-lg shadow-sm border border-gray-200 mb-8">
                 <h3 class="text-xl text-center font-bold text-[#004d2e] mb-6">
                     Respuestas de: {{ $estudiante->nombre_estudiante }} ({{ $estudiante->codigo_estudiante }})
@@ -81,12 +78,17 @@
                 <div class="flex justify-center">
                     <table class="w-full max-w-2xl text-left border-collapse">
                         @foreach($respuestas as $pregunta => $respuesta)
+                            {{-- Omitir la clave "actividad" para evitar duplicado con "actividades_estilo_vida" --}}
+                            @if($pregunta === 'actividad')
+                                @continue
+                            @endif
+
                             <tr class="border-b border-gray-100">
                                 <th class="py-3 px-4 text-[#004d2e] capitalize font-semibold">
                                     {{ str_replace('_', ' ', $pregunta) }}
                                 </th>
                                 <td class="py-3 px-4 text-gray-700 text-right">
-                                    {{ $respuesta }}
+                                    {{ is_array($respuesta) ? implode(', ', $respuesta) : $respuesta }}
                                 </td>
                             </tr>
                         @endforeach
