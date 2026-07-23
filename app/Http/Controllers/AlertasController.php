@@ -44,9 +44,8 @@ class AlertasController extends Controller
     {
         $user = auth()->user();
 
-        // 👈 Se incluye 'user' para cargar los datos de la Cédula (username)
+        // Se eliminó 'user' para evitar RelationNotFoundException
         $query = Estudiante::with([
-            'user', 
             'programa.directorUnidad', 
             'riesgo', 
             'orientacionPsicologica', 
@@ -79,9 +78,8 @@ class AlertasController extends Controller
     {
         $user = auth()->user();
 
-        // 👈 Se incluye 'user' para el reporte PDF también
+        // Se eliminó 'user' para evitar RelationNotFoundException
         $query = Estudiante::with([
-            'user', 
             'programa.directorUnidad', 
             'riesgo', 
             'orientacionPsicologica', 
