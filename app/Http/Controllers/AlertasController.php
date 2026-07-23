@@ -44,8 +44,9 @@ class AlertasController extends Controller
     {
         $user = auth()->user();
 
-        // Se eliminó 'user' para evitar RelationNotFoundException
+        // Se mantiene 'user' para precargar la Cédula/Username sin fallos de relación
         $query = Estudiante::with([
+            'user',
             'programa.directorUnidad', 
             'riesgo', 
             'orientacionPsicologica', 
@@ -78,8 +79,9 @@ class AlertasController extends Controller
     {
         $user = auth()->user();
 
-        // Se eliminó 'user' para evitar RelationNotFoundException
+        // Cargar 'user' para el reporte PDF también
         $query = Estudiante::with([
+            'user',
             'programa.directorUnidad', 
             'riesgo', 
             'orientacionPsicologica', 

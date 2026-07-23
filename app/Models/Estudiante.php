@@ -66,6 +66,15 @@ class Estudiante extends Model
     // Relaciones
     // ==========================================
 
+    /**
+     * Relación con el usuario del sistema (Cédula / Username)
+     * Si en tu BD la relación es por correo, cambia a: return $this->belongsTo(User::class, 'correo', 'email');
+     */
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'codigo_estudiante', 'username');
+    }
+
     public function programa()
     {
         return $this->belongsTo(ProgramaAcademico::class, 'id_programa', 'id_programa');
