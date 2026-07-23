@@ -45,7 +45,7 @@
                         <input type="text" 
                                name="buscar" 
                                value="{{ request('buscar') }}" 
-                               placeholder="Nombre o código..." 
+                               placeholder="Nombre, cédula o código..." 
                                class="rounded-xl px-3 py-2 text-sm w-full text-slate-800 bg-white border border-slate-300 focus:border-[#005a36] focus:ring-2 focus:ring-[#dcece4] outline-none transition-all">
                     </div>
 
@@ -104,6 +104,7 @@
                         <thead class="bg-slate-50">
                             <tr>
                                 <th class="px-3 py-3.5 text-xs font-bold uppercase tracking-wider text-slate-700">Código</th>
+                                <th class="px-3 py-3.5 text-xs font-bold uppercase tracking-wider text-slate-700">Cédula</th>
                                 <th class="px-3 py-3.5 text-xs font-bold uppercase tracking-wider text-slate-700">Nombre</th>
                                 <th class="px-3 py-3.5 text-xs font-bold uppercase tracking-wider text-slate-700">Carrera (Programa)</th>
                                 <th class="px-3 py-3.5 text-xs font-bold uppercase tracking-wider text-slate-700">Director de Unidad</th>
@@ -122,19 +123,33 @@
                         <tbody class="bg-white divide-y divide-slate-100">
                             @forelse($estudiantes as $estudiante)
                                 <tr class="hover:bg-slate-50/80 transition-colors duration-150">
+                                    <!-- CÓDIGO -->
                                     <td class="px-3 py-3 text-xs font-bold text-slate-900 whitespace-nowrap">
                                         {{ $estudiante->codigo_estudiante }}
                                     </td>
+
+                                    <!-- CÉDULA (Obtenida desde user->username o atributo de estudiante) -->
+                                    <td class="px-3 py-3 text-xs font-bold text-slate-700 whitespace-nowrap">
+                                        {{ $estudiante->user->username ?? $estudiante->username ?? $estudiante->cedula ?? 'N/A' }}
+                                    </td>
+
+                                    <!-- NOMBRE -->
                                     <td class="px-3 py-3 text-xs">
                                         <div class="font-extrabold text-slate-900">{{ $estudiante->nombre_estudiante }}</div>
                                         <div class="text-slate-500 text-[11px]">{{ $estudiante->correo }}</div>
                                     </td>
+
+                                    <!-- CARRERA -->
                                     <td class="px-3 py-3 text-xs text-slate-800">
                                         {{ $estudiante->programa?->nombre_programa ?? 'N/A' }}
                                     </td>
+
+                                    <!-- DIRECTOR -->
                                     <td class="px-3 py-3 text-xs text-slate-800">
                                         {{ $estudiante->programa?->directorUnidad?->name ?? 'Sin asignar' }}
                                     </td>
+
+                                    <!-- ¿TRABAJA? -->
                                     <td class="px-3 py-3 text-xs font-medium text-center whitespace-nowrap">
                                         @if($estudiante->trabaja === 'Si')
                                             <span class="px-2 py-0.5 text-[11px] font-bold rounded-md bg-blue-50 text-blue-700 border border-blue-100">Sí</span>
@@ -144,12 +159,18 @@
                                             <span class="text-slate-400 italic">N/A</span>
                                         @endif
                                     </td>
+
+                                    <!-- SEMESTRE -->
                                     <td class="px-3 py-3 text-xs text-slate-800 text-center whitespace-nowrap">
                                         {{ $estudiante->saberesPrevios?->semestre ?? 'N/A' }}
                                     </td>
+
+                                    <!-- JORNADA -->
                                     <td class="px-3 py-3 text-xs text-slate-800 text-center whitespace-nowrap">
                                         {{ $estudiante->jornada ?? 'N/A' }}
                                     </td>
+
+                                    <!-- RIESGO -->
                                     <td class="px-3 py-3 text-xs text-center whitespace-nowrap">
                                         @if($estudiante->riesgo)
                                             <span class="px-2.5 py-0.5 inline-flex text-[11px] leading-5 font-bold rounded-full 
@@ -162,13 +183,18 @@
                                             <span class="text-slate-400 italic text-[11px]">Sin evaluar</span>
                                         @endif
                                     </td>
+
+                                    <!-- ACTIVIDADES -->
                                     <td class="px-3 py-3 text-xs font-medium text-slate-800 break-words leading-tight">
                                         {{ $estudiante->actividades_estilo_vida ?? $estudiante->estiloVida?->actividades_estilo_vida ?? $estudiante->actividad ?? 'Ninguna' }}
                                     </td>
+
+                                    <!-- ORIENTACIÓN -->
                                     <td class="px-3 py-3 text-xs font-medium text-slate-800 break-words leading-tight">
                                         {{ $estudiante->orientacionPsicologica?->nivel_servicio ?? 'Sin orientación' }}
                                     </td>
                                     
+                                    <!-- ACCIONES -->
                                     @if(in_array(auth()->user()->rol, ['admin', 'dir_bienestar']))
                                         <td class="px-3 py-3 whitespace-nowrap text-xs text-center font-medium">
                                             <div class="flex items-center justify-center gap-1.5">
@@ -203,7 +229,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="{{ in_array(auth()->user()->rol, ['admin', 'dir_bienestar']) ? 11 : 10 }}" class="px-6 py-8 whitespace-nowrap text-sm text-center font-bold text-slate-800 bg-slate-50">
+                                    <td colspan="{{ in_array(auth()->user()->rol, ['admin', 'dir_bienestar']) ? 12 : 11 }}" class="px-6 py-8 whitespace-nowrap text-sm text-center font-bold text-slate-800 bg-slate-50">
                                         No se encontraron estudiantes registrados con los criterios seleccionados.
                                     </td>
                                 </tr>
