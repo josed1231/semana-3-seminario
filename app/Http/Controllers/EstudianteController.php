@@ -12,6 +12,37 @@ use Illuminate\Support\Facades\Log;
 
 class EstudianteController extends Controller
 {
+    /**
+     * Muestra la información del estudiante para edición (Soporta Vista o Modal/JSON).
+     */
+    public function edit($codigo_estudiante)
+    {
+        try {
+            $estudiante = Estudiante::with(['programa', 'directorUnidad', 'riesgo', 'orientacionPsicologica', 'saberesPrevios'])
+                ->where('codigo_estudiante', $codigo_estudiante)
+                ->firstOrFail();
+
+            // Si la petición es AJAX/Modal (devuelve JSON)
+            if (request()->ajax() || request()->wantsJson()) {
+                return response()->json($estudiante);
+            }
+
+            // Si es una página independiente
+            $programas = ProgramaAcademico::all();
+            return view('estudiantes.edit', compact('estudiante', 'programas'));
+
+        } catch (\Exception $e) {
+            Log::error('Error al obtener estudiante para edición: ' . $e->getMessage());
+            if (request()->ajax() || request()->wantsJson()) {
+                return response()->json(['error' => 'Estudiante no encontrado'], 404);
+            }
+            return redirect()->back()->with('error', 'Estudiante no encontrado.');
+        }
+    }
+
+    /**
+     * Actualiza la información del estudiante.
+     */
     public function update(Request $request, $codigo_estudiante)
     {
         $estudiante = Estudiante::where('codigo_estudiante', $codigo_estudiante)->firstOrFail();
@@ -29,14 +60,15 @@ class EstudianteController extends Controller
                     }
                 }
 
-                // 2. Actualizar datos base del Estudiante
+                // 2. Actualizar datos base del Estudiante (INCLUYENDO CÉDULA)
                 $datosEstudiante = [
+                    'cedula'                  => $request->input('cedula'), // <-- ¡Agregado!
                     'nombre_estudiante'       => $request->nombre_estudiante,
                     'correo'                  => $request->correo,
                     'id_programa'             => $request->id_programa,
                     'id_docente'              => $nuevoIdDirector,
                     'jornada'                 => $request->jornada,
-                    'actividades_estilo_vida' => $request->input('actividad', ''),
+                    'actividades_estilo_vida' => $request->input('actividad', $request->input('actividades_estilo_vida', '')),
                     'orientacion_automatica'  => $request->input('orientacion_automatica'),
                 ];
 
@@ -78,6 +110,9 @@ class EstudianteController extends Controller
         }
     }
 
+    /**
+     * Elimina un estudiante.
+     */
     public function destroy($codigo_estudiante)
     {
         try {
