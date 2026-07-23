@@ -10,13 +10,12 @@ class UserSeeder extends Seeder
 {
     public function run(): void
     {
-        // Se busca por correo y se crea o actualiza el registro
         User::updateOrCreate(
-            ['email' => 'webmaster@gmail.com'], // O 'webmaster@cotecnova.edu.co'
+            ['email' => 'webmaster@gmail.com'], // 👈 Aquí va el correo con el que vas a iniciar sesión
             [
                 'name'     => 'Web Master',
-                'username' => 'webmaster', // Alias limpio sin dominio
-                'password' => Hash::make('password123'), // Recuerda cambiarla después
+                'username' => 'webmaster',
+                'password' => Hash::make('password123'),
                 'rol'      => 'admin',
             ]
         );
