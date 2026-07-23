@@ -10,13 +10,13 @@ class UserSeeder extends Seeder
 {
     public function run(): void
     {
-        // Creamos tu usuario administrador oficial
+        // Se busca por correo y se crea o actualiza el registro
         User::updateOrCreate(
-            ['email' => 'juan.zuluaga@cotecnova.edu.co'], // Tu correo real o el institucional
+            ['email' => 'webmaster@gmail.com'], // O 'webmaster@cotecnova.edu.co'
             [
-                'name'     => 'Juan Sebastián Zuluaga',
-                'username' => 'juansezuluaga',
-                'password' => Hash::make('TuClaveSeguraAqui123*'), // Usa una contraseña fuerte
+                'name'     => 'Web Master',
+                'username' => 'webmaster', // Alias limpio sin dominio
+                'password' => Hash::make('password123'), // Recuerda cambiarla después
                 'rol'      => 'admin',
             ]
         );
