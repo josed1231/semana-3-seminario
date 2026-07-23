@@ -1,3 +1,4 @@
+PHP
 <?php
 
 use Illuminate\Support\Facades\Route;
@@ -16,23 +17,23 @@ use App\Http\Controllers\{
 
 /*
 |--------------------------------------------------------------------------
-| Ruta Temporal para Poblar BD en Render (Migraciones + Seeder)
+| Ruta Raíz (TEMPORAL PARA EJECUTAR MIGRACIONES Y SEEDER)
 |--------------------------------------------------------------------------
 */
-Route::get('/setup-admin', function () {
+Route::get('/', function() {
     try {
-        // 1. Crear todas las tablas en PostgreSQL
+        // 1. Ejecuta las migraciones por si falta alguna
         Artisan::call('migrate', ['--force' => true]);
 
-        // 2. Insertar el usuario admin
+        // 2. Ejecuta el seeder para crear el usuario webmaster
         Artisan::call('db:seed', [
             '--class' => 'UserSeeder',
             '--force' => true,
         ]);
 
-        return '¡Base de datos migrada y usuario webmaster creado con éxito en PostgreSQL!';
+        return '<h1>¡Éxito!</h1><p>Base de datos migrada y usuario webmaster creado correctamente en PostgreSQL.</p><a href="/login">Ir al Login</a>';
     } catch (\Exception $e) {
-        return 'Error durante la configuración: ' . $e->getMessage();
+        return '<h1>Error durante la configuración:</h1><pre>' . $e->getMessage() . '</pre>';
     }
 });
 
