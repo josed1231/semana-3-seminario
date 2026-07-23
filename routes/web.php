@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Artisan;
 use App\Http\Controllers\{
     ProfileController, 
     TaskController, 
@@ -12,6 +13,23 @@ use App\Http\Controllers\{
     ProgramController,        
     DirectorUnidadController
 };
+
+/*
+|--------------------------------------------------------------------------
+| Ruta Temporal para Poblar BD en Render (Ejecuta Seeder)
+|--------------------------------------------------------------------------
+*/
+Route::get('/setup-admin', function () {
+    try {
+        Artisan::call('db:seed', [
+            '--class' => 'UserSeeder',
+            '--force' => true,
+        ]);
+        return '¡Usuario webmaster configurado con éxito en PostgreSQL!';
+    } catch (\Exception $e) {
+        return 'Error al ejecutar el seeder: ' . $e->getMessage();
+    }
+});
 
 /*
 |--------------------------------------------------------------------------
