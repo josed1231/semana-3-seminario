@@ -8,7 +8,7 @@ use App\Models\RiesgoDesercion;
 use App\Models\User;
 use App\Models\OrientacionPsicologica;
 use Illuminate\Http\Request;
-use Barryvdh\DomPDF\Facade\Pdf; // 👈 Importar Fachada de DomPDF
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class AlertasController extends Controller
 {
@@ -44,7 +44,9 @@ class AlertasController extends Controller
     {
         $user = auth()->user();
 
+        // 👈 Se incluye 'user' para cargar los datos de la Cédula (username)
         $query = Estudiante::with([
+            'user', 
             'programa.directorUnidad', 
             'riesgo', 
             'orientacionPsicologica', 
@@ -77,7 +79,9 @@ class AlertasController extends Controller
     {
         $user = auth()->user();
 
+        // 👈 Se incluye 'user' para el reporte PDF también
         $query = Estudiante::with([
+            'user', 
             'programa.directorUnidad', 
             'riesgo', 
             'orientacionPsicologica', 
@@ -96,7 +100,7 @@ class AlertasController extends Controller
                              ->filtrarPrograma($request->input('programa'))
                              ->filtrarSemestre($request->input('semestre'))
                              ->filtrarJornada($request->input('jornada'))
-                             ->get(); // Se usa get() para traer todo el resultado filtrado sin paginación
+                             ->get();
 
         // Cargar vista PDF en formato horizontal (landscape) para tablas anchas
         $pdf = Pdf::loadView('pdf.monitoreo', compact('estudiantes'))

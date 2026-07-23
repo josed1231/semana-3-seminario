@@ -58,7 +58,7 @@ class CuestionarioController extends Controller
         // Obtener el ID del director de unidad asociado al programa
         $idDocente = $programa->id_docente;
 
-        // PROTECCIÓN CLAVE: Verificar si el id_docente realmente existe en la tabla directores_unidad
+        // PROTECCIÓN: Verificar si el id_docente realmente existe en la tabla directores_unidad
         if ($idDocente) {
             $existeDirector = DB::table('directores_unidad')->where('id_docente', $idDocente)->exists();
             
@@ -139,6 +139,7 @@ class CuestionarioController extends Controller
             $nivelCalculado = 'Medio';
         }
 
+        // Al guardar en 'riesgo()', el Observer RiesgoDesercionObserver reaccionará automáticamente
         $estudiante->riesgo()->updateOrCreate(
             ['codigo_estudiante' => $estudiante->codigo_estudiante],
             [
@@ -147,22 +148,15 @@ class CuestionarioController extends Controller
             ]
         );
 
-        // 5. Generar y asegurar el almacenamiento de la orientación automática
-        $textoOrientacion = Orientacion::generarYGuardar($estudiante, [
+        // 5. Generación directa de la Orientación Psicológica
+        Orientacion::generarYGuardar($estudiante, [
             'afectacion_academico'      => $academicoRaw,
             'afectacion_socioeconomico' => $socioRaw,
             'afectacion_psicosocial'    => $psicoRaw,
         ]);
 
-        // Forzar la actualización en la BD por si el servicio retorna el texto sin hacer persistencia directa
-        if (!empty($textoOrientacion)) {
-            $estudiante->update([
-                'orientacion_automatica' => $textoOrientacion
-            ]);
-        }
-
-        // 6. Disparar el evento para notificar al estudiante
-        event(new EstudianteActualizado($estudiante));
+        // 6. Disparar el evento para notificar al estudiante la finalización del cuestionario
+        event(new EstudianteActualizado($estudiante, 'cuestionario'));
 
         return redirect()->route('cuestionario.success');
     }
@@ -196,5 +190,44 @@ class CuestionarioController extends Controller
         $directores = User::where('rol', 'dir_unidad')->get(); 
 
         return view('estudiantes.edit', compact('estudiante', 'programas', 'directores'));
+    }
+
+    /**
+     * Actualiza la información de un estudiante desde el formulario de edición (Admin)
+     */
+    public function update(Request $request, $codigo_estudiante)
+    {
+        $estudiante = Estudiante::where('codigo_estudiante', $codigo_estudiante)->firstOrFail();
+
+        $request->validate([
+            'id_programa'               => 'required|exists:programas_academicos,id_programa',
+            'jornada'                   => 'required|string',
+            'trabaja'                   => 'nullable|string',
+            'afectacion_academico'      => 'nullable',
+            'afectacion_socioeconomico' => 'nullable',
+            'afectacion_psicosocial'    => 'nullable',
+        ]);
+
+        // Actualizar estudiante
+        $estudiante->update([
+            'id_programa' => $request->id_programa,
+            'jornada'     => $request->jornada,
+            'trabaja'     => $request->input('trabaja', 'No'),
+        ]);
+
+        // Recalcular y guardar la orientación psicológica si se enviaron las afectaciones
+        $academicoRaw = $request->input('afectacion_academico');
+        $socioRaw     = $request->input('afectacion_socioeconomico');
+        $psicoRaw     = $request->input('afectacion_psicosocial');
+
+        if ($academicoRaw || $socioRaw || $psicoRaw) {
+            Orientacion::generarYGuardar($estudiante, [
+                'afectacion_academico'      => $academicoRaw,
+                'afectacion_socioeconomico' => $socioRaw,
+                'afectacion_psicosocial'    => $psicoRaw,
+            ]);
+        }
+
+        return redirect()->route('estudiantes.index')->with('success', 'Estudiante y orientación actualizados correctamente.');
     }
 }

@@ -6,28 +6,38 @@ use App\Models\OrientacionPsicologica;
 
 class Orientacion
 {
-    public static function generarYGuardar($estudiante, array $respuestas)
+    public static function generarYGuardar($estudiante, array $respuestas = [])
     {
         $academico = $respuestas['afectacion_academico'] ?? 'Bajo';
         $socio     = $respuestas['afectacion_socioeconomico'] ?? 'Bajo';
         $psico     = $respuestas['afectacion_psicosocial'] ?? 'Bajo';
 
+        // Helper para validar niveles de riesgo
+        $esAlto = function($val) {
+            return in_array(strtolower($val), ['alto', 'alta', 'critico', 'crítica']);
+        };
+
+        $esMedio = function($val) {
+            return in_array(strtolower($val), ['medio', 'media']);
+        };
+
         // Determinar el Nivel de Servicio
         $nivelServicio = 'Tutoría Académica Standard';
-        if (in_array('Alto', [$academico, $socio, $psico]) || in_array('Alta', [$academico, $socio, $psico])) {
+        if ($esAlto($academico) || $esAlto($socio) || $esAlto($psico)) {
             $nivelServicio = 'Atención Prioritaria Bienestar / Psicología';
-        } elseif (in_array('Medio', [$academico, $socio, $psico]) || in_array('Media', [$academico, $socio, $psico])) {
+        } elseif ($esMedio($academico) || $esMedio($socio) || $esMedio($psico)) {
             $nivelServicio = 'Acompañamiento Psicoeducativo Preventivo';
         }
 
         // Construir el texto explicativo de las observaciones
         $observaciones = "Orientación Automática PIAE:\n";
-        $observaciones .= "- Afectación Académica: {$academico}\n";
+        $observaciones .= "- Exigencias Académicas: {$academico}\n";
         $observaciones .= "- Afectación Socioeconómica: {$socio}\n";
-        $observaciones .= "- Afectación Psicosocial: {$psico}\n\n";
-        $observaciones .= "Recomendación sugerida: " . self::obtenerRecomendacion($academico, $socio, $psico);
+        $observaciones .= "- Estrés / Psicosocial: {$psico}\n\n";
+        $observaciones .= "Ruta de Atención Sugerida:\n";
+        $observaciones .= self::obtenerRecomendacion($academico, $socio, $psico);
 
-        // Guardar o Actualizar usando solo las columnas requeridas
+        // Guardar o Actualizar en la base de datos
         return OrientacionPsicologica::updateOrCreate(
             ['codigo_estudiante' => $estudiante->codigo_estudiante],
             [
@@ -39,17 +49,32 @@ class Orientacion
 
     private static function obtenerRecomendacion($academico, $socio, $psico)
     {
-        // Lógica de recomendación según combinaciones
-        if ($academico === 'Alto' || $academico === 'Alta') {
-            return "Remitir a talleres de hábitos de estudio y tutorías con docentes de área.";
-        }
-        if ($psico === 'Alto' || $psico === 'Alta') {
-            return "Programar sesión individual con el equipo de Psicología / Bienestar Institucional.";
-        }
-        if ($socio === 'Alto' || $socio === 'Alta') {
-            return "Informar sobre convocatorias de apoyos socioeconómicos y subsidios de la institución.";
+        $rutas = [];
+
+        $esRiesgo = function($val) {
+            return in_array(strtolower($val), ['alto', 'alta', 'medio', 'media', 'critico', 'crítica']);
+        };
+
+        // 1. Temas de Estrés / Psicosocial -> Área de Psicología
+        if ($esRiesgo($psico)) {
+            $rutas[] = "• Área de Psicología: Remisión para manejo de estrés, salud mental y acompañamiento emocional.";
         }
 
-        return "Mantener seguimiento regular en el módulo de monitoreo.";
+        // 2. Temas Socioeconómicos -> Área Financiera
+        if ($esRiesgo($socio)) {
+            $rutas[] = "• Área Financiera: Orientación en apoyos económicos, opciones de pago, becas o subsidios.";
+        }
+
+        // 3. Exigencias Académicas -> Área de Bienestar
+        if ($esRiesgo($academico)) {
+            $rutas[] = "• Área de Bienestar: Acercamiento para nivelación por exigencias académicas, hábitos de estudio y tutorías.";
+        }
+
+        // Si no presenta afectaciones medias ni altas
+        if (empty($rutas)) {
+            return "• Módulo de Monitoreo: Mantener seguimiento regular en el sistema sin remisión prioritaria.";
+        }
+
+        return implode("\n", $rutas);
     }
 }

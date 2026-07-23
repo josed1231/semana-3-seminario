@@ -11,11 +11,18 @@ class EstudianteActualizado
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    // Define la propiedad pública para que el listener pueda acceder a ella
     public Estudiante $estudiante;
+    public string $tipo;
 
-    public function __construct(Estudiante $estudiante)
+    /**
+     * Create a new event instance.
+     *
+     * @param Estudiante $estudiante
+     * @param string $tipo Tipo de alerta: 'cuestionario', 'registro', etc.
+     */
+    public function __construct(Estudiante $estudiante, string $tipo = 'cuestionario')
     {
         $this->estudiante = $estudiante;
+        $this->tipo = $tipo;
     }
 }

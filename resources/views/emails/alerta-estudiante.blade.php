@@ -32,6 +32,14 @@
                 <div class="btn-container">
                     <a href="{{ route('login') }}" class="btn">Iniciar Sesión e Ingresar al Cuestionario</a>
                 </div>
+            @elseif(in_array($tipoAlerta ?? '', ['cuestionario', 'cuestionario_completado']))
+                <p>¡Hola, <strong>{{ $usuario->nombre_estudiante ?? $usuario->name ?? $usuario->username }}</strong>! 👋</p>
+                
+                <p><strong>¡Has completado tu Cuestionario Semestral de Caracterización satisfactoriamente! 🎉</strong></p>
+                
+                <p>Queremos confirmarte que hemos recibido tu información correctamente. Estos datos nos permiten conocer tus necesidades y brindarte un mejor acompañamiento académico, psicosocial y de bienestar.</p>
+                
+                <p>Gracias por tu valioso tiempo e interés en el proceso.</p>
             @else
                 <p>Hola, <strong>{{ $usuario->name ?? $usuario->nombre_estudiante ?? $usuario->username }}</strong>.</p>
                 <p>Te informamos que la información de tu cuestionario o seguimiento académico ha sido actualizada correctamente en el sistema.</p>

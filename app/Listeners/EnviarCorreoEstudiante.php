@@ -8,14 +8,21 @@ use Illuminate\Support\Facades\Mail;
 
 class EnviarCorreoEstudiante
 {
+    /**
+     * Handle the event.
+     */
     public function handle(EstudianteActualizado $event): void
     {
         $estudiante = $event->estudiante;
 
-        if ($estudiante && $estudiante->correo) {
-            // Se envía tipo 'registro' si es nuevo o 'actualizacion' si es una edición
-            $tipo = $event->tipo ?? 'registro'; 
-            Mail::to($estudiante->correo)->send(new AlertaEstudianteMail($estudiante, $tipo));
+        if ($estudiante) {
+            // Intenta obtener el correo desde la relación user, el modelo estudiante o el atributo directo
+            $correo = $estudiante->user->email ?? $estudiante->correo ?? $estudiante->email ?? null;
+
+            if ($correo) {
+                $tipo = $event->tipo ?? 'cuestionario';
+                Mail::to($correo)->send(new AlertaEstudianteMail($estudiante, $tipo));
+            }
         }
     }
 }

@@ -24,8 +24,9 @@ class AlertaEstudianteMail extends Mailable
     public function envelope(): Envelope
     {
         $asunto = match ($this->tipoAlerta) {
-            'registro', 'registro_admin' => '¡Bienvenido(a) al Aplicativo Institucional COTECNOVA!',
-            default                      => 'Actualización de Cuestionario Semestral - COTECNOVA',
+            'registro', 'registro_admin'     => '¡Bienvenido(a) al Aplicativo Institucional COTECNOVA!',
+            'cuestionario', 'cuestionario_completado' => '¡Cuestionario Completado con Éxito! - COTECNOVA',
+            default                          => 'Notificación Institucional - COTECNOVA',
         };
 
         return new Envelope(subject: $asunto);
