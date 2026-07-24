@@ -31,30 +31,29 @@ class AuthenticatedSessionController extends Controller
 
         $user = Auth::user();
 
-        // 2. Generar el código OTP
+        // 2. Generar el código OTP y enviarlo de forma segura sin bloquear la app
         $otp = $user->generateOtp();
 
-        // 3. Envío protegido con try-catch para evitar errores 504 o caídas si el SMTP falla o se bloquea en Render
         try {
             Mail::send('emails.otp', ['otp' => $otp, 'user' => $user], function ($message) use ($user) {
                 $message->to($user->email)
                         ->subject('Código de verificación - COTECNOVA');
             });
         } catch (\Exception $e) {
-            // Si el servidor de Render bloquea el puerto de correo, registramos el error en los logs 
-            // pero dejamos que el usuario continúe (puedes ver el OTP en los logs de Render si lo necesitas)
+            // Si la red de Render bloquea el SMTP, registramos el error en los logs 
+            // pero permitimos el flujo para evitar errores 500 o 504
             Log::error('Error al enviar correo OTP: ' . $e->getMessage());
             Log::info('OTP de respaldo para ' . $user->email . ': ' . $otp);
         }
 
-        // 4. Cerrar sesión parcial por seguridad
+        // 3. Cerrar sesión parcial por seguridad
         Auth::guard('web')->logout();
 
-        // 5. Guardar temporalmente el ID del usuario y la preferencia de recordar sesión
+        // 4. Guardar temporalmente el ID del usuario y la preferencia de recordar sesión
         $request->session()->put('otp_user_id', $user->id);
         $request->session()->put('otp_remember', $request->boolean('remember'));
 
-        // 6. Redirigir al formulario de verificación de código OTP sin bloqueos
+        // 5. Redirigir al formulario de verificación de código OTP
         return redirect()->route('otp.verify');
     }
 

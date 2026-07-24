@@ -4,11 +4,11 @@ namespace App\Listeners;
 
 use App\Events\EstudianteActualizado;
 use App\Mail\AlertaEstudianteMail;
-use Illuminate\Contracts\Queue\ShouldQueue; // <-- AGREGADO
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
 
-class EnviarCorreoEstudiante implements ShouldQueue // <-- AGREGADO ShouldQueue
+class EnviarCorreoEstudiante implements ShouldQueue
 {
     /**
      * Handle the event.
