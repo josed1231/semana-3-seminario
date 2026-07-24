@@ -7,7 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Tymon\JWTAuth\Facades\JWTAuth;
-use App\Events\EstudianteActualizado; // <-- Evento de notificación
+use App\Events\EstudianteActualizado;
 
 class AuthController extends Controller
 {
@@ -40,7 +40,7 @@ class AuthController extends Controller
             'jornada'  => $request->jornada ?? null,
         ]);
 
-        // Disparar evento para enviar el correo de bienvenida al registrarse
+        // Disparar evento de notificación (procesado de forma asíncrona)
         event(new EstudianteActualizado($user, 'registro'));
 
         // Generar token usando JWT

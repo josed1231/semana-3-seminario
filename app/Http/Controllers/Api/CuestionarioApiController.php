@@ -33,18 +33,17 @@ class CuestionarioApiController extends Controller
             'afectacion_psicosocial'    => 'nullable',
         ]);
 
+        $estudianteProcesado = null;
+
         try {
-            return DB::transaction(function () use ($request) {
+            DB::transaction(function () use ($request, &$estudianteProcesado) {
                 $user = auth()->user();
 
                 // Determinar el código del estudiante (de la sesión JWT o del parámetro de entrada)
                 $codigoEstudiante = $user->codigo_estudiante ?? $request->input('codigo_estudiante');
 
                 if (!$codigoEstudiante) {
-                    return response()->json([
-                        'status'  => 'error',
-                        'message' => 'El usuario autenticado no tiene un código de estudiante asociado.'
-                    ], 400);
+                    throw new \Exception('El usuario autenticado no tiene un código de estudiante asociado.');
                 }
 
                 // 2. Obtener Programa Académico y validar Director de Unidad
@@ -131,7 +130,7 @@ class CuestionarioApiController extends Controller
                 $detallesPuntajes = "Puntajes - Académico: {$academicoRaw}, Socioeconómico: {$socioRaw}, Psicosocial: {$psicoRaw}.";
 
                 // Guardar/Actualizar Riesgo de Deserción
-                $riesgo = $estudiante->riesgo()->updateOrCreate(
+                $estudiante->riesgo()->updateOrCreate(
                     ['codigo_estudiante' => $estudiante->codigo_estudiante],
                     [
                         'nivel_riesgo' => $nivelCalculado,
@@ -146,29 +145,32 @@ class CuestionarioApiController extends Controller
                     'afectacion_psicosocial'    => $psicoRaw,
                 ]);
 
-                // 7. Notificación mediante Evento
-                event(new EstudianteActualizado($estudiante, 'cuestionario'));
-
-                // Cargar relación de orientación generada para la respuesta
-                $estudiante->load('orientacionPsicologica');
-
-                // 8. Respuesta JSON Exitosa
-                return response()->json([
-                    'status'  => 'success',
-                    'code'    => 201,
-                    'message' => 'Cuestionario procesado y nivel de riesgo calculado exitosamente.',
-                    'data'    => [
-                        'codigo_estudiante'       => $estudiante->codigo_estudiante,
-                        'nombre_estudiante'       => $estudiante->nombre_estudiante,
-                        'nivel_riesgo_calculado'  => $nivelCalculado,
-                        'detalles_riesgo'         => $detallesPuntajes,
-                        'orientacion_psicologica' => [
-                            'nivel_servicio' => $estudiante->orientacionPsicologica->nivel_servicio ?? 'Tutoría Académica Standard',
-                            'observaciones'  => $estudiante->orientacionPsicologica->observaciones ?? ''
-                        ]
-                    ]
-                ], 201);
+                // Asignar estudiante a la variable de salida
+                $estudianteProcesado = $estudiante;
             });
+
+            // 7. Notificación mediante Evento (Fuera de la transacción de BD)
+            if ($estudianteProcesado) {
+                event(new EstudianteActualizado($estudianteProcesado, 'cuestionario'));
+                $estudianteProcesado->load('orientacionPsicologica', 'riesgo');
+            }
+
+            // 8. Respuesta JSON Exitosa
+            return response()->json([
+                'status'  => 'success',
+                'code'    => 201,
+                'message' => 'Cuestionario procesado y nivel de riesgo calculated exitosamente.',
+                'data'    => [
+                    'codigo_estudiante'       => $estudianteProcesado->codigo_estudiante,
+                    'nombre_estudiante'       => $estudianteProcesado->nombre_estudiante,
+                    'nivel_riesgo_calculado'  => $estudianteProcesado->riesgo->nivel_riesgo ?? 'Bajo',
+                    'detalles_riesgo'         => $estudianteProcesado->riesgo->detalles ?? '',
+                    'orientacion_psicologica' => [
+                        'nivel_servicio' => $estudianteProcesado->orientacionPsicologica->nivel_servicio ?? 'Tutoría Académica Standard',
+                        'observaciones'  => $estudianteProcesado->orientacionPsicologica->observaciones ?? ''
+                    ]
+                ]
+            ], 201);
 
         } catch (\Exception $e) {
             Log::error('Error en API Cuestionario: ' . $e->getMessage());

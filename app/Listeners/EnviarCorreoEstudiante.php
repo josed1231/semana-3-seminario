@@ -4,11 +4,15 @@ namespace App\Listeners;
 
 use App\Events\EstudianteActualizado;
 use App\Mail\AlertaEstudianteMail;
+use Illuminate\Contracts\Queue\ShouldQueue; // <-- AGREGADO
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
 
-class EnviarCorreoEstudiante
+class EnviarCorreoEstudiante implements ShouldQueue // <-- AGREGADO ShouldQueue
 {
+    /**
+     * Handle the event.
+     */
     public function handle(EstudianteActualizado $event): void
     {
         $objeto = $event->estudiante;
