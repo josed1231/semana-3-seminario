@@ -129,7 +129,7 @@
                                     </td>
 
                                     <td class="px-3.5 py-3 text-xs font-bold text-slate-700 whitespace-nowrap">
-                                        {{ $estudiante->user->username ?? $estudiante->username ?? $estudiante->cedula ?? 'N/A' }}
+                                        {{ $estudiante->cedula }}
                                     </td>
 
                                     <td class="px-3.5 py-3 text-xs">

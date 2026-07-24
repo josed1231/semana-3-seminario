@@ -44,7 +44,7 @@ class AlertasController extends Controller
     {
         $user = auth()->user();
 
-        // Se mantiene 'user' para precargar la Cédula/Username sin fallos de relación
+        // Se precarga 'user' para disponer del campo username/cedula
         $query = Estudiante::with([
             'user',
             'programa.directorUnidad', 
@@ -79,7 +79,7 @@ class AlertasController extends Controller
     {
         $user = auth()->user();
 
-        // Cargar 'user' para el reporte PDF también
+        // Cargar 'user' para el reporte PDF
         $query = Estudiante::with([
             'user',
             'programa.directorUnidad', 
@@ -102,7 +102,7 @@ class AlertasController extends Controller
                              ->filtrarJornada($request->input('jornada'))
                              ->get();
 
-        // Cargar vista PDF en formato horizontal (landscape) para tablas anchas
+        // Cargar vista PDF en formato horizontal (landscape)
         $pdf = Pdf::loadView('pdf.monitoreo', compact('estudiantes'))
                   ->setPaper('a4', 'landscape');
 

@@ -29,6 +29,24 @@ class Estudiante extends Model
         'orientacion_automatica',
     ];
 
+    /**
+     * Atributos personalizados adjuntos al serializar el modelo (JSON/Array).
+     */
+    protected $appends = ['cedula'];
+
+    /**
+     * Accessor para la propiedad 'cedula'.
+     * Prioriza obtener el valor desde 'username' (relación user o propiedad directa).
+     */
+    public function getCedulaAttribute()
+    {
+        return $this->user?->username 
+            ?? $this->attributes['username'] 
+            ?? $this->attributes['cedula'] 
+            ?? $this->attributes['codigo_estudiante'] 
+            ?? 'N/A';
+    }
+
     // ==========================================
     // Scopes de Búsqueda y Filtrado
     // ==========================================
@@ -37,7 +55,6 @@ class Estudiante extends Model
     {
         if (empty($texto)) return $query;
 
-        // Convertir el texto ingresado a minúsculas
         $termino = mb_strtolower(trim($texto));
 
         return $query->where(function($q) use ($termino) {

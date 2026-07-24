@@ -4,9 +4,14 @@
             <h2 class="font-bold text-xl text-slate-800 leading-tight">
                 {{ __('Editar Estudiante: ') }} <span class="text-emerald-700">{{ $estudiante->nombre_estudiante ?? $estudiante->nombre ?? 'Estudiante' }}</span>
             </h2>
-            <span class="px-3 py-1 text-xs font-semibold rounded-full bg-slate-100 text-slate-700 border border-slate-200">
-                Código: {{ $estudiante->codigo_estudiante ?? $estudiante->id ?? 'N/A' }}
-            </span>
+            <div class="flex gap-2">
+                <span class="px-3 py-1 text-xs font-semibold rounded-full bg-slate-100 text-slate-700 border border-slate-200">
+                    Código: {{ $estudiante->codigo_estudiante ?? 'N/A' }}
+                </span>
+                <span class="px-3 py-1 text-xs font-semibold rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200">
+                    Cédula: {{ $estudiante->cedula }}
+                </span>
+            </div>
         </div>
     </x-slot>
 
@@ -55,7 +60,7 @@
                     $semestreActual = old('semestre', $safeGet($estudiante, 'cuestionario.semestre', $safeGet($estudiante, 'semestre', 1)));
                     $trabajaActual = old('trabaja', $safeGet($estudiante, 'cuestionario.trabaja', $safeGet($estudiante, 'trabaja', 'No')));
 
-                    // Rutas seguras (evita 500 si la ruta no existe)
+                    // Rutas seguras
                     $codigoEst = $safeGet($estudiante, 'codigo_estudiante', $safeGet($estudiante, 'id', 1));
                     $routeUpdate = Route::has('estudiantes.update') ? route('estudiantes.update', $codigoEst) : '#';
                     $routeCancelar = Route::has('alertas.monitoreo') 
@@ -82,11 +87,20 @@
                             @endif
                         </div>
 
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                             <!-- Código del Estudiante -->
                             <div class="space-y-2">
                                 <label class="block text-sm font-semibold text-gray-700">Código del Estudiante</label>
                                 <input type="text" value="{{ $safeGet($estudiante, 'codigo_estudiante') }}" disabled class="block w-full rounded-xl border-gray-300 bg-gray-100/70 text-gray-500 text-sm cursor-not-allowed shadow-sm py-2.5">
+                            </div>
+
+                            <!-- Cédula -->
+                            <div class="space-y-2">
+                                <label for="cedula" class="block text-sm font-semibold text-gray-700">Cédula</label>
+                                <input type="text" id="cedula" name="cedula" value="{{ old('cedula', $estudiante->cedula) }}" 
+                                       {{ !$puedeEditarAcademico ? 'readonly' : '' }}
+                                       class="block w-full rounded-xl border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 {{ !$puedeEditarAcademico ? 'bg-gray-50 text-gray-500' : 'text-gray-900 bg-white' }} text-sm py-2.5">
+                                @error('cedula') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
                             </div>
 
                             <!-- Correo Institucional -->

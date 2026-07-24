@@ -9,6 +9,7 @@ use App\Models\OrientacionPsicologica;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
 
 class EstudianteController extends Controller
 {
@@ -18,7 +19,7 @@ class EstudianteController extends Controller
     public function edit($codigo_estudiante)
     {
         try {
-            $estudiante = Estudiante::with(['programa', 'directorUnidad', 'riesgo', 'orientacionPsicologica', 'saberesPrevios'])
+            $estudiante = Estudiante::with(['user', 'programa', 'directorUnidad', 'riesgo', 'orientacionPsicologica', 'saberesPrevios'])
                 ->where('codigo_estudiante', $codigo_estudiante)
                 ->firstOrFail();
 
@@ -60,9 +61,15 @@ class EstudianteController extends Controller
                     }
                 }
 
-                // 2. Actualizar datos base del Estudiante (INCLUYENDO CÉDULA)
+                // 2. Sincronizar el nombre de usuario / cédula en el Modelo User
+                if ($estudiante->user && $request->filled('cedula')) {
+                    $estudiante->user->update([
+                        'username' => $request->input('cedula')
+                    ]);
+                }
+
+                // 3. Actualizar datos base del Estudiante
                 $datosEstudiante = [
-                    'cedula'                  => $request->input('cedula'), // <-- ¡Agregado!
                     'nombre_estudiante'       => $request->nombre_estudiante,
                     'correo'                  => $request->correo,
                     'id_programa'             => $request->id_programa,
@@ -71,6 +78,10 @@ class EstudianteController extends Controller
                     'actividades_estilo_vida' => $request->input('actividad', $request->input('actividades_estilo_vida', '')),
                     'orientacion_automatica'  => $request->input('orientacion_automatica'),
                 ];
+
+                if (Schema::hasColumn('estudiantes', 'cedula') && $request->filled('cedula')) {
+                    $datosEstudiante['cedula'] = $request->input('cedula');
+                }
 
                 if ($request->has('semestre')) {
                     $datosEstudiante['semestre'] = $request->semestre;
@@ -81,7 +92,7 @@ class EstudianteController extends Controller
 
                 $estudiante->update($datosEstudiante);
 
-                // 3. Actualizar / Crear información de Riesgo
+                // 4. Actualizar / Crear información de Riesgo
                 if ($request->filled('nivel_riesgo')) {
                     $estudiante->riesgo()->updateOrCreate(
                         ['codigo_estudiante' => $estudiante->codigo_estudiante],
@@ -92,7 +103,7 @@ class EstudianteController extends Controller
                     );
                 }
 
-                // 4. Persistir Orientación Psicológica evitando errores NULL (SQL 1048)
+                // 5. Persistir Orientación Psicológica evitando errores NULL
                 OrientacionPsicologica::updateOrCreate(
                     ['codigo_estudiante' => $estudiante->codigo_estudiante],
                     [
