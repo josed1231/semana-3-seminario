@@ -11,7 +11,7 @@ use App\Http\Controllers\{
     UserController,
     ProgramController,        
     DirectorUnidadController,
-    OtpVerificationController // 👈 Agregado aquí
+    OtpVerificationController
 };
 
 /*
@@ -131,7 +131,7 @@ Route::middleware(['auth', 'prevent-back'])->group(function () {
         // Disparar evento para notificación por correo
         event(new App\Events\EstudianteActualizado($estudiante));
 
-        return "¡Evento de correo disparado correctamente para el estudiante: {$estudiante->nombre_estudiante}! Revisa el archivo storage/logs/laravel.log.";
+        return "¡Evento de correo disparado correctamente para el estudiante: {$estudiante->nombre_estudiante}!";
     });
 });
 
@@ -140,11 +140,9 @@ Route::middleware(['auth', 'prevent-back'])->group(function () {
 | Rutas de Verificación OTP (2FA - Sin requerir sesión completa previa)
 |--------------------------------------------------------------------------
 */
-Route::controller(OtpVerificationController::class)->group(function () {
-    Route::get('/otp-verify', 'show')->name('otp.verify');
-    Route::post('/otp-verify', 'verify')->name('otp.verify.post');
-    Route::post('/otp-resend', 'resend')->name('otp.resend');
-});
+Route::get('/otp-verify', [OtpVerificationController::class, 'show'])->name('otp.verify');
+Route::post('/otp-verify', [OtpVerificationController::class, 'verify'])->name('otp.verify.post');
+Route::post('/otp-resend', [OtpVerificationController::class, 'resend'])->name('otp.resend');
 
 /*
 |--------------------------------------------------------------------------
