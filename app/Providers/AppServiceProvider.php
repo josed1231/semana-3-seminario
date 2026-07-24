@@ -1,42 +1,49 @@
 <?php
 
-namespace App\Providers;
+namespace App\Policies;
 
-use Illuminate\Support\ServiceProvider;
-use App\Events\EstudianteActualizado;
-use App\Listeners\EnviarCorreoEstudiante;
-use App\Models\RiesgoDesercion;
-use App\Observers\RiesgoDesercionObserver;
-use Illuminate\Support\Facades\Event;
-use Illuminate\Routing\UrlGenerator;
+use App\Models\User;
+use App\Models\Cuestionario;
 
-class AppServiceProvider extends ServiceProvider
+class CuestionarioPolicy
 {
     /**
-     * Register any application services.
+     * Determina quién puede ver la lista general.
      */
-    public function register(): void
+    public function viewAny(User $user): bool
     {
-        //
+        return in_array($user->rol, ['admin', 'psicologo', 'dir_bienestar', 'dir_unidad']);
     }
 
     /**
-     * Bootstrap any application services.
+     * Determina quién puede ver un cuestionario en específico.
      */
-    public function boot(UrlGenerator $url): void
+    public function view(User $user, Cuestionario $cuestionario): bool
     {
-        // Registrar el Observer para que reaccione cuando cambie el riesgo de deserte
-        RiesgoDesercion::observe(RiesgoDesercionObserver::class);
+        return $user->id === $cuestionario->user_id || in_array($user->rol, ['admin', 'psicologo', 'dir_bienestar']);
+    }
 
-        // Registro del Evento y Listener de notificaciones al estudiante
-        Event::listen(
-            EstudianteActualizado::class,
-            EnviarCorreoEstudiante::class,
-        );
+    /**
+     * Determina quién puede crear/diligenciar el cuestionario.
+     */
+    public function create(User $user): bool
+    {
+        return in_array($user->rol, ['user', 'estudiante']);
+    }
 
-        // Forzar HTTPS en producción sin depender directamente de env()
-        if ($this->app->environment('production')) {
-            $url->forceScheme('https');
-        }
+    /**
+     * Determina quién puede actualizar sus respuestas.
+     */
+    public function update(User $user, Cuestionario $cuestionario): bool
+    {
+        return $user->id === $cuestionario->user_id;
+    }
+
+    /**
+     * Determina quién puede eliminar un cuestionario.
+     */
+    public function delete(User $user, Cuestionario $cuestionario): bool
+    {
+        return $user->rol === 'admin';
     }
 }

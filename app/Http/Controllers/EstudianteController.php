@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Auth\Access\AuthorizationException;
 
 class EstudianteController extends Controller
 {
@@ -23,6 +24,9 @@ class EstudianteController extends Controller
                 ->where('codigo_estudiante', $codigo_estudiante)
                 ->firstOrFail();
 
+            // 🔒 Verificación de autorización con Policy
+            $this->authorize('view', $estudiante);
+
             // Si la petición es AJAX/Modal (devuelve JSON)
             if (request()->ajax() || request()->wantsJson()) {
                 return response()->json($estudiante);
@@ -32,6 +36,8 @@ class EstudianteController extends Controller
             $programas = ProgramaAcademico::all();
             return view('estudiantes.edit', compact('estudiante', 'programas'));
 
+        } catch (AuthorizationException $e) {
+            throw $e; // Permite que Laravel maneje la respuesta 403 Forbidden automáticamente
         } catch (\Exception $e) {
             Log::error('Error al obtener estudiante para edición: ' . $e->getMessage());
             if (request()->ajax() || request()->wantsJson()) {
@@ -47,6 +53,9 @@ class EstudianteController extends Controller
     public function update(Request $request, $codigo_estudiante)
     {
         $estudiante = Estudiante::where('codigo_estudiante', $codigo_estudiante)->firstOrFail();
+
+        // 🔒 Verificación de autorización con Policy
+        $this->authorize('update', $estudiante);
 
         try {
             DB::transaction(function () use ($request, $estudiante) {
@@ -115,6 +124,8 @@ class EstudianteController extends Controller
 
             return redirect()->route('alertas.monitoreo')->with('success', 'Estudiante actualizado correctamente.');
 
+        } catch (AuthorizationException $e) {
+            throw $e;
         } catch (\Exception $e) {
             Log::error('Error al actualizar estudiante: ' . $e->getMessage());
             return redirect()->back()->with('error', 'Ocurrió un error al actualizar el estudiante.')->withInput();
@@ -128,9 +139,15 @@ class EstudianteController extends Controller
     {
         try {
             $estudiante = Estudiante::where('codigo_estudiante', $codigo_estudiante)->firstOrFail();
+
+            // 🔒 Verificación de autorización con Policy
+            $this->authorize('delete', $estudiante);
+
             $estudiante->delete();
 
             return redirect()->route('alertas.monitoreo')->with('success', 'Estudiante eliminado correctamente.');
+        } catch (AuthorizationException $e) {
+            throw $e;
         } catch (\Exception $e) {
             Log::error('Error al eliminar estudiante: ' . $e->getMessage());
             return redirect()->route('alertas.monitoreo')->with('error', 'Error al eliminar el estudiante.');
