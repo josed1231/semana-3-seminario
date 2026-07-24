@@ -1,49 +1,32 @@
 <?php
 
-namespace App\Policies;
+namespace App\Providers;
 
-use App\Models\User;
-use App\Models\Cuestionario;
+use Illuminate\Support\ServiceProvider;
+use Illuminate\Pagination\Paginator; // Descomenta si usas paginación Bootstrap
+use Illuminate\Support\Facades\URL;      // Descomenta si fuerzas HTTPS en Render
 
-class CuestionarioPolicy
+class AppServiceProvider extends ServiceProvider
 {
     /**
-     * Determina quién puede ver la lista general.
+     * Register any application services.
      */
-    public function viewAny(User $user): bool
+    public function register(): void
     {
-        return in_array($user->rol, ['admin', 'psicologo', 'dir_bienestar', 'dir_unidad']);
+        //
     }
 
     /**
-     * Determina quién puede ver un cuestionario en específico.
+     * Bootstrap any application services.
      */
-    public function view(User $user, Cuestionario $cuestionario): bool
+    public function boot(): void
     {
-        return $user->id === $cuestionario->user_id || in_array($user->rol, ['admin', 'psicologo', 'dir_bienestar']);
-    }
+        // Si fuerzas HTTPS en producción (Render):
+        if (config('app.env') === 'production') {
+            URL::forceScheme('https');
+        }
 
-    /**
-     * Determina quién puede crear/diligenciar el cuestionario.
-     */
-    public function create(User $user): bool
-    {
-        return in_array($user->rol, ['user', 'estudiante']);
-    }
-
-    /**
-     * Determina quién puede actualizar sus respuestas.
-     */
-    public function update(User $user, Cuestionario $cuestionario): bool
-    {
-        return $user->id === $cuestionario->user_id;
-    }
-
-    /**
-     * Determina quién puede eliminar un cuestionario.
-     */
-    public function delete(User $user, Cuestionario $cuestionario): bool
-    {
-        return $user->rol === 'admin';
+        // Si usas paginador de Bootstrap 5:
+        // Paginator::useBootstrapFive();
     }
 }
