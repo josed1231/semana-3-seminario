@@ -70,13 +70,14 @@ class CuestionarioController extends Controller
         // Limpieza del campo actividad
         $actividadTexto = $request->input('actividad', '');
 
-        // 2. Guardar o actualizar datos base del Estudiante
+        // 2. Guardar o actualizar datos base del Estudiante (Sincronización automática de correo)
         $estudiante = Estudiante::updateOrCreate(
             [
                 'codigo_estudiante' => auth()->user()->codigo_estudiante
             ],
             [
                 'nombre_estudiante'       => auth()->user()->name,
+                'correo'                  => auth()->user()->email, // <-- CORRECCIÓN: Asigna el correo automáticamente
                 'id_programa'             => $request->id_programa,
                 'id_docente'              => $idDocente,
                 'jornada'                 => $request->jornada,
