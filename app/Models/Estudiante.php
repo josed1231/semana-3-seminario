@@ -36,15 +36,21 @@ class Estudiante extends Model
 
     /**
      * Accessor para la propiedad 'cedula'.
-     * Prioriza obtener el valor desde 'username' (relación user o propiedad directa).
+     * Obtiene la cédula del usuario vinculado por correo o la columna interna.
      */
     public function getCedulaAttribute()
     {
-        return $this->user?->username 
-            ?? $this->attributes['username'] 
-            ?? $this->attributes['cedula'] 
-            ?? $this->attributes['codigo_estudiante'] 
-            ?? 'N/A';
+        // 1. Prioriza la cédula (username) desde la relación con el usuario
+        if ($this->user && !empty($this->user->username)) {
+            return $this->user->username;
+        }
+
+        // 2. Si no hay usuario vinculado, usa el campo 'cedula' propio (siempre que no sea el código)
+        if (!empty($this->attributes['cedula']) && $this->attributes['cedula'] !== $this->attributes['codigo_estudiante']) {
+            return $this->attributes['cedula'];
+        }
+
+        return 'N/A';
     }
 
     // ==========================================
@@ -90,9 +96,12 @@ class Estudiante extends Model
     // Relaciones
     // ==========================================
 
+    /**
+     * Relación con el Modelo User enlazada mediante el correo electrónico.
+     */
     public function user()
     {
-        return $this->belongsTo(User::class, 'codigo_estudiante', 'username');
+        return $this->belongsTo(User::class, 'correo', 'email');
     }
 
     public function programa()

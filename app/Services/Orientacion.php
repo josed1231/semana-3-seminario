@@ -12,32 +12,35 @@ class Orientacion
         $socio     = $respuestas['afectacion_socioeconomico'] ?? 'Bajo';
         $psico     = $respuestas['afectacion_psicosocial'] ?? 'Bajo';
 
-        // Helper para validar niveles de riesgo
+        // Helpers para clasificar el nivel de riesgo
         $esAlto = function($val) {
-            return in_array(strtolower($val), ['alto', 'alta', 'critico', 'crítica']);
+            return in_array(strtolower(trim((string)$val)), ['alto', 'alta', 'critico', 'crítica', '3']);
         };
 
         $esMedio = function($val) {
-            return in_array(strtolower($val), ['medio', 'media']);
+            return in_array(strtolower(trim((string)$val)), ['medio', 'media', '2']);
         };
 
-        // Determinar el Nivel de Servicio
-        $nivelServicio = 'Tutoría Académica Standard';
+        // 1. Determinar el Nivel de Servicio Institucional PIAE
+        $nivelServicio = 'Tutoría Académica Standard PIAE';
         if ($esAlto($academico) || $esAlto($socio) || $esAlto($psico)) {
-            $nivelServicio = 'Atención Prioritaria Bienestar / Psicología';
+            $nivelServicio = 'Atención Prioritaria PIAE / Bienestar Institucional';
         } elseif ($esMedio($academico) || $esMedio($socio) || $esMedio($psico)) {
-            $nivelServicio = 'Acompañamiento Psicoeducativo Preventivo';
+            $nivelServicio = 'Acompañamiento Psicoeducativo Preventivo PIAE';
         }
 
-        // Construir el texto explicativo de las observaciones
-        $observaciones = "Orientación Automática PIAE:\n";
-        $observaciones .= "- Exigencias Académicas: {$academico}\n";
-        $observaciones .= "- Afectación Socioeconómica: {$socio}\n";
-        $observaciones .= "- Estrés / Psicosocial: {$psico}\n\n";
-        $observaciones .= "Ruta de Atención Sugerida:\n";
+        // 2. Construir la Observación Estructurada del PIAE
+        $observaciones = "========================================\n";
+        $observaciones .= "   DIAGNÓSTICO DE ORIENTACIÓN AUTOMÁTICA PIAE\n";
+        $observaciones .= "========================================\n\n";
+        $observaciones .= "Niveles de Afectación Detectados:\n";
+        $observaciones .= "• Exigencias Académicas: {$academico}\n";
+        $observaciones .= "• Afectación Socioeconómica: {$socio}\n";
+        $observaciones .= "• Estrés / Psicosocial: {$psico}\n\n";
+        $observaciones .= "Ruta de Atención e Intervención Sugerida PIAE:\n";
         $observaciones .= self::obtenerRecomendacion($academico, $socio, $psico);
 
-        // Guardar o Actualizar en la base de datos
+        // 3. Guardar o Actualizar en la base de datos
         return OrientacionPsicologica::updateOrCreate(
             ['codigo_estudiante' => $estudiante->codigo_estudiante],
             [
@@ -52,27 +55,27 @@ class Orientacion
         $rutas = [];
 
         $esRiesgo = function($val) {
-            return in_array(strtolower($val), ['alto', 'alta', 'medio', 'media', 'critico', 'crítica']);
+            return in_array(strtolower(trim((string)$val)), ['alto', 'alta', 'medio', 'media', 'critico', 'crítica', '2', '3']);
         };
 
-        // 1. Temas de Estrés / Psicosocial -> Área de Psicología
+        // 1. Remisión Psicosocial -> Área de Psicología / Bienestar
         if ($esRiesgo($psico)) {
-            $rutas[] = "• Área de Psicología: Remisión para manejo de estrés, salud mental y acompañamiento emocional.";
+            $rutas[] = "• [PIAE - Psicología]: Remisión para valoración psicosocial, manejo de ansiedad/estrés y acompañamiento emocional.";
         }
 
-        // 2. Temas Socioeconómicos -> Área Financiera
+        // 2. Remisión Socioeconómica -> Apoyos Institucionales
         if ($esRiesgo($socio)) {
-            $rutas[] = "• Área Financiera: Orientación en apoyos económicos, opciones de pago, becas o subsidios.";
+            $rutas[] = "• [PIAE - Apoyo Socioeconómico]: Asesoría en subsidios, convenios de financiación, becas e incentivos de permanencia.";
         }
 
-        // 3. Exigencias Académicas -> Área de Bienestar
+        // 3. Remisión Académica -> Tutorías e Intervención Pedagógica
         if ($esRiesgo($academico)) {
-            $rutas[] = "• Área de Bienestar: Acercamiento para nivelación por exigencias académicas, hábitos de estudio y tutorías.";
+            $rutas[] = "• [PIAE - Acompañamiento Académico]: Vinculación a tutorías pares, talleres de hábitos de estudio y nivelación.";
         }
 
-        // Si no presenta afectaciones medias ni altas
+        // Si no presenta vulnerabilidades registradas
         if (empty($rutas)) {
-            return "• Módulo de Monitoreo: Mantener seguimiento regular en el sistema sin remisión prioritaria.";
+            return "• [PIAE - Monitoreo Pasivo]: Mantener seguimiento periódico en la plataforma sin requerir remisión prioritaria.";
         }
 
         return implode("\n", $rutas);
