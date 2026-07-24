@@ -2,10 +2,10 @@
     <x-slot name="header">
         <div class="flex items-center justify-between">
             <h2 class="font-bold text-xl text-slate-800 leading-tight">
-                {{ __('Editar Estudiante: ') }} <span class="text-emerald-700">{{ $estudiante->nombre_estudiante }}</span>
+                {{ __('Editar Estudiante: ') }} <span class="text-emerald-700">{{ $estudiante->nombre_estudiante ?? $estudiante->nombre ?? 'Estudiante' }}</span>
             </h2>
             <span class="px-3 py-1 text-xs font-semibold rounded-full bg-slate-100 text-slate-700 border border-slate-200">
-                Código: {{ $estudiante->codigo_estudiante }}
+                Código: {{ $estudiante->codigo_estudiante ?? $estudiante->id ?? 'N/A' }}
             </span>
         </div>
     </x-slot>
@@ -15,50 +15,55 @@
             <div class="bg-white overflow-hidden shadow-2xl rounded-3xl p-6 md:p-10 border border-emerald-100/60">
 
                 @php
-                    $userRol = auth()->user()->rol ?? '';
+                    // Helper seguro para obtener relaciones/propiedades sin disparar excepciones 500
+                    $safeGet = function($target, $path, $default = null) {
+                        if (!$target) return $default;
+                        try {
+                            return data_get($target, $path, $default);
+                        } catch (\Throwable $e) {
+                            return $default;
+                        }
+                    };
+
+                    // Roles y Permisos del Usuario
+                    $user = auth()->user();
+                    $userRol = $user->rol ?? $user->role ?? '';
                     $esAdmin = $userRol === 'admin';
-                    $esPsicologo = in_array($userRol, ['psicologo', 'bienestar']);
-                    $esDirectivo = in_array($userRol, ['dir_bienestar', 'dir_unidad']);
+                    $esPsicologo = in_array($userRol, ['psicologo', 'bienestar', 'psicologia']);
+                    $esDirectivo = in_array($userRol, ['dir_bienestar', 'dir_unidad', 'director']);
 
                     // Permisos de edición por sección
                     $puedeEditarAcademico = $esAdmin || $esDirectivo;
                     $puedeEditarOrientacion = $esAdmin || $esPsicologo;
 
-                    // Fallback robusto para Correo Institucional
-                    $correoActual = old('correo', 
-                        $estudiante->correo 
-                        ?? optional($estudiante->usuario)->email 
-                        ?? optional($estudiante->usuario)->correo 
-                        ?? optional($estudiante->user)->email 
-                        ?? optional($estudiante->cuestionario)->correo 
-                        ?? ''
-                    );
-
-                    // Fallback para Cédula / Documento de Identidad
-                    $cedulaActual = old('cedula', 
-                        $estudiante->cedula 
-                        ?? $estudiante->numero_documento 
-                        ?? $estudiante->documento 
-                        ?? optional($estudiante->cuestionario)->cedula 
-                        ?? ''
-                    );
-
-                    // Valor dinámico de la actividad de estilo de vida
+                    // Valor dinámico de estilo de vida
                     $actividadValor = old('actividad', 
-                        optional($estudiante->cuestionario)->actividad 
-                        ?? $estudiante->actividades_estilo_vida 
-                        ?? optional($estudiante->estiloVida)->actividad
+                        $safeGet($estudiante, 'cuestionario.actividad') 
+                        ?? $safeGet($estudiante, 'actividades_estilo_vida') 
+                        ?? $safeGet($estudiante, 'estiloVida.actividad')
                     );
 
-                    // Nivel de Riesgo actual
-                    $riesgoActual = old('nivel_riesgo', optional($estudiante->riesgo)->nivel_riesgo ?? 'Bajo');
+                    // Nivel de Riesgo y Detalles
+                    $riesgoActual = old('nivel_riesgo', $safeGet($estudiante, 'riesgo.nivel_riesgo', 'Bajo'));
+                    $detallesRiesgo = old('detalles', $safeGet($estudiante, 'riesgo.detalles'));
 
-                    // Datos de Orientación Psicológica
-                    $nivelServicioActual = old('nivel_servicio', optional($estudiante->orientacionPsicologica)->nivel_servicio ?? 'Tutoría Académica Standard');
-                    $observacionesActual = old('observaciones', optional($estudiante->orientacionPsicologica)->observaciones);
+                    // Orientación Psicológica
+                    $nivelServicioActual = old('nivel_servicio', $safeGet($estudiante, 'orientacionPsicologica.nivel_servicio', 'Tutoría Académica Standard'));
+                    $observacionesActual = old('observaciones', $safeGet($estudiante, 'orientacionPsicologica.observaciones'));
+
+                    // Datos Académicos
+                    $semestreActual = old('semestre', $safeGet($estudiante, 'cuestionario.semestre', $safeGet($estudiante, 'semestre', 1)));
+                    $trabajaActual = old('trabaja', $safeGet($estudiante, 'cuestionario.trabaja', $safeGet($estudiante, 'trabaja', 'No')));
+
+                    // Rutas seguras (evita 500 si la ruta no existe)
+                    $codigoEst = $safeGet($estudiante, 'codigo_estudiante', $safeGet($estudiante, 'id', 1));
+                    $routeUpdate = Route::has('estudiantes.update') ? route('estudiantes.update', $codigoEst) : '#';
+                    $routeCancelar = Route::has('alertas.monitoreo') 
+                        ? route('alertas.monitoreo') 
+                        : (Route::has('estudiantes.index') ? route('estudiantes.index') : url()->previous());
                 @endphp
 
-                <form id="editEstudianteForm" action="{{ route('estudiantes.update', $estudiante->codigo_estudiante) }}" method="POST" class="space-y-8" onsubmit="prepararEnvio()">
+                <form id="editEstudianteForm" action="{{ $routeUpdate }}" method="POST" class="space-y-8" onsubmit="prepararEnvio()">
                     @csrf
                     @method('PUT')
 
@@ -77,34 +82,19 @@
                             @endif
                         </div>
 
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                            <!-- Cédula / Documento -->
-                            <div class="space-y-2">
-                                <label for="cedula" class="block text-sm font-semibold text-gray-700">Cédula / Documento <span class="text-red-500">*</span></label>
-                                <input type="text" id="cedula" value="{{ $cedulaActual }}" required 
-                                       {{ !$puedeEditarAcademico ? 'readonly' : 'name=cedula' }}
-                                       class="block w-full rounded-xl border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 {{ !$puedeEditarAcademico ? 'bg-gray-50 text-gray-500' : 'text-gray-900 bg-white' }} text-sm py-2.5">
-                                @if(!$puedeEditarAcademico)
-                                    <input type="hidden" name="cedula" value="{{ $cedulaActual }}">
-                                @endif
-                                @error('cedula') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
-                            </div>
-
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <!-- Código del Estudiante -->
                             <div class="space-y-2">
                                 <label class="block text-sm font-semibold text-gray-700">Código del Estudiante</label>
-                                <input type="text" value="{{ $estudiante->codigo_estudiante }}" disabled class="block w-full rounded-xl border-gray-300 bg-gray-100/70 text-gray-500 text-sm cursor-not-allowed shadow-sm py-2.5">
+                                <input type="text" value="{{ $safeGet($estudiante, 'codigo_estudiante') }}" disabled class="block w-full rounded-xl border-gray-300 bg-gray-100/70 text-gray-500 text-sm cursor-not-allowed shadow-sm py-2.5">
                             </div>
 
                             <!-- Correo Institucional -->
                             <div class="space-y-2">
                                 <label for="correo" class="block text-sm font-semibold text-gray-700">Correo Institucional <span class="text-red-500">*</span></label>
-                                <input type="email" id="correo" value="{{ $correoActual }}" required 
-                                       {{ !$puedeEditarAcademico ? 'readonly' : 'name=correo' }}
+                                <input type="email" id="correo" name="correo" value="{{ old('correo', $safeGet($estudiante, 'correo')) }}" required 
+                                       {{ !$puedeEditarAcademico ? 'readonly' : '' }}
                                        class="block w-full rounded-xl border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 {{ !$puedeEditarAcademico ? 'bg-gray-50 text-gray-500' : 'text-gray-900 bg-white' }} text-sm py-2.5">
-                                @if(!$puedeEditarAcademico)
-                                    <input type="hidden" name="correo" value="{{ $correoActual }}">
-                                @endif
                                 @error('correo') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
                             </div>
                         </div>
@@ -112,12 +102,9 @@
                         <!-- Nombre Completo -->
                         <div class="space-y-2">
                             <label for="nombre_estudiante" class="block text-sm font-semibold text-gray-700">Nombre Completo <span class="text-red-500">*</span></label>
-                            <input type="text" id="nombre_estudiante" value="{{ old('nombre_estudiante', $estudiante->nombre_estudiante) }}" required 
-                                   {{ !$puedeEditarAcademico ? 'readonly' : 'name=nombre_estudiante' }}
+                            <input type="text" id="nombre_estudiante" name="nombre_estudiante" value="{{ old('nombre_estudiante', $safeGet($estudiante, 'nombre_estudiante')) }}" required 
+                                   {{ !$puedeEditarAcademico ? 'readonly' : '' }}
                                    class="block w-full rounded-xl border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 {{ !$puedeEditarAcademico ? 'bg-gray-50 text-gray-500' : 'text-gray-900 bg-white' }} text-sm py-2.5">
-                            @if(!$puedeEditarAcademico)
-                                <input type="hidden" name="nombre_estudiante" value="{{ old('nombre_estudiante', $estudiante->nombre_estudiante) }}">
-                            @endif
                             @error('nombre_estudiante') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
                         </div>
 
@@ -125,17 +112,21 @@
                             <!-- Programa Académico -->
                             <div class="space-y-2">
                                 <label for="id_programa" class="block text-sm font-semibold text-gray-700">Programa Académico <span class="text-red-500">*</span></label>
-                                <select id="id_programa" {{ !$puedeEditarAcademico ? 'disabled' : 'name=id_programa' }} required 
+                                <select id="id_programa" name="id_programa" required {{ !$puedeEditarAcademico ? 'disabled' : '' }}
                                         class="block w-full rounded-xl border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 {{ !$puedeEditarAcademico ? 'bg-gray-50 text-gray-500 cursor-not-allowed' : 'text-gray-900 bg-white' }} text-sm py-2.5">
                                     <option value="" disabled>-- Seleccione un Programa --</option>
-                                    @foreach($programas as $prog)
-                                        <option value="{{ $prog->id_programa }}" {{ old('id_programa', $estudiante->id_programa) == $prog->id_programa ? 'selected' : '' }}>
-                                            {{ $prog->nombre_programa ?? $prog->nombre }}
+                                    @foreach($programas ?? [] as $prog)
+                                        @php
+                                            $progId = $safeGet($prog, 'id_programa', $safeGet($prog, 'id'));
+                                            $progNombre = $safeGet($prog, 'nombre_programa', $safeGet($prog, 'nombre'));
+                                        @endphp
+                                        <option value="{{ $progId }}" {{ old('id_programa', $safeGet($estudiante, 'id_programa')) == $progId ? 'selected' : '' }}>
+                                            {{ $progNombre }}
                                         </option>
                                     @endforeach
                                 </select>
                                 @if(!$puedeEditarAcademico)
-                                    <input type="hidden" name="id_programa" value="{{ old('id_programa', $estudiante->id_programa) }}">
+                                    <input type="hidden" name="id_programa" value="{{ old('id_programa', $safeGet($estudiante, 'id_programa')) }}">
                                 @endif
                                 @error('id_programa') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
                             </div>
@@ -146,18 +137,18 @@
                                 <select id="id_director_unidad_visual" disabled 
                                         class="block w-full rounded-xl border-gray-300 bg-gray-100/80 shadow-sm text-gray-600 text-sm py-2.5 cursor-not-allowed font-medium">
                                     <option value="" disabled selected>-- Asignación Automática --</option>
-                                    @foreach($directores as $director)
+                                    @foreach($directores ?? [] as $director)
                                         @php 
-                                            $dirId = $director->id_director_unidad ?? $director->id ?? $director->id_usuario; 
-                                            $dirNombre = $director->nombre_director ?? $director->nombre ?? $director->nombre_completo; 
+                                            $dirId = $safeGet($director, 'id_director_unidad', $safeGet($director, 'id', $safeGet($director, 'id_usuario'))); 
+                                            $dirNombre = $safeGet($director, 'nombre_director', $safeGet($director, 'nombre', $safeGet($director, 'nombre_completo'))); 
                                         @endphp
-                                        <option value="{{ $dirId }}" {{ old('id_director_unidad', old('id_docente', $estudiante->id_docente)) == $dirId ? 'selected' : '' }}>
+                                        <option value="{{ $dirId }}" {{ old('id_director_unidad', old('id_docente', $safeGet($estudiante, 'id_docente'))) == $dirId ? 'selected' : '' }}>
                                             {{ $dirNombre }}
                                         </option>
                                     @endforeach
                                 </select>
-                                <input type="hidden" id="id_director_unidad" name="id_director_unidad" value="{{ old('id_director_unidad', $estudiante->id_docente) }}">
-                                <input type="hidden" id="id_docente" name="id_docente" value="{{ old('id_docente', $estudiante->id_docente) }}">
+                                <input type="hidden" id="id_director_unidad" name="id_director_unidad" value="{{ old('id_director_unidad', $safeGet($estudiante, 'id_docente')) }}">
+                                <input type="hidden" id="id_docente" name="id_docente" value="{{ old('id_docente', $safeGet($estudiante, 'id_docente')) }}">
                             </div>
                         </div>
 
@@ -165,10 +156,7 @@
                             <!-- Semestre -->
                             <div class="space-y-2">
                                 <label for="semestre" class="block text-sm font-semibold text-gray-700">Semestre</label>
-                                @php
-                                    $semestreActual = old('semestre', optional($estudiante->cuestionario)->semestre ?? $estudiante->semestre ?? 1);
-                                @endphp
-                                <select id="semestre" {{ !$puedeEditarAcademico ? 'disabled' : 'name=semestre' }} 
+                                <select id="semestre" name="semestre" {{ !$puedeEditarAcademico ? 'disabled' : '' }} 
                                         class="block w-full rounded-xl border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 {{ !$puedeEditarAcademico ? 'bg-gray-50 text-gray-500 cursor-not-allowed' : 'text-gray-900 bg-white' }} text-sm py-2.5">
                                     @for ($i = 1; $i <= 10; $i++)
                                         <option value="{{ $i }}" {{ $semestreActual == $i ? 'selected' : '' }}>Semestre {{ $i }}</option>
@@ -182,14 +170,14 @@
                             <!-- Jornada -->
                             <div class="space-y-2">
                                 <label for="jornada" class="block text-sm font-semibold text-gray-700">Jornada <span class="text-red-500">*</span></label>
-                                <select id="jornada" required {{ !$puedeEditarAcademico ? 'disabled' : 'name=jornada' }}
+                                <select id="jornada" name="jornada" required {{ !$puedeEditarAcademico ? 'disabled' : '' }}
                                         class="block w-full rounded-xl border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 {{ !$puedeEditarAcademico ? 'bg-gray-50 text-gray-500 cursor-not-allowed' : 'text-gray-900 bg-white' }} text-sm py-2.5">
-                                    <option value="Diurna" {{ old('jornada', $estudiante->jornada) == 'Diurna' ? 'selected' : '' }}>Diurna</option>
-                                    <option value="Nocturna" {{ old('jornada', $estudiante->jornada) == 'Nocturna' ? 'selected' : '' }}>Nocturna</option>
-                                    <option value="Sabatina" {{ old('jornada', $estudiante->jornada) == 'Sabatina' ? 'selected' : '' }}>Sabatina</option>
+                                    <option value="Diurna" {{ old('jornada', $safeGet($estudiante, 'jornada')) == 'Diurna' ? 'selected' : '' }}>Diurna</option>
+                                    <option value="Nocturna" {{ old('jornada', $safeGet($estudiante, 'jornada')) == 'Nocturna' ? 'selected' : '' }}>Nocturna</option>
+                                    <option value="Sabatina" {{ old('jornada', $safeGet($estudiante, 'jornada')) == 'Sabatina' ? 'selected' : '' }}>Sabatina</option>
                                 </select>
                                 @if(!$puedeEditarAcademico)
-                                    <input type="hidden" name="jornada" value="{{ old('jornada', $estudiante->jornada) }}">
+                                    <input type="hidden" name="jornada" value="{{ old('jornada', $safeGet($estudiante, 'jornada')) }}">
                                 @endif
                                 @error('jornada') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
                             </div>
@@ -197,10 +185,7 @@
                             <!-- ¿Trabaja? -->
                             <div class="space-y-2">
                                 <label for="trabaja" class="block text-sm font-semibold text-gray-700">¿Trabaja Actualmente?</label>
-                                @php
-                                    $trabajaActual = old('trabaja', optional($estudiante->cuestionario)->trabaja ?? $estudiante->trabaja ?? 'No');
-                                @endphp
-                                <select id="trabaja" {{ !$puedeEditarAcademico ? 'disabled' : 'name=trabaja' }}
+                                <select id="trabaja" name="trabaja" {{ !$puedeEditarAcademico ? 'disabled' : '' }}
                                         class="block w-full rounded-xl border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 {{ !$puedeEditarAcademico ? 'bg-gray-50 text-gray-500 cursor-not-allowed' : 'text-gray-900 bg-white' }} text-sm py-2.5">
                                     <option value="Si" {{ $trabajaActual == 'Si' ? 'selected' : '' }}>Sí</option>
                                     <option value="No" {{ $trabajaActual == 'No' ? 'selected' : '' }}>No</option>
@@ -232,7 +217,7 @@
                             <!-- Nivel de Riesgo -->
                             <div class="space-y-2">
                                 <label for="nivel_riesgo" class="block text-sm font-semibold text-gray-700">Nivel de Riesgo Evaluado</label>
-                                <select id="nivel_riesgo" {{ !$esAdmin ? 'disabled' : 'name=nivel_riesgo' }}
+                                <select id="nivel_riesgo" name="nivel_riesgo" {{ !$esAdmin ? 'disabled' : '' }}
                                         class="block w-full rounded-xl border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 {{ !$esAdmin ? 'bg-gray-50 text-gray-500 cursor-not-allowed' : 'text-gray-900 bg-white' }} text-sm py-2.5">
                                     <option value="Bajo" {{ $riesgoActual == 'Bajo' ? 'selected' : '' }}>Bajo</option>
                                     <option value="Medio" {{ $riesgoActual == 'Medio' ? 'selected' : '' }}>Medio</option>
@@ -246,26 +231,20 @@
                             <!-- Actividades Frecuentes -->
                             <div class="space-y-2">
                                 <label for="actividad" class="block text-sm font-semibold text-gray-700">Actividades (Estilo de Vida)</label>
-                                <input type="text" id="actividad" value="{{ $actividadValor }}"
+                                <input type="text" id="actividad" name="actividad" value="{{ $actividadValor }}"
                                        placeholder="Actividades extracurriculares o hábitos..."
-                                       {{ !$puedeEditarAcademico ? 'readonly' : 'name=actividad' }}
+                                       {{ !$puedeEditarAcademico ? 'readonly' : '' }}
                                        class="block w-full rounded-xl border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 {{ !$puedeEditarAcademico ? 'bg-gray-50 text-gray-500' : 'text-gray-900 bg-white' }} text-sm py-2.5">
-                                @if(!$puedeEditarAcademico)
-                                    <input type="hidden" name="actividad" value="{{ $actividadValor }}">
-                                @endif
                             </div>
                         </div>
 
                         <!-- Detalles Adicionales -->
                         <div class="space-y-2">
                             <label for="detalles" class="block text-sm font-semibold text-gray-700">Detalles Adicionales del Riesgo</label>
-                            <textarea id="detalles" rows="2" 
-                                      {{ !$esAdmin ? 'readonly' : 'name=detalles' }}
+                            <textarea id="detalles" name="detalles" rows="2" 
+                                      {{ !$esAdmin ? 'readonly' : '' }}
                                       placeholder="Anotaciones técnicas del nivel de deserción..."
-                                      class="block w-full rounded-xl border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 {{ !$esAdmin ? 'bg-gray-50 text-gray-500' : 'text-gray-900 bg-white' }} text-sm">{{ old('detalles', optional($estudiante->riesgo)->detalles) }}</textarea>
-                            @if(!$esAdmin)
-                                <input type="hidden" name="detalles" value="{{ old('detalles', optional($estudiante->riesgo)->detalles) }}">
-                            @endif
+                                      class="block w-full rounded-xl border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 {{ !$esAdmin ? 'bg-gray-50 text-gray-500' : 'text-gray-900 bg-white' }} text-sm">{{ $detallesRiesgo }}</textarea>
                         </div>
                     </div>
 
@@ -316,13 +295,10 @@
                             <label for="observaciones" class="block text-sm font-semibold text-gray-700">
                                 Observaciones, Diagnóstico y Ruta de Atención
                             </label>
-                            <textarea id="observaciones" rows="5" 
-                                      {{ !$puedeEditarOrientacion ? 'readonly' : 'name=observaciones' }}
+                            <textarea id="observaciones" name="observaciones" rows="5" 
+                                      {{ !$puedeEditarOrientacion ? 'readonly' : '' }}
                                       placeholder="El sistema asigna la ruta de atención automáticamente, pero el equipo de Bienestar puede ajustar o complementar las recomendaciones aquí..."
                                       class="block w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 {{ !$puedeEditarOrientacion ? 'bg-slate-50 text-slate-600' : 'text-gray-900 bg-white' }} text-sm">{{ $observacionesActual }}</textarea>
-                            @if(!$puedeEditarOrientacion)
-                                <input type="hidden" name="observaciones" value="{{ $observacionesActual }}">
-                            @endif
                         </div>
 
                         @if(!$puedeEditarOrientacion)
@@ -337,7 +313,7 @@
                     <!-- BOTONES DE ACCIÓN                                       -->
                     <!-- ======================================================== -->
                     <div class="flex items-center justify-end gap-3 pt-6 border-t border-gray-100">
-                        <a href="{{ route('alertas.monitoreo') }}" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-6 py-2.5 rounded-xl text-sm font-bold transition shadow-sm border border-gray-200">
+                        <a href="{{ $routeCancelar }}" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-6 py-2.5 rounded-xl text-sm font-bold transition shadow-sm border border-gray-200">
                             Cancelar
                         </a>
                         <button type="submit" class="bg-[#f17a28] hover:bg-[#d66213] text-white px-7 py-2.5 rounded-xl text-sm font-bold transition shadow-md flex items-center gap-2">
@@ -351,7 +327,9 @@
         </div>
     </div>
 
-    <!-- JAVASCRIPT DE ASIGNACIÓN DINÁMICA -->
+    <!-- ======================================================== -->
+    <!-- JAVASCRIPT DE ASIGNACIÓN DINÁMICA                        -->
+    <!-- ======================================================== -->
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             const programmeSelect = document.getElementById('id_programa');
@@ -379,7 +357,6 @@
                 if (palabrasClave.length > 0) {
                     for (let i = 0; i < directorSelectVisual.options.length; i++) {
                         const opcionTexto = directorSelectVisual.options[i].text.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-                        
                         const coincide = palabrasClave.some(clave => opcionTexto.includes(clave));
                         if (coincide) {
                             directorSelectVisual.selectedIndex = i;
