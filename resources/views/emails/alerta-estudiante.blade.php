@@ -22,18 +22,22 @@
         </div>
 
         <div class="content">
+            @php
+                $nombreMostrar = $usuario->name ?? $usuario->nombre_estudiante ?? $usuario->username ?? 'Estudiante';
+            @endphp
+
             @if(in_array($tipoAlerta ?? 'registro', ['registro', 'registro_admin']))
-                <p>¡Hola, <strong>{{ $usuario->name ?? $usuario->nombre_estudiante ?? $usuario->username }}</strong>! 👋</p>
+                <p>¡Hola, <strong>{{ $nombreMostrar }}</strong>! 👋</p>
                 
                 <p><strong>¡Bienvenido(a)! Gracias por registrarte en nuestra plataforma institucional.</strong></p>
                 
                 <p>De antemano, te agradecemos que nos dejes conocerte un poco más. Te invitamos a ingresar al sistema y completar tu cuestionario para brindarte un mejor acompañamiento en tu proceso académico y de bienestar.</p>
                 
                 <div class="btn-container">
-                    <a href="{{ route('login') }}" class="btn">Iniciar Sesión e Ingresar al Cuestionario</a>
+                    <a href="{{ url('/') }}" class="btn">Ingresar a la Plataforma</a>
                 </div>
             @elseif(in_array($tipoAlerta ?? '', ['cuestionario', 'cuestionario_completado']))
-                <p>¡Hola, <strong>{{ $usuario->nombre_estudiante ?? $usuario->name ?? $usuario->username }}</strong>! 👋</p>
+                <p>¡Hola, <strong>{{ $nombreMostrar }}</strong>! 👋</p>
                 
                 <p><strong>¡Has completado tu Cuestionario Semestral de Caracterización satisfactoriamente! 🎉</strong></p>
                 
@@ -41,7 +45,7 @@
                 
                 <p>Gracias por tu valioso tiempo e interés en el proceso.</p>
             @else
-                <p>Hola, <strong>{{ $usuario->name ?? $usuario->nombre_estudiante ?? $usuario->username }}</strong>.</p>
+                <p>Hola, <strong>{{ $nombreMostrar }}</strong>.</p>
                 <p>Te informamos que la información de tu cuestionario o seguimiento académico ha sido actualizada correctamente en el sistema.</p>
             @endif
         </div>

@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\EstudianteApiController;
 use App\Http\Controllers\Api\ProgramaController;
 use App\Http\Controllers\Api\RiesgoDesercionController;
+use App\Http\Controllers\Api\CuestionarioApiController; // <-- Importación agregada
 use Illuminate\Support\Facades\Route;
 
 // Rutas Públicas de Autenticación
@@ -16,6 +17,10 @@ Route::post('login', [AuthController::class, 'login']);
 Route::middleware('auth:api')->group(function () {
     Route::post('logout', [AuthController::class, 'logout']);
     Route::get('me', [AuthController::class, 'me']);
+
+    // Cuestionario de Caracterización
+    Route::post('cuestionario', [CuestionarioApiController::class, 'store']);
+    Route::get('cuestionario/mi-estado', [CuestionarioApiController::class, 'show']);
 
     // Usuarios
     Route::get('usuarios', [UserController::class, 'index']);

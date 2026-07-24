@@ -7,6 +7,7 @@ use App\Http\Requests\Auth\LoginRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail; // <-- Agregado para el envío de correo
 use Illuminate\View\View;
 
 class AuthenticatedSessionController extends Controller
@@ -24,31 +25,45 @@ class AuthenticatedSessionController extends Controller
      */
     public function store(LoginRequest $request): RedirectResponse
     {
+        // 1. Validar correo y contraseña
         $request->authenticate();
 
-        $request->session()->regenerate();
+        $user = Auth::user();
 
-        return redirect()->intended(route('dashboard', absolute: false));
+        // 2. Generar el código OTP y enviarlo al correo
+        $otp = $user->generateOtp();
+
+        Mail::send('emails.otp', ['otp' => $otp, 'user' => $user], function ($message) use ($user) {
+            $message->to($user->email)
+                    ->subject('Código de verificación - COTECNOVA');
+        });
+
+        // 3. Cerrar sesión parcial por seguridad
+        Auth::guard('web')->logout();
+
+        // 4. Guardar temporalmente el ID del usuario y la preferencia de recordar sesión
+        $request->session()->put('otp_user_id', $user->id);
+        $request->session()->put('otp_remember', $request->boolean('remember'));
+
+        // 5. Redirigir al formulario de verificación de código OTP
+        return redirect()->route('otp.verify');
     }
 
     /**
      * Destroy an authenticated session.
      */
-    /**
-     * Destroy an authenticated session.
-     */
     public function destroy(Request $request): RedirectResponse
-{
-    // 1. Limpiar el guard de autenticación
-    Auth::guard('web')->logout();
+    {
+        // 1. Limpiar el guard de autenticación
+        Auth::guard('web')->logout();
 
-    // 2. Invalidar la sesión del usuario
-    $request->session()->invalidate();
+        // 2. Invalidar la sesión del usuario
+        $request->session()->invalidate();
 
-    // 3. Regenerar el token para seguridad
-    $request->session()->regenerateToken();
+        // 3. Regenerar el token para seguridad
+        $request->session()->regenerateToken();
 
-    // 4. Limpiar cookies específicas si es necesario
-    return redirect('/')->withCookie(cookie()->forget('laravel_session'));
-}
+        // 4. Limpiar cookies específicas si es necesario
+        return redirect('/')->withCookie(cookie()->forget('laravel_session'));
+    }
 }

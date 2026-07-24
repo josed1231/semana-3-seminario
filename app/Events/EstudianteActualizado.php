@@ -2,27 +2,19 @@
 
 namespace App\Events;
 
-use App\Models\Estudiante;
-use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
 class EstudianteActualizado
 {
-    use Dispatchable, InteractsWithSockets, SerializesModels;
+    use Dispatchable, SerializesModels;
 
-    public Estudiante $estudiante;
+    public $estudiante;
     public string $tipo;
 
-    /**
-     * Create a new event instance.
-     *
-     * @param Estudiante $estudiante
-     * @param string $tipo Tipo de alerta: 'cuestionario', 'registro', etc.
-     */
-    public function __construct(Estudiante $estudiante, string $tipo = 'cuestionario')
+    public function __construct($estudiante, string $tipo = 'cuestionario')
     {
         $this->estudiante = $estudiante;
-        $this->tipo = $tipo;
+        $this->tipo       = $tipo;
     }
 }

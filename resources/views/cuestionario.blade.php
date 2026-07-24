@@ -1,7 +1,7 @@
 <x-app-layout>
-    <div class="py-10 bg-gradient-to-tr from-stone-50 via-green-50/30 to-orange-50/20 min-h-screen">
+    <div class="py-10 bg-slate-50/50 min-h-screen">
         <div class="max-w-5xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white overflow-hidden shadow-2xl rounded-3xl p-6 md:p-10 border border-emerald-100">
+            <div class="bg-white overflow-hidden shadow-xl rounded-3xl p-6 md:p-10 border border-gray-100">
                 
                 <!-- Encabezado -->
                 <div class="text-center mb-10 border-b border-gray-100 pb-8">
@@ -11,21 +11,24 @@
                     <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight mt-3">
                         Formulario de Caracterización Estudiantil (PIAE)
                     </h1>
+                    <p class="text-sm text-gray-500 mt-2 max-w-2xl mx-auto">
+                        La información registrada nos ayuda a orientar nuestros programas de tutoría, bienestar y apoyo integral.
+                    </p>
                 </div>
 
                 <form id="form-cuestionario" action="{{ route('cuestionario.store') }}" method="POST" class="space-y-8">
                     @csrf
 
-                    {{-- 
-                      Envolvemos todos los campos en un <fieldset>. 
-                      Si el usuario NO es un estudiante (es decir, pertenece a los roles administrativos), 
-                      se le añade automáticamente el atributo 'disabled', bloqueando todo el formulario de golpe.
-                    --}}
                     <fieldset class="space-y-8" {{ in_array(auth()->user()->rol, ['admin', 'psicologo', 'dir_bienestar', 'dir_unidad']) ? 'disabled' : '' }}>
 
                         <!-- SECCIÓN 1: DATOS ACADÉMICOS -->
-                        <div class="bg-emerald-50/40 p-6 md:p-8 rounded-2xl border border-emerald-100/80 space-y-6">
-                            <h3 class="text-lg font-bold text-emerald-950 border-b border-emerald-100 pb-3">Información de Registro Académico</h3>
+                        <div class="bg-emerald-50/30 p-6 md:p-8 rounded-2xl border border-emerald-100 space-y-6">
+                            <div>
+                                <h3 class="text-lg font-bold text-emerald-950">Información de Registro Académico</h3>
+                                <p class="text-xs text-emerald-800 mt-1">
+                                    Permite relacionar tus respuestas con tu programa y coordinar apoyos con tu dirección académica.
+                                </p>
+                            </div>
                             
                             <!-- Fila 1: Programa, Semestre, Jornada -->
                             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -80,6 +83,7 @@
                                         <option value="Si" {{ old('trabaja') == 'Si' ? 'selected' : '' }}>Sí</option>
                                         <option value="No" {{ old('trabaja') == 'No' ? 'selected' : '' }}>No</option>
                                     </select>
+                                    <p class="text-xs text-gray-500">Nos permite sugerir horarios flexibles de tutorías en caso de cruce de jornada.</p>
                                     @error('trabaja') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
                                 </div>
                             </div>
@@ -87,7 +91,13 @@
 
                         <!-- SECCIÓN 2: CARACTERIZACIÓN -->
                         <div class="p-6 md:p-8 bg-white rounded-2xl border border-gray-200 space-y-6">
-                            <h3 class="text-lg font-bold text-slate-800 border-b pb-3">Información Sociodemográfica</h3>
+                            <div>
+                                <h3 class="text-lg font-bold text-slate-800">Información Sociodemográfica</h3>
+                                <p class="text-xs text-gray-500 mt-1">
+                                    Información confidencial para fines de inclusión y convocatorias institucionales.
+                                </p>
+                            </div>
+                            
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div class="space-y-2">
                                     <label class="block text-sm font-semibold text-gray-700">Género: <span class="text-red-500">*</span></label>
@@ -107,19 +117,20 @@
                                         <option value="No" {{ old('victima_confict', 'No') == 'No' ? 'selected' : '' }}>No</option>
                                         <option value="Si" {{ old('victima_confict') == 'Si' ? 'selected' : '' }}>Sí</option>
                                     </select>
+                                    <p class="text-xs text-gray-500">Para facilitar la vinculación a convocatorias de subsidios y ayudas.</p>
                                     @error('victima_confict') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
                                 </div>
                             </div>
                         </div>
 
                         <!-- SECCIÓN 3: SABERES PREVIOS -->
-                        <div id="bloque-saberes-previos" class="hidden p-6 md:p-8 bg-gradient-to-br from-emerald-50/50 to-orange-50/30 rounded-2xl border border-emerald-100 shadow-sm space-y-6">
+                        <div id="bloque-saberes-previos" class="hidden p-6 md:p-8 bg-gradient-to-br from-emerald-50/40 to-slate-50 rounded-2xl border border-emerald-100 shadow-sm space-y-6">
                             <div class="border-b border-emerald-100 pb-3">
                                 <h3 class="text-lg font-bold text-emerald-950 flex items-center gap-2">
-                                    <span class="p-1.5 bg-orange-100 text-orange-800 rounded-lg text-sm">✏️</span>
+                                    <span>📚</span>
                                     Módulo de Saberes Previos
                                 </h3>
-                                <p class="text-xs text-emerald-800 mt-1">Este bloque es requerido obligatoriamente para estudiantes de primer semestre.</p>
+                                <p class="text-xs text-emerald-800 mt-1">Este bloque es requerido obligatoriamente para estudiantes de primer semestre con el fin de proyectar talleres de nivelación.</p>
                             </div>
                             
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -155,19 +166,25 @@
                             </div>
                         </div>
 
-                        <!-- SECCIÓN 4: PONDERACIÓN DE RIESGO Y ESTILO DE VIDA -->
+                        <!-- SECCIÓN 4: FACTORES DE ACOMPAÑAMIENTO Y ESTILO DE VIDA -->
                         <div class="p-6 md:p-8 bg-white rounded-2xl border border-gray-200 space-y-6">
-                            <h3 class="text-lg font-bold text-slate-800 border-b pb-3">⚠️ Ponderación de Condiciones Socio-Educativas</h3>
+                            <div>
+                                <h3 class="text-lg font-bold text-slate-800 border-b pb-3">Factores de Acompañamiento y Estilo de Vida</h3>
+                                <p class="text-xs text-gray-500 mt-2">
+                                    Indica tu apreciación en cada área para enfocar las estrategias de soporte y bienestar institucional.
+                                </p>
+                            </div>
                             
                             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                                 <div class="space-y-2">
-                                    <label class="block text-sm font-semibold text-gray-700">Exigencias académicas: <span class="text-red-500">*</span></label>
+                                    <label class="block text-sm font-semibold text-gray-700">Dificultad con exigencias académicas: <span class="text-red-500">*</span></label>
                                     <select name="afectacion_academico" class="w-full rounded-xl border-gray-300 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 py-2.5 text-sm" required>
                                         <option value="" disabled {{ old('afectacion_academico') !== null ? '' : 'selected' }}>-- Seleccione --</option>
                                         <option value="0" {{ old('afectacion_academico') == '0' ? 'selected' : '' }}>Sin afectación</option>
                                         <option value="2" {{ old('afectacion_academico') == '2' ? 'selected' : '' }}>Moderada</option>
                                         <option value="4" {{ old('afectacion_academico') == '4' ? 'selected' : '' }}>Alta</option>
                                     </select>
+                                    <p class="text-xs text-gray-500">Para coordinar refuerzos o tutorías temáticas.</p>
                                     @error('afectacion_academico') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
                                 </div>
 
@@ -179,17 +196,19 @@
                                         <option value="2" {{ old('afectacion_socioeconomico') == '2' ? 'selected' : '' }}>Afectación leve</option>
                                         <option value="4" {{ old('afectacion_socioeconomico') == '4' ? 'selected' : '' }}>Afectación grave</option>
                                     </select>
+                                    <p class="text-xs text-gray-500">Para la gestión de beneficios o apoyos alimentarios/transporte.</p>
                                     @error('afectacion_socioeconomico') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
                                 </div>
 
                                 <div class="space-y-2">
-                                    <label class="block text-sm font-semibold text-gray-700">Estrés/Ansiedad: <span class="text-red-500">*</span></label>
+                                    <label class="block text-sm font-semibold text-gray-700">Manejo de Estrés / Ansiedad: <span class="text-red-500">*</span></label>
                                     <select name="afectacion_psicosocial" class="w-full rounded-xl border-gray-300 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 py-2.5 text-sm" required>
                                         <option value="" disabled {{ old('afectacion_psicosocial') !== null ? '' : 'selected' }}>-- Seleccione --</option>
                                         <option value="0" {{ old('afectacion_psicosocial') == '0' ? 'selected' : '' }}>Casi nunca</option>
                                         <option value="2" {{ old('afectacion_psicosocial') == '2' ? 'selected' : '' }}>Ocasionalmente</option>
                                         <option value="4" {{ old('afectacion_psicosocial') == '4' ? 'selected' : '' }}>Constantemente</option>
                                     </select>
+                                    <p class="text-xs text-gray-500">Para ofrecer orientación con Bienestar Universitario.</p>
                                     @error('afectacion_psicosocial') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
                                 </div>
                             </div>
@@ -198,9 +217,9 @@
                             <div class="space-y-2 pt-2">
                                 <label class="block text-sm font-semibold text-gray-700">Actividades más frecuentes (Estilo de vida) <span class="text-red-500">*</span></label>
                                 <textarea name="actividad" id="actividad" rows="3" required
-                                          placeholder="Describe brevemente las actividades que realizas con más frecuencia fuera de tu jornada académica (ej: practicar algún deporte, cuidar familiares, pasatiempos, etc.)..."
+                                          placeholder="Describe brevemente las actividades que realizas con más frecuencia fuera de tu jornada académica (ej: practicar algún deporte, cuidar familiares, pasatiempos, compromisos laborales, etc.)..."
                                           class="block w-full rounded-xl border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 text-sm p-3 placeholder-gray-400 text-gray-900">{{ old('actividad') }}</textarea>
-                                <p class="text-xs text-gray-400 mt-1">Esta información nos ayuda a entender tus entornos cotidianos de estilo de vida.</p>
+                                <p class="text-xs text-gray-500">Nos ayuda a adaptar las actividades culturales, deportivas e institucionales a los horarios de la comunidad.</p>
                                 @error('actividad') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
                             </div>
                         </div>
@@ -209,7 +228,7 @@
 
                     <!-- MANEJO DINÁMICO DEL BOTÓN VS MENSAJE DE VISTA ADMINISTRATIVA -->
                     @if(!in_array(auth()->user()->rol, ['admin', 'psicologo', 'dir_bienestar', 'dir_unidad']))
-                        <button type="submit" class="w-full py-4 bg-[#f17a28] text-white font-bold rounded-2xl hover:bg-[#d66213] transition shadow-md">
+                        <button type="submit" class="w-full py-4 bg-[#f17a28] text-white font-bold rounded-xl hover:bg-[#d66213] transition shadow-md text-base">
                             Guardar Respuestas
                         </button>
                     @else
@@ -253,7 +272,6 @@
             }
         }
 
-        // Ejecutar al cargar la página por si hay valores previos de 'old()' en caso de error de validación
         document.addEventListener('DOMContentLoaded', function () {
             toggleSaberesPrevios();
         });

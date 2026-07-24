@@ -24,9 +24,9 @@ class AlertaEstudianteMail extends Mailable
     public function envelope(): Envelope
     {
         $asunto = match ($this->tipoAlerta) {
-            'registro', 'registro_admin'     => '¡Bienvenido(a) al Aplicativo Institucional COTECNOVA!',
+            'registro', 'registro_admin'              => '¡Bienvenido(a) al Aplicativo Institucional COTECNOVA!',
             'cuestionario', 'cuestionario_completado' => '¡Cuestionario Completado con Éxito! - COTECNOVA',
-            default                          => 'Notificación Institucional - COTECNOVA',
+            default                                   => 'Notificación Institucional - COTECNOVA',
         };
 
         return new Envelope(subject: $asunto);
@@ -36,6 +36,10 @@ class AlertaEstudianteMail extends Mailable
     {
         return new Content(
             view: 'emails.alerta-estudiante',
+            with: [
+                'usuario'    => $this->usuario,
+                'tipoAlerta' => $this->tipoAlerta,
+            ],
         );
     }
 }

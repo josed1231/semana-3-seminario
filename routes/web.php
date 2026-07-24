@@ -10,7 +10,8 @@ use App\Http\Controllers\{
     AlertasController, 
     UserController,
     ProgramController,        
-    DirectorUnidadController
+    DirectorUnidadController,
+    OtpVerificationController // 👈 Agregado aquí
 };
 
 /*
@@ -79,7 +80,7 @@ Route::middleware(['auth', 'prevent-back'])->group(function () {
     // ----------------------------------------------------------------------
     Route::middleware(['verificar.rol:admin,psicologo,dir_bienestar,dir_unidad'])->group(function () {
         Route::get('/monitoreo-alertas', [AlertasController::class, 'index'])->name('alertas.monitoreo');
-        Route::get('/monitoreo-alertas/export-pdf', [AlertasController::class, 'exportPdf'])->name('alertas.export-pdf'); // 👈 Ruta para exportar PDF con filtros
+        Route::get('/monitoreo-alertas/export-pdf', [AlertasController::class, 'exportPdf'])->name('alertas.export-pdf');
         Route::resource('estudiantes', EstudianteController::class)->except(['destroy']);
     });
 
@@ -132,6 +133,17 @@ Route::middleware(['auth', 'prevent-back'])->group(function () {
 
         return "¡Evento de correo disparado correctamente para el estudiante: {$estudiante->nombre_estudiante}! Revisa el archivo storage/logs/laravel.log.";
     });
+});
+
+/*
+|--------------------------------------------------------------------------
+| Rutas de Verificación OTP (2FA - Sin requerir sesión completa previa)
+|--------------------------------------------------------------------------
+*/
+Route::controller(OtpVerificationController::class)->group(function () {
+    Route::get('/otp-verify', 'show')->name('otp.verify');
+    Route::post('/otp-verify', 'verify')->name('otp.verify.post');
+    Route::post('/otp-resend', 'resend')->name('otp.resend');
 });
 
 /*
