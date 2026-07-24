@@ -1,61 +1,126 @@
-Markdown# Sistema de Gestión y Notificaciones API
+Aquí tienes la versión del README.md completamente limpia, sin ningún emoji o icono, lista para copiar y pegar:
 
-Aplicación web y API REST desarrollada con Laravel. Está diseñada para la gestión de tareas, control de usuarios, programas académicos, riesgos de deserción y el envío automatizado de notificaciones, estructurada mediante una arquitectura limpia y desacoplada.
+Markdown
+# Sistema de Monitoreo y Prevención de la Deserción Estudiantil (PIAE) - COTECNOVA
 
----
+¡Bienvenido al repositorio oficial del **Sistema de Información para la Detección Temprana de la Deserción Estudiantil** de la corporación universitaria **COTECNOVA**!
 
-## 1. Requisitos Previos y Justificación
-
-Antes de comenzar la instalación, asegúrate de tener instaladas las siguientes herramientas en tu sistema operativo:
-
-* **Git:** Control de versiones necesario para clonar el repositorio y gestionar el código.
-* **Docker Desktop:** Entorno de virtualización necesario para ejecutar la infraestructura (servidor web, base de datos) en contenedores aislados sin necesidad de instalar servicios directamente en tu sistema operativo.
-* **PHP (versión 8.2 o superior):** Lenguaje en el que está construido Laravel. Es necesario localmente para la ejecución de scripts iniciales de Composer.
-* **Composer:** Gestor de dependencias de PHP. Se utiliza para descargar e instalar Laravel y todos los paquetes PHP requeridos por el proyecto.
-* **Node.js (versión 18 o superior) y NPM:** Entorno de ejecución de JavaScript y su gestor de paquetes. Se requiere obligatoriamente para descargar la infraestructura del frontend y compilar estilos/scripts.
+Este sistema integra el **PIAE** (*Programa Integrado de Acompañamiento Estudiantil*) para caracterizar a los estudiantes, calcular automáticamente su nivel de riesgo académico, psicosocial y socioeconómico, y generar rutas de orientación personalizadas e institucionales.
 
 ---
 
-## 2. Tecnologías e Instalaciones Principales
+## ¿Qué hace esta aplicación?
 
-El proyecto requiere e integra las siguientes herramientas en su arquitectura:
+El objetivo principal es identificar a tiempo a los estudiantes que puedan estar en riesgo de abandonar sus estudios y brindarles el acompañamiento adecuado según sus necesidades.
 
-1. **Framework Laravel 11:** Proporciona el núcleo del sistema, el enrutamiento de la API REST y la lógica de negocio.
-2. **Laravel Sail:** Interfaz de línea de comandos integrada que simplifica la interacción con Docker para ejecutar el entorno local de desarrollo.
-3. **MySQL 8.0:** Sistema de gestión de bases de datos relacional para almacenar la información de usuarios, estudiantes, programas y registros del sistema.
-4. **Laravel Passport / Sanctum / JWT:** Mecanismos de autenticación mediante tokens de acceso seguro para proteger los endpoints de la API.
-5. **Node.js, NPM y Vite:** Herramientas encargadas de procesar, compilar y servir los activos del frontend (CSS/JS) en tiempo real durante el desarrollo.
-6. **Mailtrap / Driver Log:** Servicio SMTP de pruebas para interceptar y previsualizar los correos electrónicos enviados por la aplicación sin afectar a usuarios reales.
+### Funcionalidades Clave
+
+* **Cuestionario de Caracterización:** Los estudiantes responden un formulario sobre sus condiciones académicas, laborales, socioeconómicas y psicosociales.
+* **Cálculo Automático del Riesgo:** Mediante una matriz de ponderación interna, el sistema evalúa los datos y clasifica al estudiante en un nivel de riesgo (**Bajo**, **Medio** o **Alto**).
+* **Diagnóstico y Orientación Automática PIAE:** Se genera de forma automática una recomendación institucional con rutas específicas hacia:
+  * *Área de Psicología / Bienestar* (Estrés, salud mental y manejo emocional).
+  * *Área Financiera* (Subsidios, convenios de pago y apoyos económicos).
+  * *Área de Acompañamiento Académico* (Tutorías pares, nivelación y hábitos de estudio).
+* **Dashboard y Monitoreo de Alertas:** Panel de control centralizado para visualizar, buscar y filtrar estudiantes por programa académico, semestre, jornada o palabras clave.
+* **Exportación de Reportes en PDF:** Generación de informes consolidados en formato PDF con diseño horizontal listo para imprimir o presentar en comités.
+* **Gestión por Roles:** Control de acceso adaptado según el usuario:
+  * **Administrador / Director de Bienestar:** Acceso completo a registros, edición y métricas globales.
+  * **Director de Unidad / Programa:** Visualización filtrada únicamente para los estudiantes pertenecientes a sus carreras asignadas.
+  * **Estudiante:** Acceso exclusivo a su cuestionario y perfil.
 
 ---
 
-## 3. Guía Explicativa de Instalación Paso a Paso
+## Requisitos Previos y Dependencias
 
-Sigue detenidamente cada paso para desplegar el proyecto correctamente en tu entorno local.
+Para ejecutar este proyecto en tu equipo local o en un servidor de producción, asegúrate de contar con los siguientes programas e instalaciones básicas:
 
-### Paso 1: Clonar el repositorio
-Abre tu terminal, navega hacia el directorio donde organizas tus proyectos y clona el código fuente:
+### 1. Entorno de Desarrollo Base
+* **PHP:** Versión 8.1 o superior (con extensiones habilitadas: `mbstring`, `pdo_mysql`, `bcmath`, `openssl`, `tokenizer`, `xml`).
+* **Base de Datos:** MySQL o MariaDB (versión 10.4 o superior).
+* **Composer:** Gestor de paquetes y dependencias para PHP.
+* **Node.js y NPM:** Para la compilación de estilos visuales e interactividad del frontend.
 
+### 2. Librerías y Paquetes Clave del Proyecto
+* **Framework Backend:** [Laravel 10.x / 11.x](https://laravel.com/) - Núcleo principal de la arquitectura MVC.
+* **Generador de PDF:** [`barryvdh/laravel-dompdf`](https://github.com/barryvdh/laravel-dompdf) - Encargado de renderizar la vista del reporte e imprimir el documento en PDF.
+* **Frontend y Estilos:** 
+  * [Tailwind CSS](https://tailwindcss.com/) - Diseño responsivo y moderno.
+  * [Alpine.js](https://alpinejs.dev/) - Interactividad ligera para componentes en la interfaz.
+
+---
+
+## Guía de Instalación Paso a Paso
+
+Sigue estos sencillos pasos para instalar y ejecutar el proyecto en un entorno local:
+
+### 1. Clonar el Repositorio
+Abre tu terminal y descarga el código fuente:
 ```bash
-# Guía de Instalación y Configuración del Proyecto
-
-```bash
-git clone [https://github.com/josed1231/semana-3-seminario.git](https://github.com/josed1231/semana-3-seminario.git)
-cd semana-3-seminario
-Explicación: Descarga la copia exacta del proyecto desde GitHub a tu máquina y te ubica dentro del directorio raíz del proyecto.
-
-Paso 2: Instalar dependencias de PHP con Composer
-Ejecuta el comando para descargar las librerías necesarias:
+git clone [https://github.com/tu-usuario/desercion-estudiantil-cotecnova.git](https://github.com/tu-usuario/desercion-estudiantil-cotecnova.git)
+cd desercion-estudiantil-cotecnova
+2. Instalar Dependencias de PHP
+Ejecuta Composer para descargar el framework Laravel y las librerías necesarias:
 
 Bash
 composer install
-Explicación: Lee el archivo composer.json y crea la carpeta vendor con todas las dependencias requeridas por Laravel para que el framework pueda funcionar.
+3. Instalar Dependencias de Frontend
+Instala los componentes de diseño y scripts:
 
-Paso 3: Configurar el archivo de variables de entorno
-Crea una copia del archivo .env.example y nómbralo .env:
+Bash
+npm install
+npm run build
+4. Configurar las Variables de Entorno (.env)
+Duplica el archivo de ejemplo para crear tu configuración personal:
 
 Bash
 cp .env.example .env
-Explicación: El archivo .env almacena las credenciales locales y configuraciones sensibles (claves de API, puertos, contraseñas de BD) que no se suben al repositorio de Git por seguridad.
+Abre el archivo .env recién creado en un editor de texto y configura la conexión a tu base de datos:
 
-Abre el archivo .env en tu editor y verifica que la configuración coincida con el entorno optimizado para el repositorio
+Fragmento de código
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=nombre_de_tu_basededatos
+DB_USERNAME=root
+DB_PASSWORD=tu_contraseña
+5. Generar la Clave de la Aplicación
+Bash
+php artisan key:generate
+6. Ejecutar Migraciones y Datos Iniciales
+Crea la estructura de tablas e inserta los registros base en la base de datos:
+
+Bash
+php artisan migrate --seed
+7. Iniciar el Servidor de Desarrollo
+Corre el servidor local con:
+
+Bash
+php artisan serve
+El sistema estará disponible para navegar en tu navegador en: http://127.0.0.1:8000
+
+Estructura Principal del Proyecto
+Un resumen rápido de los archivos principales para ubicarte dentro del código:
+
+Plaintext
+app/
+├── Http/
+│   └── Controllers/
+│       ├── AlertasController.php     # Gestión del Dashboard de Monitoreo e impresión PDF
+│       ├── CuestionarioController.php# Captura del formulario, cálculo de riesgo y sincronización
+│       └── EstudianteController.php  # Edición y mantenimiento de perfiles estudiantiles
+├── Models/
+│   ├── Estudiante.php               # Modelo de estudiantes y relaciones de base de datos
+│   ├── OrientacionPsicologica.php   # Modelo para almacenar la orientación PIAE
+│   └── RiesgoDesercion.php          # Modelo con la clasificación del nivel de riesgo
+├── Observers/
+│   └── RiesgoDesercionObserver.php  # Disparador automático que genera la orientación al guardar un riesgo
+└── Services/
+    └── Orientacion.php              # Lógica de negocio del PIAE y generación de recomendaciones
+Contribución y Soporte
+Este proyecto fue diseñado para el fortalecimiento institucional de COTECNOVA. Si deseas reportar un fallo o proponer una mejora en la lógica de evaluación:
+
+Crea un Issue describiendo la situación o sugerencia.
+
+Abre un Pull Request explicando los cambios propuestos en la rama de desarrollo correspondiente.
+
+Desarrollado para la comunidad académica de COTECNOVA.
