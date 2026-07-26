@@ -45,7 +45,7 @@ class CuestionarioController extends Controller
             'semestre'                  => 'required|integer',
             'jornada'                   => 'required|string',
             'genero'                    => 'required|string',
-            'victima_conflicto'         => 'nullable|string', // 👈 Campo corregido
+            'victima_conflicto'         => 'nullable|string',
             'trabaja'                   => 'nullable|string',
             'actividad'                 => 'nullable|string',
             'afectacion_academico'      => 'nullable',
@@ -78,16 +78,14 @@ class CuestionarioController extends Controller
             // Limpieza del campo actividad
             $actividadTexto = $request->input('actividad', '');
 
-            // 2. Guardar o actualizar datos base del Estudiante (Asegurando Nombre, Cédula y Correo)
-            $codigoEstudiante = $user->codigo_estudiante ?? $user->username ?? (string)$user->id;
-            $cedulaEstudiante = $user->cedula ?? $user->username ?? $codigoEstudiante;
+            // 2. Guardar o actualizar datos base del Estudiante (username es la cédula / código de estudiante)
+            $codigoEstudiante = $user->username ?? $user->codigo_estudiante ?? (string)$user->id;
 
             $estudiante = Estudiante::updateOrCreate(
                 [
                     'codigo_estudiante' => $codigoEstudiante
                 ],
                 [
-                    'cedula'                  => $cedulaEstudiante,
                     'nombre_estudiante'       => $user->name,
                     'correo'                  => $user->email,
                     'id_programa'             => $request->id_programa,
@@ -103,7 +101,7 @@ class CuestionarioController extends Controller
             // 3. Guardar respuestas en saberes_previos (Estructura JSON y Semestre)
             $respuestas = [
                 'genero'                    => $request->input('genero'),
-                'victima_conflicto'         => $request->input('victima_conflicto'), // 👈 Campo corregido
+                'victima_conflicto'         => $request->input('victima_conflicto'),
                 'actividad'                 => $actividadTexto,
                 'actividades_estilo_vida'   => $actividadTexto,
                 'afectacion_academico'      => $request->input('afectacion_academico'),
