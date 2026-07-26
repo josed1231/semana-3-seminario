@@ -62,7 +62,14 @@ Route::middleware(['auth', 'prevent-back'])->group(function () {
     Route::controller(CuestionarioController::class)->group(function () {
         Route::get('/cuestionario', 'create')->name('cuestionario.create');
         Route::post('/cuestionario', 'store')->name('cuestionario.store');
-        Route::get('/cuestionario/finalizado', fn() => view('cuestionario_success'))->name('cuestionario.success');
+        
+        // Verifica si la vista existe con guion bajo o guion medio para evitar pantallas en blanco o errores 500
+        Route::get('/cuestionario/finalizado', function () {
+            if (view()->exists('cuestionario_success')) {
+                return view('cuestionario_success');
+            }
+            return view('cuestionario-success');
+        })->name('cuestionario.success');
     });
 
     // ----------------------------------------------------------------------
