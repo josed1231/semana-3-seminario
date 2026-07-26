@@ -11,6 +11,7 @@ use App\Http\Controllers\{
     UserController,
     ProgramController,        
     DirectorUnidadController,
+    GeneroController,
     OtpVerificationController
 };
 
@@ -119,6 +120,7 @@ Route::middleware(['auth', 'prevent-back'])->group(function () {
         Route::resource('usuarios', UserController::class)->except(['show', 'create', 'edit']);
         Route::resource('programas', ProgramController::class)->except(['create', 'show', 'edit']);
         Route::resource('directores', DirectorUnidadController::class)->except(['create', 'show', 'edit']);
+        Route::resource('generos', GeneroController::class)->except(['create', 'show', 'edit']);
         
         // Creación de Tareas Administrativas
         Route::controller(TaskController::class)->group(function () {

@@ -7,6 +7,7 @@ use App\Models\ProgramaAcademico;
 use App\Models\RiesgoDesercion;
 use App\Models\User;
 use App\Models\OrientacionPsicologica;
+use App\Models\Genero;
 use Illuminate\Http\Request;
 use Barryvdh\DomPDF\Facade\Pdf;
 
@@ -66,8 +67,9 @@ class AlertasController extends Controller
                              ->appends($request->query());
 
         $programas = ProgramaAcademico::all();
+        $generos = Genero::orderBy('nombre', 'asc')->get();
 
-        return view('alertas.monitoreo', compact('estudiantes', 'programas'));
+        return view('alertas.monitoreo', compact('estudiantes', 'programas', 'generos'));
     }
 
     public function exportPdf(Request $request)

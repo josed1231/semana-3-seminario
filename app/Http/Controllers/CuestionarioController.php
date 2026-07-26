@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Log;
 use App\Models\Estudiante;
 use App\Models\ProgramaAcademico;
 use App\Models\User;
+use App\Models\Genero;
 use App\Services\Orientacion;
 use App\Events\EstudianteActualizado;
 
@@ -31,7 +32,12 @@ class CuestionarioController extends Controller
         $programas = ProgramaAcademico::with('directorUnidad')->get();
         $directores = User::where('rol', 'dir_unidad')->get();
         
-        return view('cuestionario', compact('programas', 'directores'));
+        // Se consulta directamente la columna 'activo' (1 = Activo, 0 = Inactivo)
+        $generos = Genero::where('activo', 1)
+            ->orderBy('nombre', 'asc')
+            ->get();
+
+        return view('cuestionario', compact('programas', 'directores', 'generos'));
     }
 
     /**
@@ -189,6 +195,9 @@ class CuestionarioController extends Controller
     /**
      * Muestra el formulario para editar a un estudiante
      */
+    /**
+     * Muestra el formulario para editar a un estudiante
+     */
     public function edit($codigo_estudiante)
     {
         $estudiante = Estudiante::with([
@@ -213,8 +222,13 @@ class CuestionarioController extends Controller
 
         $programas = ProgramaAcademico::with('directorUnidad')->get();
         $directores = User::where('rol', 'dir_unidad')->get(); 
+        
+        // Se consulta directamente la columna 'activo' (1 = Activo, 0 = Inactivo)
+        $generos = Genero::where('activo', 1)
+            ->orderBy('nombre', 'asc')
+            ->get();
 
-        return view('estudiantes.edit', compact('estudiante', 'programas', 'directores'));
+        return view('estudiantes.edit', compact('estudiante', 'programas', 'directores', 'generos'));
     }
 
     /**

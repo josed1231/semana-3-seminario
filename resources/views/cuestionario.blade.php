@@ -89,7 +89,7 @@
                             </div>
                         </div>
 
-                        <!-- SECCIÓN 2: CARACTERIZACIÓN SOCIODE MOGRÁFICA -->
+                        <!-- SECCIÓN 2: CARACTERIZACIÓN SOCIODEMOGRÁFICA -->
                         <div class="p-6 md:p-8 bg-white rounded-2xl border border-gray-200 space-y-6">
                             <div>
                                 <h3 class="text-lg font-bold text-slate-800">Información Sociodemográfica</h3>
@@ -103,10 +103,11 @@
                                     <label class="block text-sm font-semibold text-gray-700">Género: <span class="text-red-500">*</span></label>
                                     <select name="genero" class="w-full rounded-xl border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 py-2.5 text-sm" required>
                                         <option value="" disabled {{ old('genero') ? '' : 'selected' }}>-- Seleccione --</option>
-                                        <option value="Masculino" {{ old('genero') == 'Masculino' ? 'selected' : '' }}>Masculino</option>
-                                        <option value="Femenino" {{ old('genero') == 'Femenino' ? 'selected' : '' }}>Femenino</option>
-                                        <option value="No binario" {{ old('genero') == 'No binario' ? 'selected' : '' }}>No binario</option>
-                                        <option value="Otro" {{ old('genero') == 'Otro' ? 'selected' : '' }}>Otro / Prefiero no decir</option>
+                                        @foreach($generos as $genero)
+                                            <option value="{{ $genero->nombre }}" {{ old('genero') == $genero->nombre ? 'selected' : '' }}>
+                                                {{ $genero->nombre }}
+                                            </option>
+                                        @endforeach
                                     </select>
                                     @error('genero') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
                                 </div>

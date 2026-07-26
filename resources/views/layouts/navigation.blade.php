@@ -65,6 +65,10 @@
                         <x-nav-link :href="route('directores.index')" :active="request()->routeIs('directores.*')" class="text-white inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium leading-5 hover:text-gray-200 transition duration-150 ease-in-out">
                             {{ __('Directores de Unidad') }}
                         </x-nav-link>
+
+                        <x-nav-link :href="route('generos.index')" :active="request()->routeIs('generos.*')" class="text-white inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium leading-5 hover:text-gray-200 transition duration-150 ease-in-out">
+                            {{ __('Gestión de Géneros') }}
+                        </x-nav-link>
                     @endif
 
                 </div>
@@ -141,6 +145,10 @@
 
                 <x-responsive-nav-link :href="route('directores.index')" :active="request()->routeIs('directores.*')" class="text-white">
                     {{ __('Directores de Unidad') }}
+                </x-responsive-nav-link>
+
+                <x-responsive-nav-link :href="route('generos.index')" :active="request()->routeIs('generos.*')" class="text-white">
+                    {{ __('Gestión de Géneros') }}
                 </x-responsive-nav-link>
             @endif
         </div>

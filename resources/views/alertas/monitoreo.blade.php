@@ -37,7 +37,7 @@
                 </div>
 
                 <!-- Filtros -->
-                <form method="GET" action="{{ route('alertas.monitoreo') }}" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 mb-6 bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                <form method="GET" action="{{ route('alertas.monitoreo') }}" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3 mb-6 bg-slate-50 p-4 rounded-2xl border border-slate-100">
                     <div>
                         <label class="block text-xs font-bold text-slate-700 mb-1">Búsqueda</label>
                         <input type="text" 
@@ -81,13 +81,25 @@
                         </select>
                     </div>
 
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Género</label>
+                        <select name="genero" class="rounded-xl px-3 py-2 text-sm w-full text-slate-800 bg-white border border-slate-300 focus:border-[#005a36] focus:ring-2 focus:ring-[#dcece4] outline-none transition-all">
+                            <option value="">Todos</option>
+                            @foreach($generos ?? [] as $gen)
+                                <option value="{{ $gen->nombre }}" {{ request('genero') == $gen->nombre ? 'selected' : '' }}>
+                                    {{ $gen->nombre }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+
                     <div class="flex items-end gap-2">
                         <button type="submit" 
                                 class="flex-1 py-2 px-4 rounded-xl text-sm font-bold bg-[#004d2e] hover:bg-[#002b1a] text-white transition-colors cursor-pointer border-none shadow-sm h-[38px]">
                             Filtrar
                         </button>
 
-                        @if(request()->hasAny(['buscar', 'programa', 'semestre', 'jornada']) && (request('buscar') || request('programa') || request('semestre') || request('jornada')))
+                        @if(request()->hasAny(['buscar', 'programa', 'semestre', 'jornada', 'genero']) && (request('buscar') || request('programa') || request('semestre') || request('jornada') || request('genero')))
                             <a href="{{ route('alertas.monitoreo') }}" 
                                class="py-2 px-3 rounded-xl text-sm font-bold bg-slate-200 hover:bg-slate-300 text-slate-800 transition-colors text-center shadow-sm decoration-none h-[38px] flex items-center justify-center">
                                 Limpiar
