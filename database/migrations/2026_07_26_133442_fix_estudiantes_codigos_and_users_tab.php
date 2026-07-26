@@ -53,16 +53,18 @@ return new class extends Migration
                 $consecutivo = str_pad($index + 1, 3, '0', STR_PAD_LEFT);
                 $nuevoCodigo = "EST-{$anio}-{$consecutivo}";
 
-                // 4. Estrategia compatible con PostgreSQL sin requerir superusuario:
-                // a) Clonar datos e insertar el nuevo registro de estudiante
+                // 4. Clonar el registro y remover 'id' para evitar conflicto en estudiantes_pkey
                 $nuevoRegistro = (array) $estudiante;
+                unset($nuevoRegistro['id']); // Permite a Postgres asignar un ID nuevo
+
                 $nuevoRegistro['codigo_estudiante'] = $nuevoCodigo;
                 $nuevoRegistro['id_user']           = $idUser;
                 $nuevoRegistro['cedula']            = $cedula;
 
+                // Insertar el nuevo estudiante
                 DB::table('estudiantes')->insert($nuevoRegistro);
 
-                // b) Re-vincular las tablas hijas al nuevo código
+                // Re-vincular las tablas hijas al nuevo código
                 $tablasHijas = [
                     'riesgos_desercion',
                     'riesgo_desercion',
@@ -79,7 +81,7 @@ return new class extends Migration
                     }
                 }
 
-                // c) Eliminar el registro antiguo una vez desvinculado de sus relaciones
+                // Eliminar el registro antiguo una vez desvinculado
                 DB::table('estudiantes')
                     ->where('codigo_estudiante', $codigoAntiguo)
                     ->delete();
