@@ -12,9 +12,6 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // Desactiva temporalmente las FK de forma segura en MySQL, PostgreSQL o SQLite
-        Schema::disableForeignKeyConstraints();
-
         DB::transaction(function () {
             $estudiantes = DB::table('estudiantes')->get();
 
@@ -34,40 +31,60 @@ return new class extends Migration
                     }
                 }
 
-                // 2. Resguardar cédula
+                // 2. Resguardar la cédula si el código actual era la cédula
                 $cedula = $estudiante->cedula;
                 if (empty($cedula) && !str_starts_with($codigoAntiguo, 'EST-')) {
                     $cedula = $codigoAntiguo;
                 }
 
-                // 3. Formatear código EST-YYYY-XXX
-                $nuevoCodigo = $codigoAntiguo;
-                if (!str_starts_with($codigoAntiguo, 'EST-')) {
-                    $anio = date('Y');
-                    $consecutivo = str_pad($index + 1, 3, '0', STR_PAD_LEFT);
-                    $nuevoCodigo = "EST-{$anio}-{$consecutivo}";
+                // Si el código ya tiene el formato EST-..., solo actualizar id_user y cédula
+                if (str_starts_with($codigoAntiguo, 'EST-')) {
+                    DB::table('estudiantes')
+                        ->where('codigo_estudiante', $codigoAntiguo)
+                        ->update([
+                            'id_user' => $idUser,
+                            'cedula'  => $cedula,
+                        ]);
+                    continue;
                 }
 
-                // Actualizar registro en la tabla principal
+                // 3. Generar el nuevo código formateado
+                $anio = date('Y');
+                $consecutivo = str_pad($index + 1, 3, '0', STR_PAD_LEFT);
+                $nuevoCodigo = "EST-{$anio}-{$consecutivo}";
+
+                // 4. Estrategia compatible con PostgreSQL sin requerir superusuario:
+                // a) Clonar datos e insertar el nuevo registro de estudiante
+                $nuevoRegistro = (array) $estudiante;
+                $nuevoRegistro['codigo_estudiante'] = $nuevoCodigo;
+                $nuevoRegistro['id_user']           = $idUser;
+                $nuevoRegistro['cedula']            = $cedula;
+
+                DB::table('estudiantes')->insert($nuevoRegistro);
+
+                // b) Re-vincular las tablas hijas al nuevo código
+                $tablasHijas = [
+                    'riesgos_desercion',
+                    'riesgo_desercion',
+                    'orientacion_psicologica',
+                    'saberes_previos',
+                    'estilo_vida'
+                ];
+
+                foreach ($tablasHijas as $tabla) {
+                    if (Schema::hasTable($tabla)) {
+                        DB::table($tabla)
+                            ->where('codigo_estudiante', $codigoAntiguo)
+                            ->update(['codigo_estudiante' => $nuevoCodigo]);
+                    }
+                }
+
+                // c) Eliminar el registro antiguo una vez desvinculado de sus relaciones
                 DB::table('estudiantes')
                     ->where('codigo_estudiante', $codigoAntiguo)
-                    ->update([
-                        'codigo_estudiante' => $nuevoCodigo,
-                        'id_user'           => $idUser,
-                        'cedula'            => $cedula,
-                    ]);
-
-                // Sincronizar tablas hijas si cambió el código
-                if ($codigoAntiguo !== $nuevoCodigo) {
-                    DB::table('riesgo_desercion')->where('codigo_estudiante', $codigoAntiguo)->update(['codigo_estudiante' => $nuevoCodigo]);
-                    DB::table('orientacion_psicologica')->where('codigo_estudiante', $codigoAntiguo)->update(['codigo_estudiante' => $nuevoCodigo]);
-                    DB::table('saberes_previos')->where('codigo_estudiante', $codigoAntiguo)->update(['codigo_estudiante' => $nuevoCodigo]);
-                    DB::table('estilo_vida')->where('codigo_estudiante', $codigoAntiguo)->update(['codigo_estudiante' => $nuevoCodigo]);
-                }
+                    ->delete();
             }
         });
-
-        Schema::enableForeignKeyConstraints();
     }
 
     /**
@@ -75,6 +92,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        // No aplica reverso al ser migración de limpieza de datos
+        // No aplica para migraciones de normalización de datos
     }
 };
