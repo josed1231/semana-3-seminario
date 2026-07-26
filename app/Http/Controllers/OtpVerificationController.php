@@ -4,8 +4,10 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\User;
+use App\Mail\OtpMail;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Log;
 
 class OtpVerificationController extends Controller
 {
@@ -67,14 +69,18 @@ class OtpVerificationController extends Controller
         $userId = $request->session()->get('otp_user_id');
         $user = User::find($userId);
 
-        if ($user) {
-            $otp = $user->generateOtp();
-            Mail::send('emails.otp', ['otp' => $otp, 'user' => $user], function ($message) use ($user) {
-                $message->to($user->email)
-                        ->subject('Nuevo código de verificación - COTECNOVA');
-            });
+        if (!$user) {
+            return redirect()->route('login');
         }
 
-        return back()->with('status', 'Se ha enviado un nuevo código a tu correo.');
+        try {
+            $otp = $user->generateOtp();
+            Mail::to($user->email)->send(new OtpMail($otp, $user));
+
+            return back()->with('status', 'Se ha enviado un nuevo código a tu correo.');
+        } catch (\Exception $e) {
+            Log::error("Error enviando código OTP a {$user->email}: " . $e->getMessage());
+            return back()->withErrors(['code' => 'No se pudo enviar el correo de verificación. Revisa los logs del servidor.']);
+        }
     }
 }
