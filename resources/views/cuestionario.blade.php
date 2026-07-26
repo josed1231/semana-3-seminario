@@ -89,7 +89,7 @@
                             </div>
                         </div>
 
-                        <!-- SECCIÓN 2: CARACTERIZACIÓN (OPCIONES DE GÉNERO UNIFICADAS) -->
+                        <!-- SECCIÓN 2: CARACTERIZACIÓN SOCIODE MOGRÁFICA -->
                         <div class="p-6 md:p-8 bg-white rounded-2xl border border-gray-200 space-y-6">
                             <div>
                                 <h3 class="text-lg font-bold text-slate-800">Información Sociodemográfica</h3>
@@ -113,12 +113,12 @@
 
                                 <div class="space-y-2">
                                     <label class="block text-sm font-semibold text-gray-700">¿Víctima del conflicto? <span class="text-red-500">*</span></label>
-                                    <select name="victima_confict" class="w-full rounded-xl border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 py-2.5 text-sm" required>
-                                        <option value="No" {{ old('victima_confict', 'No') == 'No' ? 'selected' : '' }}>No</option>
-                                        <option value="Si" {{ old('victima_confict') == 'Si' ? 'selected' : '' }}>Sí</option>
+                                    <select name="victima_conflicto" class="w-full rounded-xl border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 py-2.5 text-sm" required>
+                                        <option value="No" {{ old('victima_conflicto', 'No') == 'No' ? 'selected' : '' }}>No</option>
+                                        <option value="Si" {{ old('victima_conflicto') == 'Si' ? 'selected' : '' }}>Sí</option>
                                     </select>
                                     <p class="text-xs text-gray-500">Para facilitar la vinculación a convocatorias de subsidios y ayudas.</p>
-                                    @error('victima_confict') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
+                                    @error('victima_conflicto') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
                                 </div>
                             </div>
                         </div>
