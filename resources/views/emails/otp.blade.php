@@ -16,7 +16,7 @@
     <div class="card">
         <div class="header">
             <h2>🏛️ COTECNOVA</h2>
-            <p>Verificación de Seguridad (2FA)</p>
+            <p>Codigo de Verificación</p>
         </div>
 
         <p>Hola, <strong>{{ $user->name ?? $user->username }}</strong> 👋</p>
