@@ -31,11 +31,15 @@ return [
     |
     | Supported: "smtp", "sendmail", "mailgun", "ses", "ses-v2",
     |            "postmark", "resend", "log", "array",
-    |            "failover", "roundrobin"
+    |            "failover", "roundrobin", "brevo"
     |
     */
 
     'mailers' => [
+
+        'brevo' => [
+            'transport' => 'brevo',
+        ],
 
         'smtp' => [
             'transport' => 'smtp',
@@ -55,10 +59,6 @@ return [
 
         'postmark' => [
             'transport' => 'postmark',
-            // 'message_stream_id' => env('POSTMARK_MESSAGE_STREAM_ID'),
-            // 'client' => [
-            //     'timeout' => 5,
-            // ],
         ],
 
         'resend' => [
@@ -82,6 +82,7 @@ return [
         'failover' => [
             'transport' => 'failover',
             'mailers' => [
+                'brevo',
                 'smtp',
                 'log',
             ],
