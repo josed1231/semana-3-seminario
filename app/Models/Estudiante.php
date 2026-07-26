@@ -38,19 +38,32 @@ class Estudiante extends Model
         'saberes_previos' => 'array',
     ];
 
+    /**
+     * Boot del modelo para autogenerar el código EST-YYYY-XXX si no viene definido.
+     */
+    protected static function booted()
+    {
+        static::creating(function ($estudiante) {
+            if (empty($estudiante->codigo_estudiante) || !str_starts_with($estudiante->codigo_estudiante, 'EST-')) {
+                $anio = date('Y');
+                $ultimoNumero = static::count() + 1;
+                $consecutivo = str_pad($ultimoNumero, 3, '0', STR_PAD_LEFT);
+
+                $estudiante->codigo_estudiante = "EST-{$anio}-{$consecutivo}";
+            }
+        });
+    }
+
     /*
     |--------------------------------------------------------------------------
     | Relaciones
     |--------------------------------------------------------------------------
     */
 
-    // app/Models/Estudiante.php
-
-public function user()
-{
-    // Forzamos 'id_user' como clave foránea hacia la tabla users
-    return $this->belongsTo(User::class, 'id_user', 'id');
-}
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'id_user', 'id');
+    }
 
     public function programa(): BelongsTo
     {

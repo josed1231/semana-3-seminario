@@ -134,8 +134,8 @@
                             @forelse($estudiantes as $estudiante)
                                 @php
                                     $cedulaVal = $estudiante->cedula 
+                                        ?? $estudiante->user?->username 
                                         ?? $estudiante->username;
-                                    
 
                                     $nombreVal = $estudiante->nombre_estudiante 
                                         ?? $estudiante->user?->name 
@@ -174,8 +174,9 @@
                                         {{ $estudiante->codigo_estudiante }}
                                     </td>
 
+                                    <!-- CORREGIDO: Se imprime $cedulaVal en lugar de depender únicamente del atributo no precargado -->
                                     <td class="px-3.5 py-3 text-xs font-bold text-slate-700 whitespace-nowrap">
-                                        {{ $estudiante->cedula }}
+                                        {{ $cedulaVal ?? 'N/A' }}
                                     </td>
 
                                     <td class="px-3.5 py-3 text-xs">
