@@ -1,126 +1,122 @@
-Aquí tienes la versión del README.md completamente limpia, sin ningún emoji o icono, lista para copiar y pegar:
+# PIAE - Sistema de Información con IA para la Detección Temprana de la Deserción Estudiantil
 
-Markdown
-# Sistema de Monitoreo y Prevención de la Deserción Estudiantil (PIAE) - COTECNOVA
+![Laravel](https://img.shields.io/badge/Laravel-FF2D20?style=for-the-badge&logo=laravel&logoColor=white)
+![PHP](https://img.shields.io/badge/PHP-777BB4?style=for-the-badge&logo=php&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)
+![TailwindCSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)
+![Render](https://img.shields.io/badge/Render-46E3B7?style=for-the-badge&logo=render&logoColor=black)
 
-¡Bienvenido al repositorio oficial del **Sistema de Información para la Detección Temprana de la Deserción Estudiantil** de la corporación universitaria **COTECNOVA**!
-
-Este sistema integra el **PIAE** (*Programa Integrado de Acompañamiento Estudiantil*) para caracterizar a los estudiantes, calcular automáticamente su nivel de riesgo académico, psicosocial y socioeconómico, y generar rutas de orientación personalizadas e institucionales.
-
----
-
-## ¿Qué hace esta aplicación?
-
-El objetivo principal es identificar a tiempo a los estudiantes que puedan estar en riesgo de abandonar sus estudios y brindarles el acompañamiento adecuado según sus necesidades.
-
-### Funcionalidades Clave
-
-* **Cuestionario de Caracterización:** Los estudiantes responden un formulario sobre sus condiciones académicas, laborales, socioeconómicas y psicosociales.
-* **Cálculo Automático del Riesgo:** Mediante una matriz de ponderación interna, el sistema evalúa los datos y clasifica al estudiante en un nivel de riesgo (**Bajo**, **Medio** o **Alto**).
-* **Diagnóstico y Orientación Automática PIAE:** Se genera de forma automática una recomendación institucional con rutas específicas hacia:
-  * *Área de Psicología / Bienestar* (Estrés, salud mental y manejo emocional).
-  * *Área Financiera* (Subsidios, convenios de pago y apoyos económicos).
-  * *Área de Acompañamiento Académico* (Tutorías pares, nivelación y hábitos de estudio).
-* **Dashboard y Monitoreo de Alertas:** Panel de control centralizado para visualizar, buscar y filtrar estudiantes por programa académico, semestre, jornada o palabras clave.
-* **Exportación de Reportes en PDF:** Generación de informes consolidados en formato PDF con diseño horizontal listo para imprimir o presentar en comités.
-* **Gestión por Roles:** Control de acceso adaptado según el usuario:
-  * **Administrador / Director de Bienestar:** Acceso completo a registros, edición y métricas globales.
-  * **Director de Unidad / Programa:** Visualización filtrada únicamente para los estudiantes pertenecientes a sus carreras asignadas.
-  * **Estudiante:** Acceso exclusivo a su cuestionario y perfil.
+Plataforma web institucional enfocada en la caracterización, monitoreo preventivo y predicción del riesgo de deserción académica de los estudiantes en COTECNOVA. La herramienta integra un modelo matricial de evaluación socioeducativa, gestión de alertas tempranas, autenticación segura por OTP y exportación de informes institucionales.
 
 ---
 
-## Requisitos Previos y Dependencias
+## Configuración e Instalación Local
 
-Para ejecutar este proyecto en tu equipo local o en un servidor de producción, asegúrate de contar con los siguientes programas e instalaciones básicas:
+### Requisitos Previos
+- Docker Desktop y WSL2 (en Windows) o entorno Linux.
+- PHP >= 8.2 y Composer instalado localmente.
+- Git.
 
-### 1. Entorno de Desarrollo Base
-* **PHP:** Versión 8.1 o superior (con extensiones habilitadas: `mbstring`, `pdo_mysql`, `bcmath`, `openssl`, `tokenizer`, `xml`).
-* **Base de Datos:** MySQL o MariaDB (versión 10.4 o superior).
-* **Composer:** Gestor de paquetes y dependencias para PHP.
-* **Node.js y NPM:** Para la compilación de estilos visuales e interactividad del frontend.
+### Pasos de Instalación
 
-### 2. Librerías y Paquetes Clave del Proyecto
-* **Framework Backend:** [Laravel 10.x / 11.x](https://laravel.com/) - Núcleo principal de la arquitectura MVC.
-* **Generador de PDF:** [`barryvdh/laravel-dompdf`](https://github.com/barryvdh/laravel-dompdf) - Encargado de renderizar la vista del reporte e imprimir el documento en PDF.
-* **Frontend y Estilos:** 
-  * [Tailwind CSS](https://tailwindcss.com/) - Diseño responsivo y moderno.
-  * [Alpine.js](https://alpinejs.dev/) - Interactividad ligera para componentes en la interfaz.
+1. **Clonar el repositorio:**
+   ```bash
+   git clone [https://github.com/tu-usuario/tu-repositorio.git](https://github.com/tu-usuario/tu-repositorio.git)
+   cd tu-repositorio
+   ```
+
+2. **Copiar archivo de variables de entorno:**
+   ```bash
+   cp .env.example .env
+   ```
+
+3. **Instalar dependencias de PHP y Node.js:**
+   ```bash
+   composer install
+   npm install && npm run build
+   ```
+
+4. **Iniciar el entorno de desarrollo con Laravel Sail:**
+   ```bash
+   ./vendor/bin/sail up -d
+   ```
+
+5. **Generar la clave de la aplicación:**
+   ```bash
+   sail artisan key:generate
+   ```
+
+6. **Ejecutar migraciones y seeders:**
+   ```bash
+   sail artisan migrate --seed
+   ```
+
+7. **Acceder a la aplicación:**
+   Abre tu navegador e ingresa a `http://localhost`.
 
 ---
 
-## Guía de Instalación Paso a Paso
+## Características Principales
 
-Sigue estos sencillos pasos para instalar y ejecutar el proyecto en un entorno local:
+- **Dashboard de Monitoreo y Alertas:** Vista centralizada con filtros avanzados por carrera/programa, semestre, jornada y género.
+- **Modelo Matricial de Evaluación de Riesgo:** Clasificación automatizada del nivel de riesgo (Bajo, Medio, Alto) basada en ponderaciones analíticas.
+- **Identificador Único Estudiantil (`EST-YYYY-XXX`):** Generación automatizada de códigos institucionales con trazabilidad de documento de identidad (cédula).
+- **Seguridad y Autenticación OTP:** Verificación de código de un solo uso vía correo electrónico para autenticación de usuarios.
+- **Control de Acceso Basado en Roles (RBAC):** Gestión diferenciada de permisos para Administrador, Director de Bienestar, Psicólogo y Director de Unidad.
+- **Exportación de Reportes:** Generación instantánea de reportes ejecutivos en formato PDF.
 
-### 1. Clonar el Repositorio
-Abre tu terminal y descarga el código fuente:
-```bash
-git clone [https://github.com/tu-usuario/desercion-estudiantil-cotecnova.git](https://github.com/tu-usuario/desercion-estudiantil-cotecnova.git)
-cd desercion-estudiantil-cotecnova
-2. Instalar Dependencias de PHP
-Ejecuta Composer para descargar el framework Laravel y las librerías necesarias:
+---
 
-Bash
-composer install
-3. Instalar Dependencias de Frontend
-Instala los componentes de diseño y scripts:
+## Modelo de Ponderación del Riesgo de Deserción
 
-Bash
-npm install
-npm run build
-4. Configurar las Variables de Entorno (.env)
-Duplica el archivo de ejemplo para crear tu configuración personal:
+El sistema evalúa el nivel de vulnerabilidad de los estudiantes calculando un índice de riesgo acumulativo basado en cuatro dimensiones estratégicas:
 
-Bash
-cp .env.example .env
-Abre el archivo .env recién creado en un editor de texto y configura la conexión a tu base de datos:
+$$Puntaje_{Total} = X_{Acad} + X_{Socioecon} + X_{Psicosoc} + X_{Diferencial}$$
 
-Fragmento de código
-DB_CONNECTION=mysql
-DB_HOST=127.0.0.1
-DB_PORT=3306
-DB_DATABASE=nombre_de_tu_basededatos
-DB_USERNAME=root
-DB_PASSWORD=tu_contraseña
-5. Generar la Clave de la Aplicación
-Bash
-php artisan key:generate
-6. Ejecutar Migraciones y Datos Iniciales
-Crea la estructura de tablas e inserta los registros base en la base de datos:
+### Escala de Valoración
 
-Bash
-php artisan migrate --seed
-7. Iniciar el Servidor de Desarrollo
-Corre el servidor local con:
+| Nivel de Riesgo | Rango de Puntuación | Acción Institucional |
+| :--- | :--- | :--- |
+| **Bajo** | 0 – 3 Puntos | Seguimiento académico regular. |
+| **Medio** | 4 – 7 Puntos | Intervención preventiva por bienestar / tutoría. |
+| **Alto** | $\ge$ 8 Puntos | Atención prioritaria por psicología y dirección académica. |
 
-Bash
-php artisan serve
-El sistema estará disponible para navegar en tu navegador en: http://127.0.0.1:8000
+---
 
-Estructura Principal del Proyecto
-Un resumen rápido de los archivos principales para ubicarte dentro del código:
+## Arquitectura y Tecnologías
 
-Plaintext
-app/
-├── Http/
-│   └── Controllers/
-│       ├── AlertasController.php     # Gestión del Dashboard de Monitoreo e impresión PDF
-│       ├── CuestionarioController.php# Captura del formulario, cálculo de riesgo y sincronización
-│       └── EstudianteController.php  # Edición y mantenimiento de perfiles estudiantiles
-├── Models/
-│   ├── Estudiante.php               # Modelo de estudiantes y relaciones de base de datos
-│   ├── OrientacionPsicologica.php   # Modelo para almacenar la orientación PIAE
-│   └── RiesgoDesercion.php          # Modelo con la clasificación del nivel de riesgo
-├── Observers/
-│   └── RiesgoDesercionObserver.php  # Disparador automático que genera la orientación al guardar un riesgo
-└── Services/
-    └── Orientacion.php              # Lógica de negocio del PIAE y generación de recomendaciones
-Contribución y Soporte
-Este proyecto fue diseñado para el fortalecimiento institucional de COTECNOVA. Si deseas reportar un fallo o proponer una mejora en la lógica de evaluación:
+- **Backend:** Laravel 10+ / PHP 8.2+
+- **Frontend:** Blade, Tailwind CSS, Alpine.js
+- **Base de Datos:** PostgreSQL (Producción en Render) / MariaDB (Desarrollo local)
+- **Contenedores y Entorno:** Docker via Laravel Sail / WSL2
+- **Despliegue Continuo:** Render Cloud Platform
 
-Crea un Issue describiendo la situación o sugerencia.
+---
 
-Abre un Pull Request explicando los cambios propuestos en la rama de desarrollo correspondiente.
+## Despliegue en Render (PostgreSQL)
 
-Desarrollado para la comunidad académica de COTECNOVA.
+Para desplegar la aplicación en la plataforma Render:
+
+1. **Build Command:**
+   ```bash
+   composer install --no-dev --optimize-autoloader && npm install && npm run build
+   ```
+
+2. **Start Command:**
+   ```bash
+   php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=$PORT
+   ```
+
+3. **Variables de Entorno Críticas en Render:**
+   - `APP_ENV` = `production`
+   - `APP_KEY` = *(Generada previamente con `php artisan key:generate --show`)*
+   - `DB_CONNECTION` = `pgsql`
+   - `DATABASE_URL` = *(Internal Database URL proporcionada por la PostgreSQL de Render)*
+   - `MAIL_*` = *(Configuración del servicio SMTP para el envío de códigos OTP)*
+
+---
+
+## Licencia
+
+Este proyecto es de uso exclusivo e institucional para COTECNOVA - Corporación de Estudios Tecnológicos del Norte del Valle. Todos los derechos reservados.
