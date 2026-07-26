@@ -2,8 +2,11 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Estudiante extends Model
 {
@@ -11,136 +14,153 @@ class Estudiante extends Model
 
     protected $table = 'estudiantes';
     protected $primaryKey = 'codigo_estudiante';
-    
     public $incrementing = false;
     protected $keyType = 'string';
 
     protected $fillable = [
-        'codigo_estudiante', 
-        'cedula', 
-        'nombre_estudiante', 
-        'correo', 
-        'id_programa', 
-        'id_docente',
-        'promedio', 
+        'codigo_estudiante',
+        'id_user',
+        'id_programa',
+        'semestre',
         'jornada',
-        'trabaja',
+        'genero',
+        'saberes_previos',
+        'id_docente',
         'actividades_estilo_vida',
         'orientacion_automatica',
+        'trabaja',
+        'cedula',
+        'correo',
+        'nombre_estudiante',
     ];
 
-    /**
-     * Atributos personalizados adjuntos al serializar el modelo (JSON/Array).
-     */
-    protected $appends = ['cedula'];
+    protected $casts = [
+        'saberes_previos' => 'array',
+    ];
 
-    /**
-     * Accessor para la propiedad 'cedula'.
-     * Obtiene la cédula del usuario vinculado por correo o la columna interna.
-     */
-    public function getCedulaAttribute()
+    /*
+    |--------------------------------------------------------------------------
+    | Relaciones
+    |--------------------------------------------------------------------------
+    */
+
+    // app/Models/Estudiante.php
+
+public function user()
+{
+    // Forzamos 'id_user' como clave foránea hacia la tabla users
+    return $this->belongsTo(User::class, 'id_user', 'id');
+}
+
+    public function programa(): BelongsTo
     {
-        // 1. Prioriza la cédula (username) desde la relación con el usuario
-        if ($this->user && !empty($this->user->username)) {
-            return $this->user->username;
-        }
-
-        // 2. Si no hay usuario vinculado, usa el campo 'cedula' propio (siempre que no sea el código)
-        if (!empty($this->attributes['cedula']) && $this->attributes['cedula'] !== $this->attributes['codigo_estudiante']) {
-            return $this->attributes['cedula'];
-        }
-
-        return 'N/A';
+        return $this->belongsTo(ProgramaAcademico::class, 'id_programa');
     }
 
-    // ==========================================
-    // Scopes de Búsqueda y Filtrado
-    // ==========================================
-
-    public function scopeBuscar($query, $texto)
+    public function docente(): BelongsTo
     {
-        if (empty($texto)) return $query;
-
-        $termino = mb_strtolower(trim($texto));
-
-        return $query->where(function($q) use ($termino) {
-            $q->whereRaw('LOWER(nombre_estudiante) LIKE ?', ["%{$termino}%"])
-              ->orWhereRaw('LOWER(codigo_estudiante) LIKE ?', ["%{$termino}%"])
-              ->orWhereHas('user', function($userQuery) use ($termino) {
-                  $userQuery->whereRaw('LOWER(username) LIKE ?', ["%{$termino}%"]);
-              });
-        });
+        return $this->belongsTo(User::class, 'id_docente');
     }
 
-    public function scopeFiltrarPrograma($query, $programaId)
-    {
-        if (empty($programaId)) return $query;
-        return $query->where('id_programa', $programaId);
-    }
-
-    public function scopeFiltrarSemestre($query, $semestre)
-    {
-        if (empty($semestre)) return $query;
-        return $query->whereHas('saberesPrevios', function($q) use ($semestre) {
-            $q->where('semestre', $semestre);
-        });
-    }
-
-    public function scopeFiltrarJornada($query, $jornada)
-    {
-        if (empty($jornada)) return $query;
-        return $query->where('jornada', $jornada);
-    }
-
-    // ==========================================
-    // Relaciones
-    // ==========================================
-
-    /**
-     * Relación con el Modelo User enlazada mediante el correo electrónico.
-     */
-    public function user()
-    {
-        return $this->belongsTo(User::class, 'correo', 'email');
-    }
-
-    public function programa()
-    {
-        return $this->belongsTo(ProgramaAcademico::class, 'id_programa', 'id_programa');
-    }
-
-    public function directorUnidad()
-    {
-        return $this->belongsTo(DirectorUnidad::class, 'id_docente', 'id_docente');
-    }
-
-    public function saberesPrevios()
-    {
-        return $this->hasOne(SaberesPrevios::class, 'codigo_estudiante', 'codigo_estudiante');
-    }
-
-    public function riesgo()
+    public function riesgo(): HasOne
     {
         return $this->hasOne(RiesgoDesercion::class, 'codigo_estudiante', 'codigo_estudiante');
     }
 
-    public function estiloVida()
-    {
-        return $this->hasOne(EstiloVida::class, 'codigo_estudiante', 'codigo_estudiante');
-    }
-
-    public function orientacionPsicologica()
+    public function orientacionPsicologica(): HasOne
     {
         return $this->hasOne(OrientacionPsicologica::class, 'codigo_estudiante', 'codigo_estudiante');
     }
 
-    public function actividades()
+    public function saberesPrevios(): HasOne
     {
-        return $this->belongsToMany(
-            Actividad::class, 
-            'estudiante_actividad',
-            'codigo_estudiante',
-            'id_actividad'
-        );
+        return $this->hasOne(SaberesPrevios::class, 'codigo_estudiante', 'codigo_estudiante');
+    }
+
+    public function estiloVida(): HasOne
+    {
+        return $this->hasOne(EstiloVida::class, 'codigo_estudiante', 'codigo_estudiante');
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Accesores
+    |--------------------------------------------------------------------------
+    */
+
+    public function getCedulaAttribute(): ?string
+    {
+        // 1. Prioriza siempre la cédula real alojada en el username de la relación User
+        if ($this->relationLoaded('user') && $this->user && !empty($this->user->username)) {
+            return $this->user->username;
+        }
+
+        if ($this->user?->username) {
+            return $this->user->username;
+        }
+
+        // 2. Si no tiene usuario asociado, usa la columna física 'cedula' como fallback
+        return $this->attributes['cedula'] ?? 'N/A';
+    }
+
+    public function getCorreoAttribute(): ?string
+    {
+        if (!empty($this->attributes['correo'])) {
+            return $this->attributes['correo'];
+        }
+        return $this->user?->email ?? 'Sin correo';
+    }
+
+    public function getNombreEstudianteAttribute(): ?string
+    {
+        if (!empty($this->attributes['nombre_estudiante'])) {
+            return $this->attributes['nombre_estudiante'];
+        }
+        return $this->user?->name ?? 'Sin nombre';
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Scopes de Búsqueda y Filtrado
+    |--------------------------------------------------------------------------
+    */
+
+    public function scopeBuscar(Builder $query, ?string $term): Builder
+    {
+        if (empty($term)) {
+            return $query;
+        }
+
+        return $query->where(function (Builder $q) use ($term) {
+            $q->whereHas('user', function (Builder $userQuery) use ($term) {
+                $userQuery->where('name', 'like', "%{$term}%")
+                    ->orWhere('email', 'like', "%{$term}%")
+                    ->orWhere('username', 'like', "%{$term}%");
+            })
+            ->orWhere('codigo_estudiante', 'like', "%{$term}%")
+            ->orWhere('cedula', 'like', "%{$term}%")
+            ->orWhere('nombre_estudiante', 'like', "%{$term}%");
+        });
+    }
+
+    public function scopeFiltrar(Builder $query, array $filters): Builder
+    {
+        if (!empty($filters['programa'])) {
+            $query->where('id_programa', $filters['programa']);
+        }
+
+        if (!empty($filters['semestre'])) {
+            $query->where('semestre', $filters['semestre']);
+        }
+
+        if (!empty($filters['jornada'])) {
+            $query->where('jornada', $filters['jornada']);
+        }
+
+        if (!empty($filters['genero'])) {
+            $query->where('genero', $filters['genero']);
+        }
+
+        return $query;
     }
 }

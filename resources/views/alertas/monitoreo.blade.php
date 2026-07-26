@@ -15,7 +15,6 @@
                     <h3 class="text-xl font-bold text-slate-900 m-0">Monitoreo de Estudiantes en Alerta</h3>
                     
                     <div class="flex flex-wrap items-center gap-3">
-                        <!-- Botón Exportar PDF -->
                         <a href="{{ route('alertas.export-pdf', request()->query()) }}" 
                            target="_blank" 
                            class="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold bg-red-600 hover:bg-red-700 text-white transition-colors shadow-sm cursor-pointer border-none decoration-none whitespace-nowrap">
@@ -25,7 +24,7 @@
                             Exportar PDF
                         </a>
 
-                        @if(in_array(auth()->user()->rol, ['admin', 'dir_bienestar']))
+                        @if(in_array(auth()->user()->rol ?? '', ['admin', 'dir_bienestar']))
                             <a href="{{ route('estudiantes.create') }}" 
                                class="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold bg-[#f17a28] hover:bg-[#d66213] text-white transition-colors shadow-sm cursor-pointer border-none decoration-none whitespace-nowrap">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
@@ -39,7 +38,6 @@
 
                 <!-- Filtros -->
                 <form method="GET" action="{{ route('alertas.monitoreo') }}" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 mb-6 bg-slate-50 p-4 rounded-2xl border border-slate-100">
-                    
                     <div>
                         <label class="block text-xs font-bold text-slate-700 mb-1">Búsqueda</label>
                         <input type="text" 
@@ -53,7 +51,7 @@
                         <label class="block text-xs font-bold text-slate-700 mb-1">Carrera (Programa)</label>
                         <select name="programa" class="rounded-xl px-3 py-2 text-sm w-full text-slate-800 bg-white border border-slate-300 focus:border-[#005a36] focus:ring-2 focus:ring-[#dcece4] outline-none transition-all">
                             <option value="">Todas las carreras</option>
-                            @foreach($programas as $prog)
+                            @foreach($programas ?? [] as $prog)
                                 <option value="{{ $prog->id_programa }}" {{ request('programa') == $prog->id_programa ? 'selected' : '' }}>
                                     {{ $prog->nombre_programa }}
                                 </option>
@@ -96,17 +94,16 @@
                             </a>
                         @endif
                     </div>
-
                 </form>
 
-                <!-- Tabla de Estudiantes Optimizada -->
+                <!-- Tabla de Estudiantes -->
                 <div class="w-full overflow-x-auto rounded-2xl border border-slate-200 bg-white shadow-sm">
                     <table class="w-full divide-y divide-slate-100 text-left min-w-[1100px]">
                         <thead class="bg-slate-50 border-b border-slate-200">
                             <tr>
                                 <th class="px-3.5 py-3.5 text-xs font-bold uppercase tracking-wider text-slate-700">Código</th>
                                 <th class="px-3.5 py-3.5 text-xs font-bold uppercase tracking-wider text-slate-700">Cédula</th>
-                                <th class="px-3.5 py-3.5 text-xs font-bold uppercase tracking-wider text-slate-700">Nombre</th>
+                                <th class="px-3.5 py-3.5 text-xs font-bold uppercase tracking-wider text-slate-700">Nombre / Correo</th>
                                 <th class="px-3.5 py-3.5 text-xs font-bold uppercase tracking-wider text-slate-700">Carrera (Programa)</th>
                                 <th class="px-3.5 py-3.5 text-xs font-bold uppercase tracking-wider text-slate-700">Director de Unidad</th>
                                 <th class="px-3.5 py-3.5 text-xs font-bold uppercase tracking-wider text-slate-700 text-center">¿Trabaja?</th>
@@ -116,13 +113,50 @@
                                 <th class="px-3.5 py-3.5 text-xs font-bold uppercase tracking-wider text-slate-700">Actividades</th>
                                 <th class="px-3.5 py-3.5 text-xs font-bold uppercase tracking-wider text-slate-700">Orientación</th>
                                 
-                                @if(in_array(auth()->user()->rol, ['admin', 'dir_bienestar']))
+                                @if(in_array(auth()->user()->rol ?? '', ['admin', 'psicologo', 'dir_bienestar']))
                                     <th class="px-3.5 py-3.5 text-center text-xs font-bold uppercase tracking-wider text-slate-700">Acciones</th>
                                 @endif
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-slate-100">
                             @forelse($estudiantes as $estudiante)
+                                @php
+                                    $cedulaVal = $estudiante->cedula 
+                                        ?? $estudiante->username;
+                                    
+
+                                    $nombreVal = $estudiante->nombre_estudiante 
+                                        ?? $estudiante->user?->name 
+                                        ?? 'Sin nombre';
+
+                                    $correoVal = $estudiante->correo 
+                                        ?? $estudiante->user?->email 
+                                        ?? 'Sin correo';
+
+                                    $generoVal = $estudiante->genero ?? null;
+
+                                    $semestreVal = $estudiante->semestre 
+                                        ?? $estudiante->saberesPrevios?->semestre 
+                                        ?? 'N/A';
+
+                                    $trabajaVal = $estudiante->trabaja ?? 'N/A';
+
+                                    $actividadVal = $estudiante->actividades_estilo_vida 
+                                        ?? $estudiante->estiloVida?->actividades_estilo_vida 
+                                        ?? 'Ninguna';
+
+                                    $riesgoVal = $estudiante->riesgo?->nivel_riesgo 
+                                        ?? $estudiante->nivel_riesgo 
+                                        ?? 'Sin evaluar';
+
+                                    $orientacionVal = $estudiante->orientacionPsicologica?->nivel_servicio 
+                                        ?? $estudiante->nivel_servicio 
+                                        ?? 'Sin orientación';
+
+                                    $directorVal = $estudiante->programa?->directorUnidad?->name 
+                                        ?? $estudiante->docente?->name 
+                                        ?? 'Sin asignar';
+                                @endphp
                                 <tr class="hover:bg-slate-50/80 transition-colors duration-150">
                                     <td class="px-3.5 py-3 text-xs font-bold text-slate-900 whitespace-nowrap">
                                         {{ $estudiante->codigo_estudiante }}
@@ -133,8 +167,17 @@
                                     </td>
 
                                     <td class="px-3.5 py-3 text-xs">
-                                        <div class="font-extrabold text-slate-900">{{ $estudiante->nombre_estudiante }}</div>
-                                        <div class="text-slate-500 text-[11px]">{{ $estudiante->correo }}</div>
+                                        <div class="font-extrabold text-slate-900">
+                                            {{ $nombreVal }}
+                                        </div>
+                                        <div class="text-slate-500 text-[11px]">
+                                            {{ $correoVal }}
+                                        </div>
+                                        @if($generoVal)
+                                            <div class="text-slate-500 text-[11px] font-medium mt-0.5">
+                                                Género: <span class="text-slate-700 font-semibold">{{ $generoVal }}</span>
+                                            </div>
+                                        @endif
                                     </td>
 
                                     <td class="px-3.5 py-3 text-xs text-slate-800">
@@ -142,21 +185,21 @@
                                     </td>
 
                                     <td class="px-3.5 py-3 text-xs text-slate-800">
-                                        {{ $estudiante->programa?->directorUnidad?->name ?? 'Sin asignar' }}
+                                        {{ $directorVal }}
                                     </td>
 
                                     <td class="px-3.5 py-3 text-xs font-medium text-center whitespace-nowrap">
-                                        @if($estudiante->trabaja === 'Si')
+                                        @if(in_array(mb_strtolower($trabajaVal), ['si', 'sí']))
                                             <span class="px-2 py-0.5 text-[11px] font-bold rounded-md bg-blue-50 text-blue-700 border border-blue-100">Sí</span>
-                                        @elseif($estudiante->trabaja === 'No')
+                                        @elseif(mb_strtolower($trabajaVal) === 'no')
                                             <span class="px-2 py-0.5 text-[11px] font-bold rounded-md bg-slate-50 text-slate-600 border border-slate-100">No</span>
                                         @else
-                                            <span class="text-slate-400 italic">N/A</span>
+                                            <span class="text-slate-400 italic">{{ $trabajaVal }}</span>
                                         @endif
                                     </td>
 
                                     <td class="px-3.5 py-3 text-xs text-slate-800 text-center whitespace-nowrap">
-                                        {{ $estudiante->saberesPrevios?->semestre ?? 'N/A' }}
+                                        {{ $semestreVal }}
                                     </td>
 
                                     <td class="px-3.5 py-3 text-xs text-slate-800 text-center whitespace-nowrap">
@@ -164,38 +207,35 @@
                                     </td>
 
                                     <td class="px-3.5 py-3 text-xs text-center whitespace-nowrap">
-                                        @if($estudiante->riesgo)
-                                            <span class="px-2.5 py-0.5 inline-flex text-[11px] leading-5 font-bold rounded-full 
-                                                {{ $estudiante->riesgo->nivel_riesgo == 'Alto' ? 'bg-red-50 text-red-700 border border-red-200' : '' }}
-                                                {{ $estudiante->riesgo->nivel_riesgo == 'Medio' ? 'bg-orange-50 text-orange-700 border border-orange-200' : '' }}
-                                                {{ $estudiante->riesgo->nivel_riesgo == 'Bajo' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : '' }}">
-                                                {{ $estudiante->riesgo->nivel_riesgo }}
-                                            </span>
-                                        @else
-                                            <span class="text-slate-400 italic text-[11px]">Sin evaluar</span>
-                                        @endif
+                                        <span class="px-2.5 py-0.5 inline-flex text-[11px] leading-5 font-bold rounded-full 
+                                            {{ $riesgoVal == 'Alto' ? 'bg-red-50 text-red-700 border border-red-200' : '' }}
+                                            {{ $riesgoVal == 'Medio' ? 'bg-orange-50 text-orange-700 border border-orange-200' : '' }}
+                                            {{ $riesgoVal == 'Bajo' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : '' }}
+                                            {{ $riesgoVal == 'Sin evaluar' ? 'bg-slate-100 text-slate-500 border border-slate-200' : '' }}">
+                                            {{ $riesgoVal }}
+                                        </span>
                                     </td>
 
                                     <td class="px-3.5 py-3 text-xs font-medium text-slate-800 break-words leading-tight">
-                                        {{ $estudiante->actividades_estilo_vida ?? $estudiante->estiloVida?->actividades_estilo_vida ?? 'Ninguna' }}
+                                        {{ $actividadVal }}
                                     </td>
 
                                     <td class="px-3.5 py-3 text-xs font-medium text-slate-800 break-words leading-tight">
-                                        {{ $estudiante->orientacionPsicologica?->nivel_servicio ?? 'Sin orientación' }}
+                                        {{ $orientacionVal }}
                                     </td>
                                     
-                                    @if(in_array(auth()->user()->rol, ['admin', 'dir_bienestar']))
+                                    @if(in_array(auth()->user()->rol ?? '', ['admin', 'psicologo', 'dir_bienestar']))
                                         <td class="px-3.5 py-3 whitespace-nowrap text-xs text-center font-medium">
                                             <div class="flex items-center justify-center gap-1.5">
                                                 <a href="{{ route('estudiantes.edit', $estudiante->codigo_estudiante) }}" 
                                                    class="inline-flex items-center justify-center p-1.5 rounded-lg bg-[#dcece4] hover:bg-[#004d2e] text-[#005a36] hover:text-white shadow-sm transition-all duration-200 group" 
-                                                   title="Editar Registro">
+                                                   title="Editar Datos Estudiante / Seguimiento">
                                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 scale-100 group-hover:scale-110 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                                         <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                                     </svg>
                                                 </a>
                                                 
-                                                @if(auth()->user()->rol === 'admin')
+                                                @if((auth()->user()->rol ?? '') === 'admin')
                                                     <form action="{{ route('estudiantes.destroy', $estudiante->codigo_estudiante) }}" 
                                                           method="POST" 
                                                           x-data
@@ -218,7 +258,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="{{ in_array(auth()->user()->rol, ['admin', 'dir_bienestar']) ? 12 : 11 }}" class="px-6 py-8 whitespace-nowrap text-sm text-center font-bold text-slate-800 bg-slate-50">
+                                    <td colspan="{{ in_array(auth()->user()->rol ?? '', ['admin', 'psicologo', 'dir_bienestar']) ? 12 : 11 }}" class="px-6 py-8 whitespace-nowrap text-sm text-center font-bold text-slate-800 bg-slate-50">
                                         No se encontraron estudiantes registrados con los criterios seleccionados.
                                     </td>
                                 </tr>
@@ -234,7 +274,7 @@
                 @endif
             </div>
 
-            <!-- Metodología y Fórmulas -->
+            <!-- Metodología -->
             <div class="bg-white overflow-hidden shadow-md sm:rounded-3xl p-8 border border-slate-200">
                 <div class="flex items-center space-x-3 mb-4 border-b border-slate-100 pb-4">
                     <div class="p-2 rounded-xl bg-orange-50 text-[#f17a28]">

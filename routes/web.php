@@ -42,7 +42,7 @@ Route::middleware(['auth', 'prevent-back'])->group(function () {
     Route::get('/welcome', fn() => view('welcome'))->name('welcome');
     
     Route::get('/welcome-admin', function () {
-        if (!in_array(auth()->user()->rol, ['admin', 'psicologo', 'dir_bienestar', 'dir_unidad'])) {
+        if (!in_array(auth()->user()->rol, ['admin', 'psicologo', 'dir_bienestar', 'dir_unidad', 'docente'])) {
             abort(403, 'Acceso no autorizado.');
         }
         return view('welcome_admin');
@@ -75,37 +75,40 @@ Route::middleware(['auth', 'prevent-back'])->group(function () {
     });
 
     // ----------------------------------------------------------------------
-    // 4. GESTIÓN DE MONITOREO Y ESTUDIANTES
-    // (Roles: admin, psicologo, dir_bienestar, dir_unidad)
+    // 4. GESTIÓN DE MONITOREO Y ESTUDIANTES (Rutas Explícitas por codigo_estudiante)
     // ----------------------------------------------------------------------
-    Route::middleware(['verificar.rol:admin,psicologo,dir_bienestar,dir_unidad'])->group(function () {
+    Route::middleware(['verificar.rol:admin,psicologo,dir_bienestar,dir_unidad,docente'])->group(function () {
         Route::get('/monitoreo-alertas', [AlertasController::class, 'index'])->name('alertas.monitoreo');
         Route::get('/monitoreo-alertas/export-pdf', [AlertasController::class, 'exportPdf'])->name('alertas.export-pdf');
-        Route::resource('estudiantes', EstudianteController::class)->except(['destroy']);
+        
+        // Rutas directas para el CRUD de Estudiantes sin conflictos de ID
+        Route::get('/estudiantes', [EstudianteController::class, 'index'])->name('estudiantes.index');
+        Route::get('/estudiantes/create', [EstudianteController::class, 'create'])->name('estudiantes.create');
+        Route::post('/estudiantes', [EstudianteController::class, 'store'])->name('estudiantes.store');
+        Route::get('/estudiantes/{codigo_estudiante}/edit', [EstudianteController::class, 'edit'])->name('estudiantes.edit');
+        Route::match(['put', 'patch'], '/estudiantes/{codigo_estudiante}', [EstudianteController::class, 'update'])->name('estudiantes.update');
     });
 
     // ----------------------------------------------------------------------
     // 5. RESULTADOS DE CUESTIONARIOS Y SEGUIMIENTO PSICOLÓGICO
-    // (Roles: admin, psicologo, dir_bienestar)
     // ----------------------------------------------------------------------
-    Route::middleware(['verificar.rol:admin,psicologo,dir_bienestar'])->group(function () {
+    Route::middleware(['verificar.rol:admin,psicologo,dir_bienestar,dir_unidad,docente'])->group(function () {
         Route::get('/resultados-cuestionario', [PsicologoController::class, 'index'])->name('resultados.index');
         Route::get('/resultados-cuestionario/buscar', [PsicologoController::class, 'buscar'])->name('resultados.buscar');
         
         // Seguimiento específico de Psicología
         Route::get('/psicologo/estudiante/{codigo}/editar', [PsicologoController::class, 'edit'])->name('psicologo.edit');
-        Route::post('/psicologo/estudiante/{codigo}/actualizar', [PsicologoController::class, 'update'])->name('psicologo.update');
+        Route::match(['post', 'put'], '/psicologo/estudiante/{codigo}/actualizar', [PsicologoController::class, 'update'])->name('psicologo.update');
     });
 
     // ----------------------------------------------------------------------
     // 6. MÓDULOS EXCLUSIVOS DE ADMINISTRADOR
-    // (Rol: admin)
     // ----------------------------------------------------------------------
     Route::middleware(['verificar.rol:admin'])->group(function () {
-        // Eliminación de estudiantes
-        Route::delete('/estudiantes/{estudiante}', [EstudianteController::class, 'destroy'])->name('estudiantes.destroy');
+        // Eliminación de estudiantes por código
+        Route::delete('/estudiantes/{codigo_estudiante}', [EstudianteController::class, 'destroy'])->name('estudiantes.destroy');
         
-        // Gestión de Entidades
+        // Gestión de Entidades del Sistema
         Route::resource('usuarios', UserController::class)->except(['show', 'create', 'edit']);
         Route::resource('programas', ProgramController::class)->except(['create', 'show', 'edit']);
         Route::resource('directores', DirectorUnidadController::class)->except(['create', 'show', 'edit']);

@@ -9,15 +9,15 @@
         }
         body { 
             font-family: 'DejaVu Sans', sans-serif; 
-            font-size: 9px; 
+            font-size: 8.5px; 
             color: #1e293b; 
             margin: 0; 
             padding: 0; 
-            line-height: 1.3;
+            line-height: 1.4;
         }
         .header { 
             text-align: center; 
-            font-size: 15px; 
+            font-size: 14px; 
             font-weight: bold; 
             margin-bottom: 4px; 
             color: #0f172a; 
@@ -25,11 +25,11 @@
         }
         .subheader { 
             text-align: center; 
-            font-size: 9.5px; 
+            font-size: 9px; 
             color: #64748b; 
-            margin-bottom: 15px; 
+            margin-bottom: 12px; 
             border-bottom: 2px solid #004d2e;
-            padding-bottom: 8px;
+            padding-bottom: 6px;
         }
         table { 
             width: 100%; 
@@ -39,28 +39,39 @@
         th { 
             background-color: #004d2e; 
             color: #ffffff; 
-            padding: 6px 8px; 
-            font-size: 8.5px; 
+            padding: 8px 6px; /* Mayor espaciado superior e inferior en cabecera */
+            font-size: 8px; 
             text-align: left; 
             text-transform: uppercase; 
             border: 1px solid #003822;
+            letter-spacing: 0.3px;
         }
         td { 
             border-bottom: 1px solid #e2e8f0; 
-            padding: 6px 8px; 
+            padding: 8px 6px; /* Mayor espaciado interno (padding) para dar "aire" */
             font-size: 8.5px; 
-            vertical-align: middle;
+            vertical-align: top; /* Alineado arriba para celdas de múltiples líneas */
         }
         tr:nth-child(even) { 
             background-color: #f8fafc; 
         }
         
+        /* ESTILOS DE TEXTO SECUNDARIO */
+        .text-muted {
+            color: #64748b;
+            font-size: 7.5px;
+        }
+        .text-code {
+            color: #0f172a;
+            font-weight: bold;
+        }
+
         /* BADGES / INSIGNIAS */
         .badge { 
-            padding: 2px 6px; 
+            padding: 3px 6px; 
             border-radius: 3px; 
             font-weight: bold; 
-            font-size: 8px; 
+            font-size: 7.5px; 
             display: inline-block; 
             text-align: center;
         }
@@ -97,11 +108,11 @@
     <table>
         <thead>
             <tr>
-                <th style="width: 10%;">Código</th>
-                <th style="width: 22%;">Estudiante</th>
-                <th style="width: 20%;">Programa</th>
-                <th style="width: 9%;">Jornada</th>
-                <th style="width: 9%; text-align: center;">Riesgo</th>
+                <th style="width: 11%;">Código</th>
+                <th style="width: 24%;">Estudiante / Contacto</th>
+                <th style="width: 19%;">Programa</th>
+                <th style="width: 8%;">Jornada</th>
+                <th style="width: 8%; text-align: center;">Riesgo</th>
                 <th style="width: 15%;">Servicio / Orientación</th>
                 <th style="width: 15%;">Observaciones</th>
             </tr>
@@ -109,8 +120,22 @@
         <tbody>
             @forelse($estudiantes as $e)
                 <tr>
-                    <td><strong>{{ $e->codigo_estudiante }}</strong></td>
-                    <td>{{ $e->nombre_estudiante }}</td>
+                    <td>
+                        <span class="text-code">{{ $e->codigo_estudiante }}</span>
+                    </td>
+                    <td>
+                        <!-- Nombre Principal -->
+                        <div style="font-weight: bold; color: #0f172a; margin-bottom: 2px;">
+                            {{ $e->nombre_estudiante }}
+                        </div>
+                        <!-- Cédula y Correo integrados en pequeño -->
+                        <div class="text-muted">
+                            Cédula: {{ $e->cedula ?? 'N/A' }}
+                        </div>
+                        <div class="text-muted" style="word-break: break-all;">
+                            {{ $e->correo ?? 'Sin correo' }}
+                        </div>
+                    </td>
                     <td>{{ $e->programa->nombre_programa ?? 'Sin Asignar' }}</td>
                     <td>{{ ucfirst($e->jornada ?? 'N/A') }}</td>
                     <td style="text-align: center;">
@@ -130,7 +155,7 @@
                 </tr>
             @empty
                 <tr>
-                    <td colspan="7" style="text-align: center; padding: 15px; color: #64748b;">
+                    <td colspan="7" style="text-align: center; padding: 20px; color: #64748b;">
                         No se encontraron registros con los filtros seleccionados.
                     </td>
                 </tr>

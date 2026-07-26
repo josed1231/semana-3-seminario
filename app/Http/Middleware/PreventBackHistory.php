@@ -15,7 +15,7 @@ class PreventBackHistory
     {
         $response = $next($request);
 
-        // Añade cabeceras HTTP para evitar que el navegador guarde la página en la caché local
+        // Añade cabeceras HTTP para evitar que el navegador guarde la página en la caché local[cite: 17]
         return $response->header('Cache-Control', 'no-cache, no-store, max-age=0, must-revalidate')
                         ->header('Pragma', 'no-cache')
                         ->header('Expires', 'Sun, 02 Jan 1990 00:00:00 GMT');

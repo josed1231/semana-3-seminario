@@ -43,7 +43,7 @@ class CuestionarioController extends Controller
             'id_programa'               => 'required|exists:programas_academicos,id_programa',
             'semestre'                  => 'required|integer',
             'jornada'                   => 'required|string',
-            'genero'                    => 'nullable|string',
+            'genero'                    => 'required|string',
             'victima_confict'           => 'nullable|string',
             'trabaja'                   => 'nullable|string',
             'actividad'                 => 'nullable|string',
@@ -51,6 +51,8 @@ class CuestionarioController extends Controller
             'afectacion_socioeconomico' => 'nullable',
             'afectacion_psicosocial'    => 'nullable',
         ]);
+
+        $user = auth()->user();
 
         // Consulta del programa académico seleccionado
         $programa = ProgramaAcademico::findOrFail($request->id_programa);
@@ -70,24 +72,29 @@ class CuestionarioController extends Controller
         // Limpieza del campo actividad
         $actividadTexto = $request->input('actividad', '');
 
-        // 2. Guardar o actualizar datos base del Estudiante (Sincronización automática de correo)
+        // 2. Guardar o actualizar datos base del Estudiante (Asegurando Nombre, Cédula y Correo)
+        $codigoEstudiante = $user->codigo_estudiante ?? $user->username;
+        $cedulaEstudiante = $user->cedula ?? $user->username ?? $codigoEstudiante;
+
         $estudiante = Estudiante::updateOrCreate(
             [
-                'codigo_estudiante' => auth()->user()->codigo_estudiante
+                'codigo_estudiante' => $codigoEstudiante
             ],
             [
-                'nombre_estudiante'       => auth()->user()->name,
-                'correo'                  => auth()->user()->email, // <-- CORRECCIÓN: Asigna el correo automáticamente
+                'cedula'                  => $cedulaEstudiante,            // 👈 Mantiene la cédula visible
+                'nombre_estudiante'       => $user->name,                  // 👈 Asigna el nombre (ej: Samuel)
+                'correo'                  => $user->email,                 // 👈 Asigna el correo
                 'id_programa'             => $request->id_programa,
                 'id_docente'              => $idDocente,
                 'jornada'                 => $request->jornada,
+                'genero'                  => $request->input('genero'),    // 👈 Guardado directo
                 'trabaja'                 => $request->input('trabaja', 'No'),
                 'actividades_estilo_vida' => $actividadTexto,
                 'promedio'                => 0,
             ]
         );
 
-        // 3. Guardar respuestas en saberes_previos (Estructura JSON)
+        // 3. Guardar respuestas en saberes_previos (Estructura JSON y Semestre)
         $respuestas = [
             'genero'                    => $request->input('genero'),
             'victima_conflicto'         => $request->input('victima_confict'),
@@ -203,6 +210,7 @@ class CuestionarioController extends Controller
         $request->validate([
             'id_programa'               => 'required|exists:programas_academicos,id_programa',
             'jornada'                   => 'required|string',
+            'genero'                    => 'nullable|string',
             'trabaja'                   => 'nullable|string',
             'afectacion_academico'      => 'nullable',
             'afectacion_socioeconomico' => 'nullable',
@@ -213,6 +221,7 @@ class CuestionarioController extends Controller
         $estudiante->update([
             'id_programa' => $request->id_programa,
             'jornada'     => $request->jornada,
+            'genero'      => $request->input('genero', $estudiante->genero),
             'trabaja'     => $request->input('trabaja', 'No'),
         ]);
 

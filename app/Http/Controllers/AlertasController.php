@@ -44,7 +44,7 @@ class AlertasController extends Controller
     {
         $user = auth()->user();
 
-        // Se precarga 'user' para disponer del campo username/cedula
+        // Precarga de relaciones
         $query = Estudiante::with([
             'user',
             'programa.directorUnidad', 
@@ -59,12 +59,10 @@ class AlertasController extends Controller
             $query->whereIn('id_programa', $programasDelDirector);
         }
 
-        // Aplicar Scopes
-        $estudiantes = $query->buscar($request->input('buscar'))
-                             ->filtrarPrograma($request->input('programa'))
-                             ->filtrarSemestre($request->input('semestre'))
-                             ->filtrarJornada($request->input('jornada'))
-                             ->paginate(15)
+        // Aplicar Filtros (Búsqueda, Programa, Semestre, Jornada y Género)
+        $query = $this->aplicarFiltros($query, $request);
+
+        $estudiantes = $query->paginate(15)
                              ->appends($request->query());
 
         $programas = ProgramaAcademico::all();
@@ -72,14 +70,10 @@ class AlertasController extends Controller
         return view('alertas.monitoreo', compact('estudiantes', 'programas'));
     }
 
-    /**
-     * Exportar el listado completo de Monitoreo a PDF respetando filtros y rol
-     */
     public function exportPdf(Request $request)
     {
         $user = auth()->user();
 
-        // Cargar 'user' para el reporte PDF
         $query = Estudiante::with([
             'user',
             'programa.directorUnidad', 
@@ -89,23 +83,49 @@ class AlertasController extends Controller
             'estiloVida'
         ]);
 
-        // Si es Director de Unidad, filtra únicamente sus programas
         if ($user && $user->rol === 'dir_unidad') {
             $programasDelDirector = ProgramaAcademico::where('id_docente', $user->id)->pluck('id_programa');
             $query->whereIn('id_programa', $programasDelDirector);
         }
 
-        // Aplica EXACTAMENTE los mismos filtros de la vista Web
-        $estudiantes = $query->buscar($request->input('buscar'))
-                             ->filtrarPrograma($request->input('programa'))
-                             ->filtrarSemestre($request->input('semestre'))
-                             ->filtrarJornada($request->input('jornada'))
-                             ->get();
+        $query = $this->aplicarFiltros($query, $request);
 
-        // Cargar vista PDF en formato horizontal (landscape)
+        $estudiantes = $query->get();
+
         $pdf = Pdf::loadView('pdf.monitoreo', compact('estudiantes'))
                   ->setPaper('a4', 'landscape');
 
         return $pdf->download('reporte-monitoreo-estudiantes-' . date('Y-m-d') . '.pdf');
+    }
+
+    private function aplicarFiltros($query, Request $request)
+    {
+        return $query
+            ->when($request->filled('buscar'), function ($q) use ($request) {
+                $buscar = $request->input('buscar');
+                $q->where(function ($sub) use ($buscar) {
+                    $sub->where('codigo_estudiante', 'like', "%{$buscar}%")
+                        ->orWhere('nombre_estudiante', 'like', "%{$buscar}%")
+                        ->orWhereHas('user', function ($u) use ($buscar) {
+                            $u->where('username', 'like', "%{$buscar}%")
+                              ->orWhere('name', 'like', "%{$buscar}%")
+                              ->orWhere('email', 'like', "%{$buscar}%");
+                        });
+                });
+            })
+            ->when($request->filled('programa'), function ($q) use ($request) {
+                $q->where('id_programa', $request->input('programa'));
+            })
+            ->when($request->filled('semestre'), function ($q) use ($request) {
+                $q->whereHas('saberesPrevios', function ($s) use ($request) {
+                    $s->where('semestre', $request->input('semestre'));
+                });
+            })
+            ->when($request->filled('jornada'), function ($q) use ($request) {
+                $q->where('jornada', $request->input('jornada'));
+            })
+            ->when($request->filled('genero'), function ($q) use ($request) {
+                $q->where('genero', $request->input('genero'));
+            });
     }
 }

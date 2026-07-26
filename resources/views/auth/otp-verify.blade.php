@@ -3,7 +3,7 @@
         
         <!-- Encabezado de la Tarjeta -->
         <div style="margin-bottom: 1.75rem; text-align: center;">
-            <h2 style="color: #1e293b; font-weight: 800; font-size: 1.5rem; margin: 0;">Verificación 2FA</h2>
+            <h2 style="color: #1e293b; font-weight: 800; font-size: 1.5rem; margin: 0;">Verificación</h2>
             <p style="color: #64748b; font-size: 0.875rem; margin-top: 6px; margin-bottom: 0;">
                 Se ha enviado un código de 6 dígitos a tu correo electrónico.
             </p>

@@ -74,7 +74,7 @@
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                         <div>
                             <label for="promedio" class="block text-sm font-medium text-gray-300">Promedio <span class="text-red-500">*</span></label>
                             <input type="number" step="0.01" min="0" max="5.0" name="promedio" id="promedio" value="{{ old('promedio') }}" required placeholder="0.00 a 5.00" class="mt-1 block w-full rounded-md border-gray-700 bg-gray-900 text-gray-100 text-sm focus:border-indigo-500 focus:ring-indigo-500">
@@ -101,6 +101,18 @@
                                 <option value="Sabatina" {{ old('jornada') == 'Sabatina' ? 'selected' : '' }}>Sabatina</option>
                             </select>
                             @error('jornada') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
+                        </div>
+
+                        <div>
+                            <label for="genero" class="block text-sm font-medium text-gray-300">Género <span class="text-red-500">*</span></label>
+                            <select name="genero" id="genero" required class="mt-1 block w-full rounded-md border-gray-700 bg-gray-900 text-gray-100 text-sm focus:border-indigo-500 focus:ring-indigo-500">
+                                <option value="">Seleccione...</option>
+                                <option value="Masculino" {{ old('genero') == 'Masculino' ? 'selected' : '' }}>Masculino</option>
+                                <option value="Femenino" {{ old('genero') == 'Femenino' ? 'selected' : '' }}>Femenino</option>
+                                <option value="No binario" {{ old('genero') == 'No binario' ? 'selected' : '' }}>No binario</option>
+                                <option value="Otro" {{ old('genero') == 'Otro' ? 'selected' : '' }}>Otro / Prefiero no decir</option>
+                            </select>
+                            @error('genero') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
                         </div>
                     </div>
 
