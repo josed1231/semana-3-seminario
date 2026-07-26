@@ -2,65 +2,45 @@
 
 namespace App\Policies;
 
-use App\Models\Cuestionario;
 use App\Models\User;
-use Illuminate\Auth\Access\Response;
 
 class CuestionarioPolicy
 {
     /**
-     * Determine whether the user can view any models.
+     * Determina si el usuario puede ver la lista o resultados general del cuestionario.
      */
     public function viewAny(User $user): bool
     {
-        return false;
+        return in_array($user->rol, [
+            'admin', 
+            'dir_bienestar', 
+            'dir_unidad', 
+            'psicologo', 
+            'docente'
+        ]);
     }
 
     /**
-     * Determine whether the user can view the model.
-     */
-    public function view(User $user, Cuestionario $cuestionario): bool
-    {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can create models.
+     * Determina si el usuario puede diligenciar / responder el cuestionario.
      */
     public function create(User $user): bool
     {
-        return false;
+        return in_array($user->rol, ['user', 'estudiante', 'admin', 'dir_bienestar']);
     }
 
     /**
-     * Determine whether the user can update the model.
+     * Determina si el usuario puede actualizar respuestas del cuestionario.
      */
-    public function update(User $user, Cuestionario $cuestionario): bool
+    public function update(User $user): bool
     {
-        return false;
+        return in_array($user->rol, ['user', 'estudiante', 'admin', 'dir_bienestar', 'psicologo']);
     }
 
     /**
-     * Determine whether the user can delete the model.
+     * Determina si el usuario puede eliminar registros asociados.
      */
-    public function delete(User $user, Cuestionario $cuestionario): bool
+    public function delete(User $user): bool
     {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can restore the model.
-     */
-    public function restore(User $user, Cuestionario $cuestionario): bool
-    {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can permanently delete the model.
-     */
-    public function forceDelete(User $user, Cuestionario $cuestionario): bool
-    {
-        return false;
+        return $user->rol === 'admin';
     }
 }
