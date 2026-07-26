@@ -25,7 +25,7 @@
                     </div>
                     <div>
                         <h3 class="text-lg font-bold text-slate-900 m-0">Información del Perfil</h3>
-                        <p class="text-xs text-slate-500 m-0">Actualiza la información general de tu usuario, correo electrónico y género.</p>
+                        <p class="text-xs text-slate-500 m-0">Actualiza la información general de tu usuario y correo electrónico.</p>
                     </div>
                 </div>
 

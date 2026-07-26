@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Genero;
 use Illuminate\Http\Request;
+use App\Models\Estudiante;
 
 class GeneroController extends Controller
 {
@@ -80,11 +81,19 @@ class GeneroController extends Controller
     /**
      * Eliminar un género si no está en uso
      */
-    public function destroy($id)
+    public function destroy(Genero $genero)
     {
-        $genero = Genero::findOrFail($id);
+        // Verificar si hay estudiantes que usen este género
+        $asignadoAEstudiantes = Estudiante::where('genero', $genero->nombre)->exists();
+
+        if ($asignadoAEstudiantes) {
+            return redirect()->route('generos.index')
+                ->with('error', "No se puede eliminar el género '{$genero->nombre}' porque está asignado a uno o más estudiantes.");
+        }
+
         $genero->delete();
 
-        return redirect()->back()->with('success', 'Género eliminado correctamente.');
+        return redirect()->route('generos.index')
+            ->with('success', 'Género eliminado exitosamente.');
     }
 }

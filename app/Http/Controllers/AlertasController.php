@@ -103,15 +103,16 @@ class AlertasController extends Controller
     private function aplicarFiltros($query, Request $request)
     {
         return $query
-            ->when($request->filled('buscar'), function ($q) use ($request) {
+        ->when($request->filled('buscar'), function ($q) use ($request) {
                 $buscar = $request->input('buscar');
                 $q->where(function ($sub) use ($buscar) {
                     $sub->where('codigo_estudiante', 'like', "%{$buscar}%")
+                        ->orWhere('cedula', 'like', "%{$buscar}%")
                         ->orWhere('nombre_estudiante', 'like', "%{$buscar}%")
                         ->orWhereHas('user', function ($u) use ($buscar) {
                             $u->where('username', 'like', "%{$buscar}%")
-                              ->orWhere('name', 'like', "%{$buscar}%")
-                              ->orWhere('email', 'like', "%{$buscar}%");
+                            ->orWhere('name', 'like', "%{$buscar}%")
+                            ->orWhere('email', 'like', "%{$buscar}%");
                         });
                 });
             })

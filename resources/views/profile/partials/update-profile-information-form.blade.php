@@ -1,7 +1,7 @@
 <section>
     <header class="mb-4">
         <p class="text-xs text-slate-500 m-0">
-            {{ __("Actualiza la información general de tu cuenta, tu dirección de correo electrónico institucional y preferencia de género.") }}
+            {{ __("Actualiza la información general de tu cuenta y tu dirección de correo electrónico institucional.") }}
         </p>
     </header>
 
@@ -79,23 +79,6 @@
                     @endif
                 </div>
             @endif
-        </div>
-
-        <!-- Selector de Género -->
-        <div>
-            <x-input-label for="genero" :value="__('Género')" class="text-slate-700 font-semibold mb-1" />
-            <select 
-                id="genero" 
-                name="genero" 
-                class="mt-1 block w-full rounded-xl border-slate-300 focus:border-[#004d2e] focus:ring-[#004d2e] shadow-sm text-sm text-slate-800 bg-white"
-            >
-                <option value="" disabled {{ old('genero', $user->genero ?? '') == '' ? 'selected' : '' }}>Seleccione una opción</option>
-                <option value="Masculino" {{ old('genero', $user->genero ?? '') == 'Masculino' ? 'selected' : '' }}>Masculino</option>
-                <option value="Femenino" {{ old('genero', $user->genero ?? '') == 'Femenino' ? 'selected' : '' }}>Femenino</option>
-                <option value="No Binario" {{ old('genero', $user->genero ?? '') == 'No Binario' ? 'selected' : '' }}>No Binario</option>
-                <option value="Otro" {{ old('genero', $user->genero ?? '') == 'Otro' ? 'selected' : '' }}>Otro</option>
-            </select>
-            <x-input-error class="mt-2" :messages="$errors->get('genero')" />
         </div>
 
         <!-- Botón de Guardar y Notificación -->
