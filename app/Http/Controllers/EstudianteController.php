@@ -7,6 +7,7 @@ use App\Models\ProgramaAcademico;
 use App\Models\DirectorUnidad;
 use App\Models\OrientacionPsicologica;
 use App\Models\User;
+use App\Models\Genero;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -17,6 +18,105 @@ use Illuminate\Validation\Rule;
 class EstudianteController extends Controller
 {
     use AuthorizesRequests;
+
+    /**
+     * Muestra el formulario para registrar un nuevo estudiante.
+     */
+    public function create()
+    {
+        $programas = ProgramaAcademico::all();
+        $directores = DirectorUnidad::all();
+        $generos = Genero::where('activo', 1)->orderBy('nombre', 'asc')->get();
+
+        return view('estudiantes.create', compact('programas', 'directores', 'generos'));
+    }
+
+    /**
+     * Almacena un nuevo estudiante en la base de datos.
+     */
+    public function store(Request $request)
+    {
+        // 1. Validación de entradas
+        $request->validate([
+            'codigo_estudiante' => 'required|string|max:50|unique:estudiantes,codigo_estudiante',
+            'cedula'            => 'required|string|max:50|unique:users,username',
+            'nombre_estudiante' => 'required|string|max:255',
+            'correo'            => 'required|email|max:255|unique:users,email',
+            'id_programa'       => 'required',
+            'semestre'          => 'required',
+            'jornada'           => 'required',
+            'genero'            => 'required',
+        ], [
+            'codigo_estudiante.unique' => 'El código de estudiante ya se encuentra registrado.',
+            'cedula.unique'            => 'La cédula ingresada ya está registrada en el sistema por otro usuario.',
+            'correo.unique'            => 'El correo institucional ingresado ya está en uso por otra cuenta.',
+        ]);
+
+        try {
+            DB::transaction(function () use ($request) {
+                // 2. Buscar o crear el usuario en `users`
+                $user = User::where('email', $request->input('correo'))
+                    ->orWhere('username', $request->input('cedula'))
+                    ->first();
+
+                if (!$user) {
+                    $user = User::create([
+                        'name'     => $request->input('nombre_estudiante'),
+                        'email'    => $request->input('correo'),
+                        'username' => $request->input('cedula'),
+                        'password' => bcrypt($request->input('cedula')), // Contraseña por defecto: Cédula
+                    ]);
+                }
+
+                // 3. Determinar un id_docente válido existente en directores_unidad
+                $idDocente = $request->input('id_director_unidad');
+
+                // Si no vino o el enviado no existe en directores_unidad, buscar según el programa
+                if (!$idDocente || !DirectorUnidad::where('id_docente', $idDocente)->exists()) {
+                    if ($request->filled('id_programa')) {
+                        $programa = ProgramaAcademico::find($request->id_programa);
+                        if ($programa && $programa->id_docente && DirectorUnidad::where('id_docente', $programa->id_docente)->exists()) {
+                            $idDocente = $programa->id_docente;
+                        }
+                    }
+                }
+
+                // Si aún no se encuentra un ID válido, tomar el primer id_docente real de directores_unidad
+                if (!$idDocente || !DirectorUnidad::where('id_docente', $idDocente)->exists()) {
+                    $idDocente = DirectorUnidad::value('id_docente');
+                }
+
+                // 4. Crear el registro en `estudiantes`
+                $estudiante = new Estudiante();
+                $estudiante->codigo_estudiante = $request->input('codigo_estudiante');
+                $estudiante->correo            = $request->input('correo');
+                $estudiante->nombre_estudiante = $request->input('nombre_estudiante');
+                $estudiante->genero            = $request->input('genero');
+                $estudiante->id_programa       = $request->input('id_programa');
+                $estudiante->id_docente        = $idDocente;
+                $estudiante->jornada           = $request->input('jornada');
+                $estudiante->id_user           = $user->id;
+                $estudiante->save();
+
+                // 5. Registro inicial en Orientación Psicológica
+                OrientacionPsicologica::firstOrCreate(
+                    ['codigo_estudiante' => $estudiante->codigo_estudiante],
+                    [
+                        'nivel_servicio' => 'Tutoría Académica Standard',
+                        'observaciones'  => 'Registro inicial del estudiante.',
+                    ]
+                );
+            });
+
+            return redirect()->route('alertas.monitoreo')->with('success', 'Estudiante registrado con éxito.');
+
+        } catch (AuthorizationException $e) {
+            throw $e;
+        } catch (\Exception $e) {
+            Log::error('Error al registrar estudiante: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'No se pudo guardar la información: ' . $e->getMessage())->withInput();
+        }
+    }
 
     /**
      * Muestra la información del estudiante para edición.
