@@ -11,7 +11,7 @@ class UserSeeder extends Seeder
     public function run(): void
     {
         User::updateOrCreate(
-            ['email' => 'webmaster@gmail.com'], // 👈 Aquí va el correo con el que vas a iniciar sesión
+            ['email' => 'josedavidzuluagabarco@gmail.com'], 
             [
                 'name'     => 'Web Master',
                 'username' => 'webmaster',
